@@ -1,0 +1,6 @@
+{
+    "path": "../examples/visualize_maps.ipynb",
+    "extra-media": [
+        "../examples/img"
+    ]
+}

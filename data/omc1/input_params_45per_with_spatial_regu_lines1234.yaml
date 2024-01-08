@@ -1,0 +1,130 @@
+simu_init:
+  simu_name: "omc1_45per_with_spatial_regu_lines1234" # 1234
+  cloud_name: "omc1"
+  max_workers: 10
+  #
+  params_names:
+    kappa: $\kappa$
+    P: $P_{th}$
+    radm: $G_0$
+    Avmax: $A_V^{tot}$
+    angle: $\alpha$
+  #
+  list_lines_fit:
+    - "chp_j1__j0"
+    - "co_v0_j2__v0_j1"
+    - "co_v0_j10__v0_j9"
+    - "hcop_j3__j2"
+    # - "cp_el2p_j3_2__el2p_j1_2"
+    # - "13c_o_j2__j1"
+#
+to_run_optim_map: false # true
+to_run_mcmc: true
+#
+filename_int: "omc1-int-cgs.pkl"
+filename_err: "omc1-err-cgs.pkl"
+#
+forward_model:
+  forward_model_name: "meudon_pdr_model_dense"
+  force_use_cpu: false
+  fixed_params: # must contain all the params in list_names of the SImulation object. Values are in linear scale.
+    kappa: null
+    P: null
+    radm: null
+    Avmax: null
+    angle: null
+  is_log_scale_params: # defines the scale to work with for each param (either log or lin)
+    kappa: True
+    P: True
+    radm: True
+    Avmax: True
+    angle: False
+#
+#
+sigma_m_float_linscale: 1.452
+#
+# prior indicator
+prior_indicator:
+  indicator_margin_scale: 1.0e-1
+  lower_bounds_lin:
+    - 1.0e-1 # kappa
+    - 1.0e+5 # thermal pressure
+    - 1.0e+0 # G0
+    - 1.0e+0 # AVtot
+    - 0.0 # angle
+  upper_bounds_lin:
+    - 1.0e+1 # kappa
+    - 1.0e+9 # thermal pressure
+    - 1.0e+5 # G0
+    - 4.0e+1 # AVtot
+    - 60.0 # angle
+#
+list_gaussian_approx_params: []
+mixing_model_params_filename: ["params_for_gaussian_only.csv"]
+#
+# spatial prior
+with_spatial_prior: true
+spatial_prior:
+  name: "L2-laplacian"
+  use_next_nearest_neighbours: false
+  initial_regu_weights: [1.0, 1.0, 1.0, 1.0, 1.0]
+  use_clustering: false
+  n_clusters: null
+  cluster_algo: null  # "spectral_clustering",
+#
+# sampling params
+sampling_params:
+  map:
+    initial_step_size:  3.0e-2
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.2, 0.8] # (p_mtm, p_pmala)
+    k_mtm: 50
+    is_stochastic: false
+    compute_correction_term: false
+  mcmc:
+    initial_step_size: 1.0e-1 #1.0e-5
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
+    k_mtm: 50
+    is_stochastic: true
+    compute_correction_term: true
+#
+# run params
+run_params:
+  map:
+    N_MCMC: 1
+    T_MC: 2_000
+    T_BI: 30
+    batch_size: 20
+    freq_save: 1
+    start_from: null
+  mcmc:
+    N_MCMC: 1
+    T_MC: 2_000
+    T_BI: 250
+    plot_1D_chains: true
+    plot_2D_chains: true
+    plot_ESS: false
+    plot_comparisons_yspace: true
+    batch_size: 10
+    freq_save: 1
+    start_from: null # "MAP"
+    regu_spatial_N0: !!float inf # sets to infinite
+    regu_spatial_scale: 1.0
+    regu_spatial_vmin: 1.0e-8
+    regu_spatial_vmax: 1.0e+8
+    list_CI: [68, 90, 95, 99]
+#
+pixels_of_interest:
+  910: "#1 Nothern ridge"
+  1380: "#2 North-west ridge edge"
+  1422: "#3 CH+ peak near Trapezium"
+  992: "#4 Orion Bar PDR"
+  1345: "#5 Southern edge"
+  1020: "#6 Northern lane"
+  641: "#7 East PDR"
+  879: "#8 Toward dense HII region"
+  #9 BN-KL outflows
+  1835: "#10 Western edge"

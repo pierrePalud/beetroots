@@ -1,0 +1,36 @@
+simu_init:
+  simu_name: "gaussian_mix_pmtm0p1"
+  max_workers: 10
+#
+# prior indicator
+prior_indicator:
+  indicator_margin_scale: 1.0e-1
+  lower_bounds_lin:
+    - -15.0
+    - -15.0
+  upper_bounds_lin:
+    - +15.0
+    - +15.0
+#
+# sampling params
+sampling_params:
+  mcmc:
+    initial_step_size:  0.5
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.1, 0.9] # (p_mtm, p_pmala)
+    k_mtm: 50
+    is_stochastic: true
+    compute_correction_term: true
+#
+# run params
+run_params:
+  mcmc:
+    N_MCMC: 1
+    T_MC: 10_000
+    T_BI: 100
+    plot_1D_chains: true
+    plot_2D_chains: true
+    plot_ESS: true
+    freq_save: 1
+    # list_CI: [68, 90, 95, 99]

@@ -1,0 +1,133 @@
+simu_init:
+  simu_name: "carina_v1p7_with_spatial_regu_optim_mle"
+  cloud_name: "carina"
+  max_workers: 10
+  #
+  params_names:
+    kappa: $\kappa$
+    P: $P_{th}$
+    radm: $G_0$
+    Avmax: $A_V^{tot}$
+    angle: $\alpha$
+  #
+  list_lines_fit:
+    - "co_v0_j4__v0_j3"
+    - "co_v0_j5__v0_j4"
+    - "co_v0_j6__v0_j5"
+    - "co_v0_j7__v0_j6"
+    - "co_v0_j8__v0_j7"
+    - "co_v0_j9__v0_j8"
+    - "co_v0_j10__v0_j9"
+    - "co_v0_j11__v0_j10"
+    - "co_v0_j12__v0_j11"
+    - "co_v0_j13__v0_j12"
+    #
+    - "c_el3p_j1__el3p_j0"
+    - "c_el3p_j2__el3p_j1"
+#
+to_run_optim_map: true
+to_run_mcmc: false
+#
+filename_int: "carina_fts_lines_int_v4_full.pkl"
+filename_err: "carina_fts_lines_err_v4_full.pkl"
+#
+forward_model:
+  forward_model_name: "meudon_pdr_model_dense"
+  force_use_cpu: false
+  fixed_params: # must contain all the params in list_names of the SImulation object. Values are in linear scale.
+    kappa: null
+    Pth: null
+    radm: null
+    Avmax: null
+    angle: 0.0
+  is_log_scale_params: # defines the scale to work with for each param (either log or lin)
+    kappa: True
+    P: True
+    radm: True
+    Avmax: True
+    angle: False
+  # version: "1p7"
+#
+#
+sigma_m_float_linscale: 1.001
+#
+# prior indicator
+prior_indicator:
+  indicator_margin_scale: 1.0e-1
+  lower_bounds_lin:
+    - 1.0e-1 # kappa
+    - 1.0e+5 # thermal pressure
+    - 1.0e+0 # G0
+    - 1.0e+0 # AVtot
+    - 0.0 # angle
+  upper_bounds_lin:
+    - 1.0e+1 # kappa
+    - 1.0e+9 # thermal pressure
+    - 1.0e+5 # G0
+    - 4.0e+1 # AVtot
+    - 60.0 # angle
+#
+list_gaussian_approx_params: []
+mixing_model_params_filename: ["params_for_gaussian_only.csv"]
+#
+# spatial prior
+with_spatial_prior: true
+spatial_prior:
+  name: "L2-laplacian"
+  use_next_nearest_neighbours: false
+  initial_regu_weights: [0.1, 0.1, 0.1, 0.1,0.1]
+  use_clustering: false
+  n_clusters: null
+  cluster_algo: null  # "spectral_clustering",
+#
+# sampling params
+sampling_params:
+  map:
+    initial_step_size:  3.0e-2
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.01, 0.99] # (p_mtm, p_pmala)
+    k_mtm: 200
+    is_stochastic: false
+    compute_correction_term: false
+  mcmc:
+    initial_step_size:  3.0e-3
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
+    k_mtm: 20 # 200
+    is_stochastic: true
+    compute_correction_term: true
+#
+# run params
+run_params:
+  map:
+    N_MCMC: 1
+    T_MC: 500
+    T_BI: 100
+    batch_size: 20
+    freq_save: 1
+    start_from: null
+  mcmc:
+    N_MCMC: 1
+    T_MC: 3_000
+    T_BI: 50
+    plot_1D_chains: true
+    plot_2D_chains: true
+    plot_ESS: true
+    plot_comparisons_yspace: true
+    batch_size: 10
+    freq_save: 1
+    start_from: null
+    regu_spatial_N0: !!float inf # sets to infinite
+    regu_spatial_scale: 1.0
+    regu_spatial_vmin: 1.0e-8
+    regu_spatial_vmax: 1.0e+8
+    list_CI: [68, 90, 95, 99]
+#
+pixels_of_interest:
+  15: "Car I/II"
+  85: "Car I-S"
+  164: "Car I-E"
+  161: "border"
+  154: "border other side"

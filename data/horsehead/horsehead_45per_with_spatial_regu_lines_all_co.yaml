@@ -1,0 +1,128 @@
+simu_init:
+  simu_name: "horsehead_45per_with_spatial_regu_lines12345678"
+  cloud_name: "horsehead"
+  max_workers: 10
+  #
+  params_names:
+    kappa: $\kappa$
+    P: $P_{th}$
+    radm: $G_0$
+    Avmax: $A_V^{tot}$
+    angle: $\alpha$
+  #
+  list_lines_fit:
+    - "co_v0_j1__v0_j0"
+    - "13c_o_j1__j0"
+    - "c_18o_j1__j0"
+    - "cn_n1_j1d5__n0_j0d5"
+    - "cs_j2__j1"
+    - "hcop_j1__j0"
+    - "hcn_j1_f2__j0_f1"
+    - "hnc_j1__j0"
+    # - "so_n2_j3__n1_j2"
+    # - "c2h_n1d0_j1d5_f2d0__n0d0_j0d5_f1d0"
+    # - "c_c3h2_j2_ka1_kc2__j1_ka0_kc1"
+#
+to_run_optim_map: false
+to_run_mcmc: true
+#
+filename_int: "horsehead-int.pkl"
+filename_err: "horsehead-err.pkl"
+#
+forward_model:
+  forward_model_name: "meudon_pdr_model_dense"
+  force_use_cpu: false
+  fixed_params: # must contain all the params in list_names of the SImulation object. Values are in linear scale.
+    kappa: null
+    P: null
+    radm: null
+    Avmax: null
+    angle: null
+  is_log_scale_params: # defines the scale to work with for each param (either log or lin)
+    kappa: True
+    P: True
+    radm: True
+    Avmax: True
+    angle: False
+#
+#
+sigma_m_float_linscale: 1.452
+#
+# prior indicator
+prior_indicator:
+  indicator_margin_scale: 1.0e-1
+  lower_bounds_lin:
+    - 1.0e-1 # kappa
+    - 1.0e+5 # thermal pressure
+    - 1.0e+0 # G0
+    - 1.0e+0 # AVtot
+    - 0.0 # angle
+  upper_bounds_lin:
+    - 1.0e+1 # kappa
+    - 1.0e+9 # thermal pressure
+    - 1.0e+5 # G0
+    - 4.0e+1 # AVtot
+    - 60.0 # angle
+#
+list_gaussian_approx_params: []
+mixing_model_params_filename: ["params_for_gaussian_only.csv"]
+#
+# spatial prior
+with_spatial_prior: true
+spatial_prior:
+  name: "L2-laplacian"
+  use_next_nearest_neighbours: false
+  initial_regu_weights: [1.0, 1.0, 1.0, 1.0, 1.0]
+  use_clustering: false
+  n_clusters: null
+  cluster_algo: null  # "spectral_clustering",
+#
+# sampling params
+sampling_params:
+  map:
+    initial_step_size:  3.0e-2
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.1, 0.9] # (p_mtm, p_pmala)
+    k_mtm: 25
+    is_stochastic: false
+    compute_correction_term: false
+  mcmc:
+    initial_step_size:  1.0e-1
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
+    k_mtm: 25
+    is_stochastic: true
+    compute_correction_term: true
+#
+# run params
+run_params:
+  map:
+    N_MCMC: 1
+    T_MC: 500
+    T_BI: 50
+    batch_size: 20
+    freq_save: 1
+    start_from: null
+  mcmc:
+    N_MCMC: 1
+    T_MC: 20_000
+    T_BI: 1_000
+    plot_1D_chains: true
+    plot_2D_chains: true
+    plot_ESS: false
+    plot_comparisons_yspace: true
+    batch_size: 10
+    freq_save: 1
+    start_from: null
+    regu_spatial_N0: !!float inf # sets to infinite
+    regu_spatial_scale: 1.0
+    regu_spatial_vmin: 1.0e-8
+    regu_spatial_vmax: 1.0e+8
+    list_CI: [68, 90, 95, 99]
+#
+pixels_of_interest:
+  1066: "Dense core"
+  1868: "Cloud edge"
+  156: "Horsehead foot"
