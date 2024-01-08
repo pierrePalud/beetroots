@@ -61,42 +61,17 @@ class NeuralNetworkApprox(ExpForwardMap):
 
         self._update_derivatives()
 
-        # manually fixed values, constant during sampling / optim
-        self.dict_fixed_values_scaled = dict_fixed_values_scaled
-        r"""dict: indices of the entries to be fixed and the associated value"""
-
-        self.list_indices_to_sample = [
-            d
-            for d, value in enumerate(dict_fixed_values_scaled.values())
-            if value is None
-        ]
-        r"""list: indices of the entries to be sampled"""
+        self.set_sampled_and_fixed_entries(dict_fixed_values_scaled)
 
         self.list_indices_to_sample_for_nn = [
             d - 1 for d in self.list_indices_to_sample if d >= 1
         ]  # remove kappa and start at Pth
         r"""list: indices of the entries to be sampled for the neural network, i.e., with an offset of 1 compared with `list_indices_fixed` due to the scaling parameter :math:`\kappa`"""
 
-        self.list_indices_fixed = [
-            d
-            for d, value in enumerate(dict_fixed_values_scaled.values())
-            if value is not None
-        ]
-        r"""list: indices of the entries to be fixed"""
         self.list_indices_fixed_for_nn = [
             d - 1 for d in self.list_indices_fixed if d >= 1
         ]  # remove kappa and start at Pth
         r"""list: indices of the entries to be fixed for the neural network, i.e., with an offset of 1 compared with `list_indices_fixed` due to the scaling parameter :math:`\kappa`"""
-
-        self.D_sampling = len(self.list_indices_to_sample)
-        r"""int: dimension of the subspace to sample (considering fixed values)"""
-
-        arr_fixed_values = np.zeros((self.D,))
-        for d, value in enumerate(dict_fixed_values_scaled.values()):
-            if value is not None:
-                arr_fixed_values[d] = value * 1
-        self.arr_fixed_values = arr_fixed_values
-        r"""np.ndarray: values of :math:`\theta` that are not sampled, but set to a specific value. The indices of fixed entries are given in ``list_indices_fixed``"""
 
         # display short message
         msg = f"neural network runs on : {self.network.device}"

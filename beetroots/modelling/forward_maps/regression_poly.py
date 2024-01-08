@@ -175,6 +175,7 @@ class PolynomialApprox(ExpForwardMap):
     def __init__(
         self,
         model_name: str,
+        dict_fixed_values_scaled: dict[str, float],
         angle: int,
     ):
         filepath = f"{self.SIMU_PATH}/models/{model_name}/model.pickle"
@@ -201,6 +202,8 @@ class PolynomialApprox(ExpForwardMap):
 
         self.deg = deg
         r"""int: degree of the polynomial"""
+
+        self.set_sampled_and_fixed_entries(dict_fixed_values_scaled)
 
         self.pow_arr = pow_arr  # (n_coefs, D_no_kappa)
         r"""np.ndarray of shape (n_coefs, D_no_kappa): powers of the monomials (loaded from model)"""

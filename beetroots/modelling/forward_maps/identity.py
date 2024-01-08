@@ -1,5 +1,7 @@
 """Implementation of the identity forward map
 """
+from typing import Optional
+
 import numpy as np
 
 from beetroots.modelling.forward_maps.abstract_base import ForwardMap
@@ -14,9 +16,11 @@ class BasicForwardMap(ForwardMap):
     i.e. in this class, :math:`D = L`
     """
 
-    def __init__(self, L: int, N: int):
+    def __init__(
+        self, L: int, N: int, dict_fixed_values_scaled: Optional[dict[str, float]] = {}
+    ):
         # assert D == L
-        super().__init__(1, L, N)
+        super().__init__(1, L, N, dict_fixed_values_scaled)
 
     def evaluate(self, Theta: np.ndarray) -> np.ndarray:
         return Theta  # (N, L)

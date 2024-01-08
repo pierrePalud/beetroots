@@ -117,6 +117,8 @@ class GaussianMixtureLikelihood(Likelihood):
 
         if pixelwise:
             return nlpdf  # (N_pix,)
+        if full:
+            return 1 / self.D * np.ones((N_pix, self.D)) * nlpdf[:, None]  # (N_pix, L)
 
         return np.sum(nlpdf)  # float
 
@@ -207,6 +209,15 @@ class GaussianMixtureLikelihood(Likelihood):
     ) -> dict:
         nll_utils = {}
         return nll_utils
+
+    def sample_observation_model(
+        self,
+        forward_map_evals: dict,
+        rng: np.random.Generator = np.random.default_rng(),
+    ) -> np.ndarray:
+        # to be disregarded, as model checking does not make sense
+        # in this example
+        return forward_map_evals["f_Theta"]
 
     def gradient_variable_neglog_pdf(
         self,

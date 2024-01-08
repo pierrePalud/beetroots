@@ -33,4 +33,5 @@ run_params:
     plot_2D_chains: true
     plot_ESS: true
     freq_save: 1
+    can_run_in_parallel: false
     # list_CI: [68, 90, 95, 99]

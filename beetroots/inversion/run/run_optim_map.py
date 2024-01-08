@@ -42,23 +42,23 @@ class RunOptimMAP(Run):
                 if not os.path.isdir(folder_path):
                     os.mkdir(folder_path)
 
-        # read x0 if needed
+        # read Theta_0 if needed
         assert start_from in ["MLE", "MAP", None]
 
         if start_from == "MLE":
             result_extractor = ResultsExtractorOptimMLE(path_csv_mle)
-            x0, _ = result_extractor.read_estimator(model_name)
-            x0 = scaler.from_lin_to_scaled(x0)
+            Theta_0, _ = result_extractor.read_estimator(model_name)
+            Theta_0 = scaler.from_lin_to_scaled(Theta_0)
 
         elif start_from == "MAP":
             result_extractor = ResultsExtractorOptimMAP(path_csv_map)
-            x0, _ = result_extractor.read_estimator(model_name)
-            x0 = scaler.from_lin_to_scaled(x0)
+            Theta_0, _ = result_extractor.read_estimator(model_name)
+            Theta_0 = scaler.from_lin_to_scaled(Theta_0)
 
         else:
-            x0 = None
+            Theta_0 = None
 
-        return x0
+        return Theta_0
 
     def run(
         self,
@@ -68,7 +68,7 @@ class RunOptimMAP(Run):
         N_runs: int,
         max_iter: int,
         path_raw: str,
-        x0: Optional[np.ndarray] = None,
+        Theta_0: Optional[np.ndarray] = None,
         freq_save: int = 1,
         can_run_in_parallel: bool = True,
     ) -> None:
@@ -90,7 +90,7 @@ class RunOptimMAP(Run):
                 dict_posteriors[model_name],
                 saver=saver_seed,
                 max_iter=max_iter,
-                x0=x0,
+                Theta_0=Theta_0,
             )
             # return input dict with duration information
             dict_output = {
@@ -142,7 +142,7 @@ class RunOptimMAP(Run):
         freq_save: int = 1,
         can_run_in_parallel: bool = True,
     ) -> None:
-        x0 = self.prepare_run(
+        Theta_0 = self.prepare_run(
             dict_posteriors,
             path_raw,
             N_runs,
@@ -158,7 +158,7 @@ class RunOptimMAP(Run):
             N_runs,
             max_iter,
             path_raw,
-            x0,
+            Theta_0,
             freq_save,
             can_run_in_parallel,
         )

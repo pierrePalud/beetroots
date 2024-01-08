@@ -52,14 +52,6 @@ beetroots.modelling.forward\_maps.regression\_poly module
    :undoc-members:
    :show-inheritance:
 
-beetroots.modelling.forward\_maps.sensor\_loc\_forward module
--------------------------------------------------------------
-
-.. automodule:: beetroots.modelling.forward_maps.sensor_loc_forward
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

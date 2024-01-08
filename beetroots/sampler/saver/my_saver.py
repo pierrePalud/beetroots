@@ -10,7 +10,7 @@ class MySaver(Saver):
         self,
         T_MC: int,
         t: int,
-        x: np.ndarray,
+        Theta: np.ndarray,
         forward_map_evals: dict = dict(),
         nll_utils: dict = dict(),
         dict_objective: dict = dict(),
@@ -75,7 +75,7 @@ class MySaver(Saver):
     def update_memory(
         self,
         t: int,
-        x: np.ndarray,
+        Theta: np.ndarray,
         forward_map_evals: dict = dict(),
         nll_utils: dict = dict(),
         dict_objective: dict = dict(),
@@ -86,10 +86,10 @@ class MySaver(Saver):
         """updates the memory with new information. All of the potential entries are optional except for the current iterate."""
         t_save = (t - self.t_last_init) // self.freq_save
 
-        xfull = np.zeros((x.shape[0], self.D))
+        Theta_full = np.zeros((Theta.shape[0], self.D))
         for i, idx in enumerate(self.list_idx_sampling):
-            xfull[:, idx] = Theta[:, i]
-        lin_Theta_full = self.scaler.from_scaled_to_lin(xfull)
+            Theta_full[:, idx] = Theta[:, i]
+        lin_Theta_full = self.scaler.from_scaled_to_lin(Theta_full)
         lin_Theta_full = lin_Theta_full[:, self.list_idx_sampling]
         self.memory["list_Theta"][t_save, :, :] = lin_Theta_full
 

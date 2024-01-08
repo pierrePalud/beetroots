@@ -81,7 +81,7 @@
 #         list_objective_1 = np.array(f["list_objective"][T_bi:])
 #         list_log_proba_accept_1 = np.array(f["list_log_proba_accept_t"][T_bi:])
 
-#         x0 = scaler.from_lin_to_scaled(np.array(f["list_Theta"][T_bi - 1]))
+#         Theta_0 = scaler.from_lin_to_scaled(np.array(f["list_Theta"][T_bi - 1]))
 #         v0 = np.array(f["list_v"][T_bi - 1]).flatten()
 #         rng_state_1 = np.array(f["list_rng_state"][T_bi - 1])
 #         rng_inc_1 = np.array(f["list_rng_inc"][T_bi - 1])
@@ -97,7 +97,7 @@
 #         posterior,
 #         saver=saver_2,
 #         max_iter=max_iter_2,
-#         x0=x0,
+#         Theta_0=Theta_0,
 #         v0=v0,
 #         sample_regu_weights=True,
 #     )

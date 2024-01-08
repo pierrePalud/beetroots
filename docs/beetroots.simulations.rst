@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    beetroots.simulations.astro
-   beetroots.simulations.other_applications
 
 Submodules
 ----------

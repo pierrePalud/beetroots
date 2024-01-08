@@ -152,7 +152,7 @@ class HierarchicalSampler(Sampler):
         conditional: Posterior,
         saver: HierarchicalSaver,
         max_iter: int,
-        x0: Optional[np.ndarray] = None,
+        Theta_0: Optional[np.ndarray] = None,
         v0: Optional[np.ndarray] = None,  # ! P.-A.: never used? remove?
         u0: Optional[np.ndarray] = None,
         u_v0: Optional[np.ndarray] = None,  # ! P.-A.: never used? remove?
@@ -172,7 +172,7 @@ class HierarchicalSampler(Sampler):
             enables to save the progression of the sampling
         max_iter : int
             maximum size of the markov chain
-        x0 : np.array, optional
+        Theta_0 : np.array, optional
             starting point of the sampling (if None, it will be sampled randomly), by default None
         v0 : np.array, optional
             initial value of the v vector of RMSProp (if None, it will be initialized used the square of the gradient of the starting point), by default None
@@ -180,23 +180,25 @@ class HierarchicalSampler(Sampler):
         additional_sampling_log = {}
         additional_sampling_log_u = {}
 
-        if x0 is None:
-            x0 = self.generate_random_start_Theta(conditional[1])  # (N, D)
-            # x0 will need to be passed as hyperparameter for conditional[0].prior
-        assert x0.shape == (self.N, self.D)
+        if Theta_0 is None:
+            Theta_0 = self.generate_random_start_Theta(conditional[1])  # (N, D)
+            # Theta_0 will need to be passed as hyperparameter for conditional[0].prior
+        assert Theta_0.shape == (self.N, self.D)
 
         if u0 is None:
             # ! Note: conditional[0].N = self.N, conditional[0].D = self.L
-            dict_fwm = conditional[1].likelihood.evaluate_all_forward_map(x0, False)
+            dict_fwm = conditional[1].likelihood.evaluate_all_forward_map(
+                Theta_0, False
+            )
             u0 = self.rng.lognormal(size=(self.N, self.L)) * dict_fwm["f_Theta"]
 
         assert u0.shape == (self.N, self.L)
 
         # plug u0 as observations for conditional[1]
         conditional[1].likelihood._update_observations(u0)
-        self.current_Theta = conditional[1].compute_all(x0)
+        self.current_Theta = conditional[1].compute_all(Theta_0)
 
-        # plug f(x0) as hyperparameter of conditional[0]
+        # plug f(Theta_0) as hyperparameter of conditional[0]
         # (field "forward_map_evals" in self.current_Theta)
         self.current_u = conditional[0].compute_all(
             u0,
@@ -217,7 +219,7 @@ class HierarchicalSampler(Sampler):
 
         rng_state_array, _ = self.get_rng_state()
 
-        self.jx_t = np.zeros((self.N * self.D,))
+        self.jTheta_t = np.zeros((self.N * self.D,))
 
         # only hyperparams for the "second" conditional object need to be
         # updated with MML (if updated)
@@ -281,7 +283,7 @@ class HierarchicalSampler(Sampler):
                     self.k_mtm[1],
                     self.alpha[1],
                     self.v_Theta,
-                    self.jx_t,
+                    self.jTheta_t,
                     self.stochastic[1],
                 )
                 u_accepted_t = x_accepted_t * 1
@@ -330,7 +332,7 @@ class HierarchicalSampler(Sampler):
                     self.v_Theta,
                     self.eps0[1],
                     self.alpha[1],
-                    self.jx_t,
+                    self.jTheta_t,
                     self.compute_correction_term[1],
                     self.stochastic[1],
                 )
@@ -836,7 +838,7 @@ class HierarchicalSampler(Sampler):
             ].likelihood.neglog_pdf_candidates(
                 candidates_pix_theta,
                 idx=idx_pix,
-                x_t=new_Theta * 1,
+                Theta_t=new_Theta * 1,
                 return_forward_map_evals=True,
             )  # (n_pix * (k_mtm+1),)
             assert neglogpdf_candidates.shape == (n_pix * (k_mtm + 1),)
@@ -873,7 +875,7 @@ class HierarchicalSampler(Sampler):
             neglogpdf_candidates_u = conditional[0].likelihood.neglog_pdf_candidates(
                 candidates_pix_u,
                 idx=idx_pix,
-                x_t=new_u * 1,
+                Theta_t=new_u * 1,
             )  # (n_pix * (k_mtm+1),)
 
             candidates_pix_u = candidates_pix_u.reshape((n_pix, k_mtm + 1, self.L))

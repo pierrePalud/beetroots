@@ -252,7 +252,7 @@ class MySampler(Sampler):
         posterior: Posterior,
         saver: Saver,
         max_iter: int,
-        x0: Optional[np.ndarray] = None,
+        Theta_0: Optional[np.ndarray] = None,
         v0: Optional[np.ndarray] = None,
         # sample_regu_weights: bool = True,
         # T_BI_reguweights: Optional[int] = None,
@@ -274,7 +274,7 @@ class MySampler(Sampler):
             enables to save the progression of the sampling
         max_iter : int
             maximum size of the markov chain
-        x0 : np.array, optional
+        Theta_0 : np.array, optional
             starting point of the sampling (if None, it will be sampled randomly), by default None
         v0 : np.array, optional
             initial value of the v vector of RMSProp (if None, it will be initialized used the square of the gradient of the starting point), by default None
@@ -283,13 +283,13 @@ class MySampler(Sampler):
         """
         additional_sampling_log = {}
 
-        if x0 is None:
+        if Theta_0 is None:
             print("starting from a random point")
-            x0 = self.generate_random_start_Theta(posterior)  # (N, D)
+            Theta_0 = self.generate_random_start_Theta(posterior)  # (N, D)
 
-        assert x0.shape == (self.N, self.D)
+        assert Theta_0.shape == (self.N, self.D)
 
-        self.current = posterior.compute_all(x0)
+        self.current = posterior.compute_all(Theta_0)
 
         assert np.isnan(self.current["objective"]) == 0
         assert np.sum(np.isnan(self.current["grad"])) == 0
@@ -307,7 +307,7 @@ class MySampler(Sampler):
         assert np.sum(np.isnan(self.v)) == 0.0
         assert np.sum(np.isinf(self.v)) == 0.0
 
-        # print(self.v, x0, self.lambda_)
+        # print(self.v, Theta_0, self.lambda_)
 
         # self.u = self.current["grad"].flatten() * self.current["hess_diag"].flatten()
         # assert self.u.shape == (self.N * self.D,)
@@ -441,7 +441,7 @@ class MySampler(Sampler):
                 saver.initialize_memory(
                     max_iter,
                     t,
-                    x=self.current["Theta"],
+                    Theta=self.current["Theta"],
                     forward_map_evals=self.current["forward_map_evals"],
                     nll_utils=self.current["nll_utils"],
                     dict_objective=dict_objective,
@@ -452,7 +452,7 @@ class MySampler(Sampler):
 
                 saver.update_memory(
                     t,
-                    x=self.current["Theta"],
+                    Theta=self.current["Theta"],
                     forward_map_evals=self.current["forward_map_evals"],
                     nll_utils=self.current["nll_utils"],
                     dict_objective=dict_objective,
@@ -486,7 +486,7 @@ class MySampler(Sampler):
 
                 saver.update_memory(
                     t,
-                    x=self.current["Theta"],
+                    Theta=self.current["Theta"],
                     forward_map_evals=self.current["forward_map_evals"],
                     nll_utils=self.current["nll_utils"],
                     dict_objective=dict_objective,

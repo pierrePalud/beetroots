@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 from beetroots.modelling.forward_maps.abstract_exp import ExpForwardMap
@@ -12,9 +14,11 @@ class BasicExpForwardMap(ExpForwardMap):
     i.e. in this class, :math:`D = L`
     """
 
-    def __init__(self, D, L, N):
+    def __init__(
+        self, D, L, N, dict_fixed_values_scaled: Optional[dict[str, float]] = {}
+    ):
         assert D == L
-        super().__init__(D, L, N)
+        super().__init__(D, L, N, dict_fixed_values_scaled)
 
     def evaluate(self, Theta: np.ndarray) -> np.ndarray:
         return np.exp(Theta)

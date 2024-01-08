@@ -27,6 +27,7 @@ class Simulation(abc.ABC):
         small_size: int = 16,
         medium_size: int = 20,
         bigger_size: int = 24,
+        folder_path: Optional[str] = None,
     ):
         # TODO : adapt to include non astro obs
         self.cloud_name = cloud_name
@@ -34,7 +35,7 @@ class Simulation(abc.ABC):
         self.L = len(list_lines_fit)
         self.simu_name = simu_name
 
-        self.create_empty_output_folders(simu_name, params)
+        self.create_empty_output_folders(simu_name, params, folder_path)
         self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
 
         self.max_workers = max_workers
@@ -80,7 +81,9 @@ class Simulation(abc.ABC):
         plt.rc("figure", titlesize=bigger_size)  # fontsize of the figure title
         return
 
-    def create_empty_output_folders(self, name: str, params: dict) -> None:
+    def create_empty_output_folders(
+        self, name: str, params: dict, folder_path: Optional[str] = None
+    ) -> None:
         r"""creates the directories that receive the results of the sampling
 
         Parameters
@@ -89,6 +92,8 @@ class Simulation(abc.ABC):
             name of the simulation to be run
         params : dict
             set of params used for the simulation
+        folder_path: str, optional
+            folder where to write outputs, by default None
 
         Returns
         -------
@@ -99,7 +104,11 @@ class Simulation(abc.ABC):
         dt_string = now.strftime("%Y-%m-%d_%H")
 
         # path to the outputs dir
-        path_ouput_general = f"{os.path.abspath(__file__)}/../../../../outputs"
+        if folder_path is None:
+            path_ouput_general = f"{os.path.abspath(__file__)}/../../../../outputs"
+        else:
+            path_ouput_general = f"{folder_path}/outputs"
+
         path_ouput_general = os.path.abspath(path_ouput_general)
 
         path_output_sim = f"{path_ouput_general}/{name}_{dt_string}"

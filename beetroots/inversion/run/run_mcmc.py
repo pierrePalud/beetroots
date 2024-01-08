@@ -42,27 +42,27 @@ class RunMCMC(Run):
                 if not os.path.isdir(folder_path):
                     os.mkdir(folder_path)
 
-        # read x0 if needed
+        # read Theta_0 if needed
         assert start_from in ["MLE", "MAP", None]
 
         if start_from == "MLE":
-            x0, _ = ResultsExtractorOptimMLE.read_estimator(
+            Theta_0, _ = ResultsExtractorOptimMLE.read_estimator(
                 path_csv_mle,
                 model_name,
             )
-            x0 = scaler.from_lin_to_scaled(x0)
+            Theta_0 = scaler.from_lin_to_scaled(Theta_0)
 
         elif start_from == "MAP":
-            x0, _ = ResultsExtractorOptimMAP.read_estimator(
+            Theta_0, _ = ResultsExtractorOptimMAP.read_estimator(
                 path_csv_map,
                 model_name,
             )
-            x0 = scaler.from_lin_to_scaled(x0)
+            Theta_0 = scaler.from_lin_to_scaled(Theta_0)
 
         else:
-            x0 = None
+            Theta_0 = None
 
-        return x0
+        return Theta_0
 
     def run(
         self,
@@ -73,7 +73,7 @@ class RunMCMC(Run):
         max_iter: int,
         T_BI: int,
         path_raw: str,
-        x0: Optional[np.ndarray] = None,
+        Theta_0: Optional[np.ndarray] = None,
         # sample_regu_weights: bool = True,
         # T_BI_reguweights: Optional[int] = None,
         #
@@ -103,7 +103,7 @@ class RunMCMC(Run):
                 dict_posteriors[model_name],
                 saver=saver_seed,
                 max_iter=max_iter,
-                x0=x0,
+                Theta_0=Theta_0,
                 #
                 # sample_regu_weights=sample_regu_weights,
                 # T_BI_reguweights=T_BI_reguweights,
@@ -176,7 +176,7 @@ class RunMCMC(Run):
         freq_save: int = 1,
         can_run_in_parallel: bool = True,
     ) -> None:
-        x0 = self.prepare_run(
+        Theta_0 = self.prepare_run(
             dict_posteriors,
             path_raw,
             N_runs,
@@ -193,7 +193,7 @@ class RunMCMC(Run):
             max_iter=max_iter,
             T_BI=T_BI,
             path_raw=path_raw,
-            x0=x0,
+            Theta_0=Theta_0,
             #
             regu_spatial_N0=regu_spatial_N0,
             regu_spatial_scale=regu_spatial_scale,

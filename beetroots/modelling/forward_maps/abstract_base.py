@@ -1,6 +1,7 @@
 """Abstract forward map
 """
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import numpy as np
 
@@ -15,13 +16,52 @@ class ForwardMap(ABC):
 
     __slots__ = ("D", "L", "N")
 
-    def __init__(self, D: int, L: int, N: int) -> None:
+    def __init__(
+        self,
+        D: int,
+        L: int,
+        N: int,
+        dict_fixed_values_scaled: Optional[dict[str, float]] = {},
+    ) -> None:
         self.D = D
         """int: dimensionality of input space"""
         self.L = L
         """int: dimensionality of output space"""
         self.N = N
         """int: number of independent pixels"""
+
+        self.set_sampled_and_fixed_entries(dict_fixed_values_scaled)
+
+    def set_sampled_and_fixed_entries(
+        self, dict_fixed_values_scaled: Optional[dict[str, float]] = {}
+    ) -> None:
+        # manually fixed values, constant during sampling / optim
+        self.dict_fixed_values_scaled = dict_fixed_values_scaled
+        r"""dict: indices of the entries to be fixed and the associated value"""
+
+        self.list_indices_to_sample = [
+            d
+            for d, value in enumerate(dict_fixed_values_scaled.values())
+            if value is None
+        ]
+        r"""list: indices of the entries to be sampled"""
+
+        self.list_indices_fixed = [
+            d
+            for d, value in enumerate(dict_fixed_values_scaled.values())
+            if value is not None
+        ]
+        r"""list: indices of the entries to be fixed"""
+
+        self.D_sampling = len(self.list_indices_to_sample)
+        r"""int: dimension of the subspace to sample (considering fixed values)"""
+
+        arr_fixed_values = np.zeros((self.D,))
+        for d, value in enumerate(dict_fixed_values_scaled.values()):
+            if value is not None:
+                arr_fixed_values[d] = value * 1
+        self.arr_fixed_values = arr_fixed_values
+        r"""np.ndarray: values of :math:`\theta` that are not sampled, but set to a specific value. The indices of fixed entries are given in ``list_indices_fixed``"""
 
     @abstractmethod
     def evaluate(self, Theta: np.ndarray) -> np.ndarray:

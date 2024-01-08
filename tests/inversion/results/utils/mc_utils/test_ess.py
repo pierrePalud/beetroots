@@ -13,6 +13,6 @@ def test_compute_ess():
     assert 0.95 * n <= ess.compute_ess(x) <= 1.05 * n
 
     # fully correlated samples
-    x0 = rng.standard_normal()
-    x = x0 * np.ones((1, n))
+    Theta_0 = rng.standard_normal()
+    x = Theta_0 * np.ones((1, n))
     assert np.isclose(ess.compute_ess(x), n / (2 * n + 1), rtol=1e-3)

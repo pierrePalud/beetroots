@@ -50,7 +50,7 @@ filename_err: "OrionBar_Joblin_Err.pkl"
 forward_model:
   forward_model_name: "meudon_pdr_model_dense"
   force_use_cpu: false
-  fixed_params: # must contain all the params in list_names of the SImulation object. Values are in linear scale.
+  fixed_params: # must contain all the params in list_names of the Simulation object. Values are in linear scale.
     kappa: null
     P: null
     radm: null

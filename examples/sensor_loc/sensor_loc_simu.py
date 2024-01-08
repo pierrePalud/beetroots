@@ -6,6 +6,8 @@ import h5py
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sensor_loc_forward import SensorLocForwardMap
+from sensor_loc_likelihood import SensorLocalizationLikelihood
 
 from beetroots.inversion.results.results_mcmc import ResultsExtractorMCMC
 from beetroots.inversion.run.run_mcmc import RunMCMC
@@ -16,9 +18,6 @@ from beetroots.sampler.saver.my_saver import MySaver
 from beetroots.sampler.utils.psgldparams import PSGLDParams
 from beetroots.simulations.abstract_simulation import Simulation
 from beetroots.space_transform.id_transform import IdScaler
-
-from .sensor_loc_forward import SensorLocForwardMap
-from .sensor_loc_likelihood import SensorLocalizationLikelihood
 
 
 class SensorLocalizationSimulation(Simulation):
@@ -41,7 +40,7 @@ class SensorLocalizationSimulation(Simulation):
         medium_size: int = 20,
         bigger_size: int = 24,
     ):
-        self.create_empty_output_folders(params["simu_init"]["simu_name"], params)
+        self.create_empty_output_folders(params["simu_init"]["simu_name"], params, ".")
         self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
 
         self.max_workers = max_workers
@@ -55,8 +54,7 @@ class SensorLocalizationSimulation(Simulation):
         lower_bounds_lin,
         upper_bounds_lin,
     ):
-        filepath = f"{os.path.dirname(os.path.abspath(__file__))}/../../../../"
-        filepath += "data/sensor_loc"
+        filepath = f"{os.path.dirname(os.path.abspath(__file__))}/data"
 
         df_sensors = pd.read_csv(
             f"{filepath}/sensors_localizations_rescaled.csv",
@@ -211,8 +209,7 @@ class SensorLocalizationSimulation(Simulation):
         plt.show()
 
     def read_true_positions(self) -> np.ndarray:
-        filename = f"{os.path.dirname(os.path.abspath(__file__))}/../../../../"
-        filename += "data/sensor_loc/sensors_localizations_rescaled.csv"
+        filename = f"{os.path.dirname(os.path.abspath(__file__))}/data/sensors_localizations_rescaled.csv"
         df_sensors = pd.read_csv(filename, index_col="sensor_id")
 
         self.L = len(df_sensors)
@@ -226,25 +223,24 @@ class SensorLocalizationSimulation(Simulation):
         mask = ~df_sensors["known"]
         self.Theta_true_scaled = df_sensors.loc[mask, ["x", "y"]].values
 
-        x_ref = df_sensors.loc[df_sensors["known"], ["x", "y"]].values
-        assert x_ref.shape == (self.K, self.D)
-        return x_ref
+        Theta_ref = df_sensors.loc[df_sensors["known"], ["x", "y"]].values
+        assert Theta_ref.shape == (self.K, self.D)
+        return Theta_ref
 
     def setup_forward_map(self) -> Tuple[IdScaler, SensorLocForwardMap]:
         scaler = IdScaler()
 
-        x_ref = self.read_true_positions()
+        Theta_ref = self.read_true_positions()
         forward_map = SensorLocForwardMap(
             self.D,
             self.L,
             self.N,
-            x_ref,
+            Theta_ref,
         )
         return scaler, forward_map
 
     def setup_observation(self, filename_obs: str) -> np.ndarray:
-        filename = f"{os.path.dirname(os.path.abspath(__file__))}/../../../../"
-        filename += f"data/sensor_loc/{filename_obs}"
+        filename = f"{os.path.dirname(os.path.abspath(__file__))}/data/{filename_obs}"
         df_obs = pd.read_csv(filename)
 
         y = df_obs.loc[df_obs["sensor_id_1"] >= self.K, "y"].values.reshape(
@@ -415,8 +411,7 @@ class SensorLocalizationSimulation(Simulation):
 
 
 if __name__ == "__main__":
-    path_data = f"{os.path.dirname(os.path.abspath(__file__))}"
-    path_data += "/../../../../data/sensor_loc"
+    path_data = f"{os.path.dirname(os.path.abspath(__file__))}/data"
 
     params = SensorLocalizationSimulation.load_params(path_data)
 

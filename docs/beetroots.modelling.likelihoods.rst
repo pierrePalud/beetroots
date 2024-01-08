@@ -36,14 +36,6 @@ beetroots.modelling.likelihoods.gaussian\_censored module
    :undoc-members:
    :show-inheritance:
 
-beetroots.modelling.likelihoods.gaussian\_mixture module
---------------------------------------------------------
-
-.. automodule:: beetroots.modelling.likelihoods.gaussian_mixture
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 beetroots.modelling.likelihoods.log\_normal module
 --------------------------------------------------
 
@@ -56,14 +48,6 @@ beetroots.modelling.likelihoods.log\_normal\_censored module
 ------------------------------------------------------------
 
 .. automodule:: beetroots.modelling.likelihoods.log_normal_censored
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beetroots.modelling.likelihoods.sensor\_loc module
---------------------------------------------------
-
-.. automodule:: beetroots.modelling.likelihoods.sensor_loc
    :members:
    :undoc-members:
    :show-inheritance:

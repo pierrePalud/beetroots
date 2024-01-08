@@ -54,9 +54,8 @@ class LogNormalLikelihood(Likelihood):
 
         Note
         ----
-        - Derivatives and Hessians are taken with resepct of the mean of the
-        distribution.
-        - y provided in log space already? (saving computations)
+        * Derivatives and Hessians are taken with respect of the mean of the distribution.
+        * y provided in log space already? (saving computations)
 
         """
 

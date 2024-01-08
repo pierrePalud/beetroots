@@ -111,7 +111,7 @@ class SensorLocalizationLikelihood(Likelihood):
         return np.sum(nlpdf)  # float
 
     def neglog_pdf_candidates(
-        self, candidates: np.ndarray, idx: np.ndarray, x_t: np.ndarray
+        self, candidates: np.ndarray, idx: np.ndarray, Theta_t: np.ndarray
     ) -> np.ndarray:
 
         assert len(candidates.shape) == 2 and candidates.shape[1] == self.D
@@ -124,7 +124,7 @@ class SensorLocalizationLikelihood(Likelihood):
         forward_map_evals = {
             "f_Theta": self.forward_map.evaluate_candidates_one_n(
                 candidates,
-                x_t,
+                Theta_t,
                 n,
             )
         }

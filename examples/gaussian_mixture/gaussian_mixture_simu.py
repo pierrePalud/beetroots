@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.transforms as transforms
 import numpy as np
 import pandas as pd
+from gaussian_mixture_likelihood import GaussianMixtureLikelihood
 from matplotlib.patches import Ellipse
 
 from beetroots.inversion.results.results_mcmc import ResultsExtractorMCMC
@@ -18,8 +19,6 @@ from beetroots.sampler.saver.my_saver import MySaver
 from beetroots.sampler.utils.psgldparams import PSGLDParams
 from beetroots.simulations.abstract_simulation import Simulation
 from beetroots.space_transform.id_transform import IdScaler
-
-from .gaussian_mixture_likelihood import GaussianMixtureLikelihood
 
 
 def confidence_ellipse(x, cov, ax, n_std=3.0, facecolor="none", **kwargs):
@@ -45,11 +44,11 @@ def confidence_ellipse(x, cov, ax, n_std=3.0, facecolor="none", **kwargs):
     pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
     # Using a special case to obtain the eigenvalues of this
     # two-dimensionl dataset.
-    ell_radius_Theta = np.sqrt(1 + pearson)
+    ell_radius_x = np.sqrt(1 + pearson)
     ell_radius_y = np.sqrt(1 - pearson)
     ellipse = Ellipse(
         (0, 0),
-        width=ell_radius_Theta * 2,
+        width=ell_radius_x * 2,
         height=ell_radius_y * 2,
         facecolor=facecolor,
         **kwargs,
@@ -58,18 +57,18 @@ def confidence_ellipse(x, cov, ax, n_std=3.0, facecolor="none", **kwargs):
     # Calculating the stdandard deviation of x from
     # the squareroot of the variance and multiplying
     # with the given number of standard deviations.
-    scale_Theta = np.sqrt(cov[0, 0]) * n_std
-    mean_Theta = Theta[0]
+    scale_x = np.sqrt(cov[0, 0]) * n_std
+    mean_x = x[0]
 
     # calculating the stdandard deviation of y ...
     scale_y = np.sqrt(cov[1, 1]) * n_std
-    mean_y = Theta[1]
+    mean_y = x[1]
 
     transf = (
         transforms.Affine2D()
         .rotate_deg(45)
-        .scale(scale_Theta, scale_y)
-        .translate(mean_Theta, mean_y)
+        .scale(scale_x, scale_y)
+        .translate(mean_x, mean_y)
     )
 
     ellipse.set_transform(transf + ax.transData)
@@ -95,10 +94,10 @@ def read_gaussian_distribution_file(modes_filename: str):
         list of modes' covariance matrices
     """
     D = 2
-    path_data = f"{os.path.abspath(__file__)}/../../../../../data"
+    path_data = f"{os.path.dirname(os.path.abspath(__file__))}/data"
     path_data = os.path.abspath(path_data)
 
-    df_mixture = pd.read_csv(f"{path_data}/gaussian_mix/{modes_filename}")
+    df_mixture = pd.read_csv(f"{path_data}/{modes_filename}")
 
     n_means = len(df_mixture)
 
@@ -114,18 +113,6 @@ def read_gaussian_distribution_file(modes_filename: str):
         list_cov[i, 0, 1] = df_mixture.at[i, "covariance"]
 
     return n_means, list_means, list_cov
-
-    # def __init__(
-    #     self,
-    #     max_workers: int,
-    #     N_MCMC: int,
-    #     T_MC: int,
-    #     T_OPTI: int,
-    #     T_OPTI_MLE: int,
-    #     T_BI: int,
-    #     batch_size: int,
-    #     modes_filename: str,
-    # ):
 
 
 class SimulationGaussianMixture(Simulation):
@@ -145,12 +132,13 @@ class SimulationGaussianMixture(Simulation):
     def __init__(
         self,
         modes_filename: str,
+        params: dict,
         max_workers: int = 10,
         small_size: int = 16,
         medium_size: int = 20,
         bigger_size: int = 24,
     ):
-        self.create_empty_output_folders("toy_gaussian_mixture")
+        self.create_empty_output_folders("toy_gaussian_mixture", params, ".")
         self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
 
         self.max_workers = max_workers
@@ -188,9 +176,9 @@ class SimulationGaussianMixture(Simulation):
         for i, x in enumerate(self.list_means):
             confidence_ellipse(x, self.list_cov[i], ax, 2.0, edgecolor="red")
 
-        ax.set_Thetalim([lower_bounds_lin[0], upper_bounds_lin[0]])
+        ax.set_xlim([lower_bounds_lin[0], upper_bounds_lin[0]])
         ax.set_ylim([lower_bounds_lin[1], upper_bounds_lin[1]])
-        ax.set_Thetalabel(self.list_names[0])
+        ax.set_xlabel(self.list_names[0])
         ax.set_ylabel(self.list_names[1])
         # ax.grid()
         ax.grid()
@@ -226,6 +214,11 @@ class SimulationGaussianMixture(Simulation):
         )
 
         # indicator prior
+        list_idx_sampling = np.arange(self.D)
+
+        lower_bounds_lin = np.array(lower_bounds_lin)
+        upper_bounds_lin = np.array(upper_bounds_lin)
+
         lower_bounds = scaler.from_lin_to_scaled(
             lower_bounds_lin.reshape((self.N, self.D)),
         ).flatten()
@@ -238,6 +231,7 @@ class SimulationGaussianMixture(Simulation):
             indicator_margin_scale,
             lower_bounds,
             upper_bounds,
+            list_idx_sampling,
         )
 
         # posterior
@@ -292,16 +286,19 @@ class SimulationGaussianMixture(Simulation):
         plot_2D_chains: bool = True,
         plot_ESS: bool = True,
         freq_save: int = 1,
+        can_run_in_parallel: bool = True,
         start_from: Optional[str] = None,
     ) -> None:
         tps_init = time.time()
 
         saver_ = MySaver(
-            self.N,
-            self.D,
-            self.L,
-            scaler,
+            N=self.N,
+            D=self.D,
+            D_sampling=self.D,
+            L=self.L,
+            scaler=scaler,
             batch_size=100,
+            list_idx_sampling=np.arange(self.D),
         )
 
         run_mcmc = RunMCMC(self.path_data_csv_out, self.max_workers)
@@ -312,11 +309,13 @@ class SimulationGaussianMixture(Simulation):
             scaler,
             N_MCMC,
             T_MC,
+            T_BI,
             path_raw=self.path_raw,
             path_csv_mle=self.path_data_csv_out_optim_mle,
             path_csv_map=self.path_data_csv_out_optim_map,
             start_from=start_from,
             freq_save=freq_save,
+            can_run_in_parallel=can_run_in_parallel,
         )
 
         results_mcmc = ResultsExtractorMCMC(
@@ -331,19 +330,21 @@ class SimulationGaussianMixture(Simulation):
         )
         for model_name, posterior in dict_posteriors.items():
             results_mcmc.main(
-                posterior,
-                model_name,
-                scaler,
-                self.list_names,
+                posterior=posterior,
+                model_name=model_name,
+                scaler=scaler,
+                list_names=self.list_names,
+                list_idx_sampling=np.arange(self.D),
+                list_fixed_values=[None for _ in range(self.D)],
                 #
-                plot_1D_chains,
-                plot_2D_chains,
-                plot_ESS,
+                plot_1D_chains=plot_1D_chains,
+                plot_2D_chains=plot_2D_chains,
+                plot_ESS=plot_ESS,
                 #
                 plot_comparisons_yspace=False,
                 estimator_plot=None,
                 analyze_regularization_weight=False,
-                list_lines_fit=None,
+                list_lines_fit=self.list_names,
                 Theta_true_scaled=self.Theta_true_scaled * 1,
             )
 
@@ -356,12 +357,11 @@ class SimulationGaussianMixture(Simulation):
 
 
 if __name__ == "__main__":
-    path_data = f"{os.path.dirname(os.path.abspath(__file__))}"
-    path_data += "/../../../../../data/gaussian_mix"
+    path_data = f"{os.path.dirname(os.path.abspath(__file__))}/data"
 
     params = SimulationGaussianMixture.load_params(path_data)
 
-    simulation_gmm = SimulationGaussianMixture("gaussian_mixture.csv")
+    simulation_gmm = SimulationGaussianMixture("gaussian_mixture.csv", params)
 
     sampler_ = MySampler(
         PSGLDParams(**params["sampling_params"]["mcmc"]),
@@ -370,13 +370,11 @@ if __name__ == "__main__":
         simulation_gmm.N,
     )
 
-    dict_posteriors, scaler = SimulationGaussianMixture.setup(
-        **params["prior_indicator"]
-    )
+    dict_posteriors, scaler = simulation_gmm.setup(**params["prior_indicator"])
 
     simulation_gmm.inversion_mcmc(
         dict_posteriors,
         scaler,
         sampler_,
-        **params["sampling_params"]["mcmc"],
+        **params["run_params"]["mcmc"],
     )

@@ -480,7 +480,7 @@
 #                 dict_output[f"x_MLE_{d}_lin"] = x_MLE_lin[0, d]
 #                 if self.Theta_true_scaled is not None:
 #                     Theta_true = self.scaler.from_scaled_to_lin(self.Theta_true_scaled)
-#                     dict_output[f"x_true_{d}_lin"] = Theta_true[n, d]
+#                     dict_output[f"Theta_true_{d}_lin"] = Theta_true[n, d]
 
 #             # plot objective
 #             # plt.figure(figsize=(8, 6))

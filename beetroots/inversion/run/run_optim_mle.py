@@ -51,7 +51,7 @@ class RunOptimMLE(Run):
         N_runs: int,
         max_iter: int,
         path_raw: str,
-        x0: Optional[np.ndarray] = None,
+        Theta_0: Optional[np.ndarray] = None,
         freq_save: int = 1,
     ) -> None:
         # TODO: change this method using the old method run_optimization_MLE
@@ -73,7 +73,7 @@ class RunOptimMLE(Run):
                 dict_posteriors[model_name],
                 saver=saver_seed,
                 max_iter=max_iter,
-                x0=x0,
+                Theta_0=Theta_0,
             )
             # return input dict with duration information
             dict_output = {
@@ -125,7 +125,7 @@ class RunOptimMLE(Run):
         start_from: Optional[str] = None,
         freq_save: int = 1,
     ) -> None:
-        x0 = self.prepare_run(dict_posteriors, path_raw, N_runs)
+        Theta_0 = self.prepare_run(dict_posteriors, path_raw, N_runs)
         self.run(
             dict_posteriors,
             sampler_,
@@ -133,7 +133,7 @@ class RunOptimMLE(Run):
             N_runs,
             max_iter,
             path_raw,
-            x0,
+            Theta_0,
             freq_save,
         )
         return

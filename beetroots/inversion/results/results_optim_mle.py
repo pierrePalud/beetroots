@@ -130,7 +130,7 @@ class ResultsExtractorOptimMLE(ResultsExtractor):
             for d in range(self.D):
                 dict_output[f"x_MLE_{d}_lin"] = x_MLE_lin[0, d]
                 if Theta_true_scaled is not None:
-                    dict_output[f"x_true_{d}_lin"] = Theta_true_lin[n, d]
+                    dict_output[f"Theta_true_{d}_lin"] = Theta_true_lin[n, d]
 
             return dict_output
 

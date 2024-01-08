@@ -104,6 +104,8 @@ class ResultsExtractorMCMC(ResultsExtractor):
         D_sampling = posterior.D * 1
         D = len(list_fixed_values)
         L = len(list_lines_fit)
+
+        assert D >= D_sampling, f"should have D={D} >= D_sampling={D_sampling}"
         print(f"N = {N}, L (fit) = {L}, D_sampling = {D_sampling}, D = {D}")
 
         if estimator_plot is not None:
@@ -201,8 +203,6 @@ class ResultsExtractorMCMC(ResultsExtractor):
             lower_bounds_lin = estimator_plot.lower_bounds_lin * 1
             upper_bounds_lin = estimator_plot.upper_bounds_lin * 1
         else:
-            print(list_fixed_values)
-            print(posterior.prior_indicator.lower_bounds)
             lower_bounds = posterior.prior_indicator.lower_bounds_full.reshape(
                 (1, D),
             )

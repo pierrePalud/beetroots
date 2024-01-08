@@ -15,20 +15,20 @@ deg = 3
 
 
 ##% manual functions
-def f0(x0, Theta_scaled, x2):
-    return x0 + 2 * Theta_scaled**2 + x2**3
+def f0(Theta_0, Theta_scaled, x2):
+    return Theta_0 + 2 * Theta_scaled**2 + x2**3
 
 
-def f1(x0, Theta_scaled, x2):
-    return x0 - Theta_scaled**2 + x2**2
+def f1(Theta_0, Theta_scaled, x2):
+    return Theta_0 - Theta_scaled**2 + x2**2
 
 
-def f2(x0, Theta_scaled, x2):
-    return x0 + Theta_scaled - 3 * x2**2
+def f2(Theta_0, Theta_scaled, x2):
+    return Theta_0 + Theta_scaled - 3 * x2**2
 
 
-def f3(x0, Theta_scaled, x2):
-    return x0 + Theta_scaled + x2
+def f3(Theta_0, Theta_scaled, x2):
+    return Theta_0 + Theta_scaled + x2
 
 
 def f(Theta):
@@ -104,22 +104,22 @@ def hess_diag_f(Theta):
 # @pytest.fixture(scope="module")
 # def pdr_code():
 #     list_dicts = [
-#         {"x0": 0, "Theta_scaled": i / 100, "x2": j / 100}
+#         {"Theta_0": 0, "Theta_scaled": i / 100, "x2": j / 100}
 #         for i in range(-100, 100)
 #         for j in range(-100, 100)
 #     ]
 #     grid_reg = pd.DataFrame(list_dicts)
 #     grid_reg["y0"] = grid_reg.apply(
-#         lambda x: np.exp(f0(x["x0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
+#         lambda x: np.exp(f0(x["Theta_0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
 #     )
 #     grid_reg["y1"] = grid_reg.apply(
-#         lambda x: np.exp(f1(x["x0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
+#         lambda x: np.exp(f1(x["Theta_0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
 #     )
 #     grid_reg["y2"] = grid_reg.apply(
-#         lambda x: np.exp(f2(x["x0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
+#         lambda x: np.exp(f2(x["Theta_0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
 #     )
 #     grid_reg["y3"] = grid_reg.apply(
-#         lambda x: np.exp(f3(x["x0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
+#         lambda x: np.exp(f3(x["Theta_0"], Theta["Theta_scaled"], Theta["x2"])), axis=1
 #     )
 
 #     pdr_code = PolynomialApprox(grid_reg, D, D_no_kappa, L, deg)

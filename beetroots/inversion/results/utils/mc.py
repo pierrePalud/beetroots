@@ -284,7 +284,6 @@ class ResultsMC(ResultsUtil):
                     df_first_elt_valid_mc.to_csv(
                         path_file,
                         mode="w",
-                        header=not (os.path.exists(path_file)),
                     )
                 else:
                     while not (os.path.exists(path_file)):
