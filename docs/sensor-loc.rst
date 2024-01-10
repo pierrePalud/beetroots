@@ -4,6 +4,23 @@ Sensor localization problem
 This example shows how the ``beetroots`` package can be used to perform inversion on a slightly more complicated casde: the sensor localization problem.
 Run
 
+TODO: explain that what is needed to prepare the run is only
+
+* a dedicated ``Likelihood`` class to encode the data-fidelity term.
+* a dedicated ``Simulation`` class to setup the observation and posterior
+* a dedicated ``ForwardMap`` class to compute distances between sensors
+
+already implemented:
+
+* the prior encoding validity intervals (a smooth variant for the sampler)
+* the ``Posterior`` class
+* the ``Sampler``class
+* the ``Saver`` class
+* the inversion itself, with the ``RunMCMC`` class
+* the inversion result extraction, with the ``ResultMCMC`` class
+
+Ajouter un schéma des différentes classes, et de quand elles sont appelées.
+
 .. code:: bash
 
     poetry run python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p9.yaml
