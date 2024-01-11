@@ -53,7 +53,7 @@ extensions = [
     "sphinx.ext.viewcode",  # Add links to highlighted source code
     # Non-official Sphinx extensions need to be installed
     # https://github.com/sphinx-contrib/
-    # "sphinxcontrib.bibtex",  # Sphinx extension for BibTeX style citations
+    "sphinxcontrib.bibtex",  # Sphinx extension for BibTeX style citations
     # "sphinxcontrib.proof",  # Sphinx extension to typeset theorems, proofs
     # Non-official Sphinx extension for matplotlib plots
     # https://matplotlib.org/stable/api/sphinxext_plot_directive_api.html?highlight=plot_directive#module-matplotlib.sphinxext.plot_directive
@@ -74,6 +74,9 @@ myst_enable_extensions = ["colon_fence"]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "*_old*", "tests*"]
 
+# sphinxcontrib-bibtex
+bibtex_bibfiles = ["biblio.bib"]
+bibtex_reference_style = "author_year"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

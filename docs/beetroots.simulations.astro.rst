@@ -13,17 +13,6 @@ Subpackages
    beetroots.simulations.astro.real_data
    beetroots.simulations.astro.toy_case
 
-Submodules
-----------
-
-beetroots.simulations.astro.utils module
-----------------------------------------
-
-.. automodule:: beetroots.simulations.astro.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

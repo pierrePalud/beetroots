@@ -52,26 +52,10 @@ beetroots.inversion.results.utils.kernel module
    :undoc-members:
    :show-inheritance:
 
-beetroots.inversion.results.utils.kernel\_hierarchical module
--------------------------------------------------------------
-
-.. automodule:: beetroots.inversion.results.utils.kernel_hierarchical
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 beetroots.inversion.results.utils.lowest\_obj\_estimator module
 ---------------------------------------------------------------
 
 .. automodule:: beetroots.inversion.results.utils.lowest_obj_estimator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beetroots.inversion.results.utils.lowest\_obj\_estimator\_hierarchical module
------------------------------------------------------------------------------
-
-.. automodule:: beetroots.inversion.results.utils.lowest_obj_estimator_hierarchical
    :members:
    :undoc-members:
    :show-inheritance:
@@ -84,14 +68,6 @@ beetroots.inversion.results.utils.mc module
    :undoc-members:
    :show-inheritance:
 
-beetroots.inversion.results.utils.mc\_hierarchical module
----------------------------------------------------------
-
-.. automodule:: beetroots.inversion.results.utils.mc_hierarchical
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 beetroots.inversion.results.utils.mmse\_ci module
 -------------------------------------------------
 
@@ -100,26 +76,10 @@ beetroots.inversion.results.utils.mmse\_ci module
    :undoc-members:
    :show-inheritance:
 
-beetroots.inversion.results.utils.mmse\_ci\_hierarchical module
----------------------------------------------------------------
-
-.. automodule:: beetroots.inversion.results.utils.mmse_ci_hierarchical
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 beetroots.inversion.results.utils.objective module
 --------------------------------------------------
 
 .. automodule:: beetroots.inversion.results.utils.objective
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beetroots.inversion.results.utils.objective\_hierarchical module
-----------------------------------------------------------------
-
-.. automodule:: beetroots.inversion.results.utils.objective_hierarchical
    :members:
    :undoc-members:
    :show-inheritance:

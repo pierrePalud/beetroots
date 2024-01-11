@@ -8,9 +8,8 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
-from beetroots.inversion.results.results_optim_mle import ResultsExtractorOptimMLE
 from beetroots.inversion.run.abstract_run import Run
+from beetroots.modelling.posterior import Posterior
 from beetroots.sampler.abstract_sampler import Sampler
 from beetroots.sampler.saver.abstract_saver import Saver
 from beetroots.space_transform.abstract_transform import Scaler
@@ -19,20 +18,53 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class RunOptimMLE(Run):
+    r"""class that runs inversions using an optimization approach, considering all pixels independently.
+
+    .. warning::
+        Unfinished class.
+    """
+
     def __init__(self, path_data_csv_out: str, max_workers: int, N: int):
+        r"""
+
+        Parameters
+        ----------
+        path_data_csv_out : str
+            path to the folder where results are to be saved
+        max_workers : int
+            max number of workers that can be used to run the inversion
+        N : int
+            number of pixels, i.e., of optimization problems to solve
+        """
         self.path_data_csv_out = path_data_csv_out
+        r"""str: path to the folder where results are to be saved"""
+
         self.max_workers = max_workers
+        r"""int: max number of workers that can be used to run the inversion"""
+
         self.N = N
+        r"""int: number of pixels, i.e., of optimization problems to solve"""
 
     def prepare_run(
         self,
-        dict_posteriors: dict,
+        dict_posteriors: dict[str, Posterior],
         path_raw: str,
         N_runs: int,
-    ) -> Optional[np.ndarray]:
+    ) -> None:
+        r"""prepares the run by creating empty folders to save the run results
+
+        Parameters
+        ----------
+        dict_posteriors : dict[str, Posterior]
+            dictionary of posterior distributions
+        path_raw : str
+            path to the folders where the ``.hdf5`` files are to be stored
+        N_runs : int
+            number of independent optimization runs to run per component :math:`n` / pixel
+        """
         for model_name in list(dict_posteriors.keys()):
             for seed in range(N_runs):
-                folder_path_inter = f"{self.path_raw}/{model_name}/"
+                folder_path_inter = f"{path_raw}/{model_name}/"
                 folder_path_inter += f"optim_MLE_{seed}"
 
                 for n in range(self.N):
@@ -45,23 +77,44 @@ class RunOptimMLE(Run):
 
     def run(
         self,
-        dict_posteriors: dict,
+        dict_posteriors: dict[str, Posterior],
         sampler_: Sampler,
         saver_: Saver,
         N_runs: int,
         max_iter: int,
         path_raw: str,
-        Theta_0: Optional[np.ndarray] = None,
         freq_save: int = 1,
     ) -> None:
-        # TODO: change this method using the old method run_optimization_MLE
-        global _run_one_simulation_optim_map_all_pixels
+        r"""runs the ``N`` inversions.
 
-        def _run_one_simulation_optim_map_all_pixels(dict_input: dict) -> dict:
+        .. warning::
+            Unfinished method.
+
+        Parameters
+        ----------
+        dict_posteriors : dict[str, Posterior]
+            _dictionary of posterior distributions
+        sampler_ : Sampler
+            sampler to be used to generate the Markov chain(s)
+        saver_ : Saver
+            object responsible for progressively saving the Markov chain data during the run
+        N_runs : int
+            number of independent Markov chains to run per posterior distribution
+        max_iter : int
+            total duration of a Markov chain
+        path_raw : str
+            path to the folders where the ``.hdf5`` files are to be stored
+        freq_save : int, optional
+            frequency of saved iterates during the run (1 means that every iteration is saved), by default 1
+        """
+        # TODO: change this method using the old method run_optimization_MLE
+        global _run_one_simulation_optim_mle_all_pixels
+
+        def _run_one_simulation_optim_mle_all_pixels(dict_input: dict) -> dict:
             model_name = dict_input["model_name"]
             seed = dict_input["seed"]
 
-            folder_path = f"{self.path_raw}/{model_name}/optim_MAP_{seed}"
+            folder_path = f"{path_raw}/{model_name}/optim_MLE_{seed}"
             saver_seed = copy.deepcopy(saver_)
             saver_seed.set_results_path(folder_path)
 
@@ -73,7 +126,6 @@ class RunOptimMLE(Run):
                 dict_posteriors[model_name],
                 saver=saver_seed,
                 max_iter=max_iter,
-                Theta_0=Theta_0,
             )
             # return input dict with duration information
             dict_output = {
@@ -84,11 +136,11 @@ class RunOptimMLE(Run):
             return dict_output
 
         # * global function
-        print("starting optimization MAP")
+        print("starting optimization MLE")
         list_params = [
             {"seed": seed, "model_name": model_name}
-            for seed in range(self.N_MCMC)
-            for model_name in list(self.dict_posteriors.keys())
+            for seed in range(N_runs)
+            for model_name in list(dict_posteriors.keys())
         ]
         # TODO: multiprocessing and cuda?
         # with ProcessPoolExecutor(
@@ -105,27 +157,40 @@ class RunOptimMLE(Run):
             list_simulations_durations.append(duration)
 
         df_results_sampling = pd.DataFrame(list_simulations_durations)
-        df_results_sampling.to_csv(
-            f"{self.path_data_csv_out_optim_map}/durations_optim_MAP.csv"
-        )
-        print("optimization MAP done\n")
+        df_results_sampling.to_csv(f"{self.path_data_csv_out}/durations_optim_MLE.csv")
+        print("optimization MLE done\n")
         return
 
     def main(
         self,
-        dict_posteriors: dict,
+        dict_posteriors: dict[str, Posterior],
         sampler_: Sampler,
         saver_: Saver,
-        scaler: Scaler,
         N_runs: int,
         max_iter: int,
         path_raw: str,
-        path_csv_mle: Optional[str] = None,
-        path_csv_map: Optional[str] = None,
-        start_from: Optional[str] = None,
         freq_save: int = 1,
     ) -> None:
-        Theta_0 = self.prepare_run(dict_posteriors, path_raw, N_runs)
+        r"""sequentially calls ``prepare_run`` and ``run``
+
+        Parameters
+        ----------
+        dict_posteriors : dict[str, Posterior]
+            dictionary of posterior distributions
+        sampler_ : Sampler
+            optimizer
+        saver_ : Saver
+            object responsible for progressively saving the optimization run data during the run
+        N_runs : int
+            number of independent optimization runs to run per posterior distribution
+        max_iter : int
+            total duration of an optimization run
+        path_raw : str
+            path to the folders where the ``.hdf5`` files are to be stored
+        freq_save : int, optional
+            frequency of saved iterates during the run (1 means that every iteration is saved), by default 1
+        """
+        self.prepare_run(dict_posteriors, path_raw, N_runs)
         self.run(
             dict_posteriors,
             sampler_,
@@ -133,7 +198,6 @@ class RunOptimMLE(Run):
             N_runs,
             max_iter,
             path_raw,
-            Theta_0,
             freq_save,
         )
         return
@@ -141,13 +205,13 @@ class RunOptimMLE(Run):
     #! Old method
     # def run_optimization_MLE(
     #     self,
-    #     psgld_params,
+    #     my_sampler_params,
     #     freq_save: int = 1,
     # ) -> None:
 
     #     global _run_one_simulation_one_pixel
 
-    #     psgld_params.save_to_file(self.path_data_csv_in, "algo_params_optim_MLE.csv")
+    #     my_sampler_params.save_to_file(self.path_data_csv_in, "algo_params_optim_MLE.csv")
 
     #     def _run_one_simulation_one_pixel(dict_input: dict) -> dict:
     #         n = dict_input["n"]
@@ -162,7 +226,7 @@ class RunOptimMLE(Run):
     #             idx_model
     #         ]
 
-    #         folder_path_inter = f"{self.path_raw}/{model_name}/opti_MLE_{seed_folder}"
+    #         folder_path_inter = f"{path_raw}/{model_name}/opti_MLE_{seed_folder}"
     #         folder_path = f"{folder_path_inter}/pixel_{n}"
 
     #         saver_ = MySaver(
@@ -170,12 +234,11 @@ class RunOptimMLE(Run):
     #             self.D,
     #             self.L,
     #             folder_path,
-    #             self.scaler,
     #             self.batch_size,
     #             freq_save=freq_save_mle,
     #         )
     #         sampler = MySampler(
-    #             psgld_params,
+    #             my_sampler_params,
     #             self.D,
     #             self.D_no_kappa,
     #             self.L,
@@ -265,7 +328,7 @@ class RunOptimMLE(Run):
     #     list_params = [
     #         {"n": n, "seed": seed, "model_name": model_name}
     #         for n in range(self.N)
-    #         for seed in range(self.N_MCMC)
+    #         for seed in range(N_runs)
     #         for model_name in list(self.dict_posteriors.keys())
     #     ]
 
@@ -281,12 +344,12 @@ class RunOptimMLE(Run):
     #                     _run_one_simulation_one_pixel,
     #                     list_params,
     #                 ),
-    #                 total=self.N * self.N_MCMC * n_models,
+    #                 total=self.N * N_runs * n_models,
     #             )
     #         )
     #     df_results_optim_mle = pd.DataFrame(list_simulations_durations)
     #     df_results_optim_mle.to_csv(
-    #         f"{self.path_data_csv_out_optim_mle}/durations_optim_MLE.csv"
+    #         f"{self.path_data_csv_out}/durations_optim_MLE.csv"
     #     )
     #     print("optimization MLE done")
     #     return

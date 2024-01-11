@@ -4,34 +4,18 @@ beetroots.simulations.astro.toy\_case package
 Submodules
 ----------
 
-beetroots.simulations.astro.toy\_case.toy\_case\_nn\_direct\_posterior module
------------------------------------------------------------------------------
+beetroots.simulations.astro.toy\_case.toy\_case\_nn module
+----------------------------------------------------------
 
-.. automodule:: beetroots.simulations.astro.toy_case.toy_case_nn_direct_posterior
+.. automodule:: beetroots.simulations.astro.toy_case.toy_case_nn
    :members:
    :undoc-members:
    :show-inheritance:
 
-beetroots.simulations.astro.toy\_case.toy\_case\_nn\_hierarchical\_posterior module
------------------------------------------------------------------------------------
+beetroots.simulations.astro.toy\_case.toy\_case\_polyreg module
+---------------------------------------------------------------
 
-.. automodule:: beetroots.simulations.astro.toy_case.toy_case_nn_hierarchical_posterior
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beetroots.simulations.astro.toy\_case.toy\_case\_polyreg\_direct\_posterior module
-----------------------------------------------------------------------------------
-
-.. automodule:: beetroots.simulations.astro.toy_case.toy_case_polyreg_direct_posterior
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beetroots.simulations.astro.toy\_case.toy\_case\_polyreg\_hierarchical\_posterior module
-----------------------------------------------------------------------------------------
-
-.. automodule:: beetroots.simulations.astro.toy_case.toy_case_polyreg_hierarchical_posterior
+.. automodule:: beetroots.simulations.astro.toy_case.toy_case_polyreg
    :members:
    :undoc-members:
    :show-inheritance:

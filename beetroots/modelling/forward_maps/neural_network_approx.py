@@ -1,5 +1,4 @@
 import os
-import pickle
 from typing import Dict, List, Optional, Sequence
 
 import numpy as np
@@ -18,6 +17,12 @@ class NeuralNetworkApprox(ExpForwardMap):
         f : \theta_n \in \mathbb{R}^D \mapsto f(\theta_n) \in \mathbb{R}^L
 
     where :math:`f(\theta_n)` can be written with a left composition with the exponential, i.e., :math:`f(\theta_n) = \exp \circ (\ln f) (\theta_n)`. Here the neural network corresponds to :math:`\ln f(\theta_n)`.
+
+    The neural network needs to be defined with the ``nnbma`` package, presented in :cite:t:`paludNeuralNetworkbasedEmulation2023`.
+    Here are the links towards the corresponding
+    `GitHub repository <https://github.com/einigl/ism-model-nn-approximation>`_,
+    `PyPi package <https://pypi.org/project/nnbma/>`_
+    and `documentation <https://ism-model-nn-approximation.readthedocs.io/en/latest/?badge=latest>`_.
     """
 
     LOGE_10 = np.log(10.0)

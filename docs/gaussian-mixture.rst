@@ -1,7 +1,9 @@
 Two-dimensional Gaussian mixture
 ================================
 
-This example shows how the ``beetroots`` package can be used to perform inversion on a simple case: a 2D Gaussian mixture.
+This example shows how the ``beetroots`` package can be used to sample a simple 2D Gaussian mixture.
+This first example appears in Section IV.A of :cite:t:`paludEfficientSamplingNon2023`.
+
 
 TODO: explain that what is needed to prepare the run is only
 
@@ -13,7 +15,7 @@ already implemented:
 * the identity forward map
 * the prior encoding validity intervals (a smooth variant for the sampler)
 * the ``Posterior`` class
-* the ``Sampler``class
+* the ``Sampler`` class
 * the ``Saver`` class
 * the inversion itself, with the ``RunMCMC`` class
 * the inversion result extraction, with the ``ResultMCMC`` class

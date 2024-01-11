@@ -2,9 +2,7 @@ import abc
 
 
 class ResultsExtractor(abc.ABC):
-    @abc.abstractmethod
-    def read_estimator(self, path_data_csv_out: str):
-        pass
+    r"""extractor of the results of an inversion"""
 
     @abc.abstractmethod
     def main(self):

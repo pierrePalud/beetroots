@@ -28,14 +28,6 @@ beetroots.inversion.results.results\_mcmc module
    :undoc-members:
    :show-inheritance:
 
-beetroots.inversion.results.results\_mcmc\_hierarchical module
---------------------------------------------------------------
-
-.. automodule:: beetroots.inversion.results.results_mcmc_hierarchical
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 beetroots.inversion.results.results\_optim\_map module
 ------------------------------------------------------
 

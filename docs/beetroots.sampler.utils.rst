@@ -12,10 +12,10 @@ beetroots.sampler.utils.mml module
    :undoc-members:
    :show-inheritance:
 
-beetroots.sampler.utils.psgldparams module
-------------------------------------------
+beetroots.sampler.utils.my\_sampler\_params module
+--------------------------------------------------
 
-.. automodule:: beetroots.sampler.utils.psgldparams
+.. automodule:: beetroots.sampler.utils.my_sampler_params
    :members:
    :undoc-members:
    :show-inheritance:

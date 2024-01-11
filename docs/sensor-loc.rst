@@ -1,8 +1,10 @@
 Sensor localization problem
 ===========================
 
-This example shows how the ``beetroots`` package can be used to perform inversion on a slightly more complicated casde: the sensor localization problem.
-Run
+This example shows how the ``beetroots`` package can be used to perform inversion on a slightly more complicated case: the sensor localization problem.
+This second example appears in Section IV.B of :cite:t:`paludEfficientSamplingNon2023`.
+
+
 
 TODO: explain that what is needed to prepare the run is only
 
@@ -14,7 +16,7 @@ already implemented:
 
 * the prior encoding validity intervals (a smooth variant for the sampler)
 * the ``Posterior`` class
-* the ``Sampler``class
+* the ``Sampler`` class
 * the ``Saver`` class
 * the inversion itself, with the ``RunMCMC`` class
 * the inversion result extraction, with the ``ResultMCMC`` class

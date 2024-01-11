@@ -211,7 +211,7 @@ class EBayesMMLE(ABC):
     Empirical Bayes maximum marginal likelihood estimation of a scalar
     regularization parameter :math:`\theta` from within an MCMC algorithm using
     a projected gradient ascent. The implementation follows the description
-    provided in `Vidal2020`.
+    provided in :cite:t:`vidalMaximumLikelihoodEstimation2020`.
     """
     # :cite:p:`Vidal2020`
 

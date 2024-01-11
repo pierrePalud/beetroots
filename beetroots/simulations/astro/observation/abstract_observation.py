@@ -6,7 +6,6 @@ import numpy as np
 # from beetroots.inversion.plots.map_shaper import MapShaper
 from beetroots.inversion.plots.plots_2d_setup import Plots2DSetup
 from beetroots.inversion.plots.plots_estimator import PlotsEstimator
-from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
 from beetroots.space_transform.abstract_transform import Scaler
 
 

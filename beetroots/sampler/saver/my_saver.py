@@ -16,14 +16,24 @@ class MySaver(Saver):
         dict_objective: dict = dict(),
         additional_sampling_log: dict = dict(),
     ) -> None:
-        """initializes the memory with the correct shapes
+        r"""initializes the memory with the correct shapes
 
         Parameters
         ----------
         T_MC : int
-            size of the markov chain to be sampled
+            size of the Markov chain to be sampled / optimization procedure
         t : int
             current iteration index
+        Theta : np.ndarray
+            current iterate in the Markov chain / optimization run
+        forward_map_evals : dict, optional
+            evaluations of the forward map and potentially derivatives, by default dict()
+        nll_utils : dict, optional
+            evaluation of utilitary values of the Likelihood class, by default dict()
+        dict_objective : dict, optional
+            contains the negative log posterior value and detailed components, by default dict()
+        additional_sampling_log : dict, optional
+            additional data on the sampling / optimization run, by default dict()
         """
         if self.batch_size is None:
             self.batch_size = T_MC
@@ -83,7 +93,27 @@ class MySaver(Saver):
         rng_state_array: Optional[np.ndarray] = None,
         rng_inc_array: Optional[np.ndarray] = None,
     ) -> None:
-        """updates the memory with new information. All of the potential entries are optional except for the current iterate."""
+        r"""updates the memory with new information. All of the potential entries are optional except for the current iterate.
+
+        Parameters
+        ----------
+        t : int
+            current iteration index
+        Theta : np.ndarray
+            current iterate in the Markov chain / optimization run
+        forward_map_evals : dict, optional
+            evaluations of the forward map and potentially derivatives, by default dict()
+        nll_utils : dict, optional
+            evaluation of utilitary values of the Likelihood class, by default dict()
+        dict_objective : dict, optional
+            contains the negative log posterior value and detailed components, by default dict()
+        additional_sampling_log : dict, optional
+            additional data on the sampling / optimization run, by default dict()
+        rng_state_array : Optional[np.ndarray], optional
+            current state of the random generator (saved for sampling reproducibility), by default None
+        rng_inc_array : Optional[np.ndarray], optional
+            current inc of the random generator (saved for sampling reproducibility), by default None
+        """
         t_save = (t - self.t_last_init) // self.freq_save
 
         Theta_full = np.zeros((Theta.shape[0], self.D))

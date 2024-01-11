@@ -10,7 +10,7 @@
 # from beetroots.modelling.posterior import Posterior
 # from beetroots.modelling.priors.l22_prior import L22SpatialPrior
 # from beetroots.sampler import mysampler, saver
-# from beetroots.sampler.psgldparams import PSGLDParams
+# from beetroots.sampler.psgldparams import MySamplerParams
 # from beetroots.space_transform.id_transform import IdScaler
 
 
@@ -53,7 +53,7 @@
 #             os.mkdir(path)
 
 #     scaler = IdScaler()
-#     psgld_params = PSGLDParams(1.5e-3, 1e-5, 0.995, 0.05, 1.0, 4**D, True, True)
+#     my_sampler_params = MySamplerParams(1.5e-3, 1e-5, 0.995, 0.05, 1.0, 4**D, True, True)
 
 #     # first sampling
 #     batch_size = 5
@@ -66,7 +66,7 @@
 #     saver_1 = saver.Saver(N, D, L, dir_name_1, scaler, batch_size, 1)
 #     saver_2 = saver.Saver(N, D, L, dir_name_2, scaler, batch_size, 1)
 
-#     sampler_1 = mysampler.MySampler(psgld_params, D, D_no_kappa, L, N)
+#     sampler_1 = mysampler.MySampler(my_sampler_params, D, D_no_kappa, L, N)
 #     sampler_1.sample(
 #         posterior,
 #         saver=saver_1,
@@ -91,7 +91,7 @@
 #     assert list_tau_1.shape == (max_iter_2, D)
 #     assert list_objective_1.shape == (max_iter_2,)
 
-#     sampler_2 = mysampler.MySampler(psgld_params, D, D_no_kappa, L, N)
+#     sampler_2 = mysampler.MySampler(my_sampler_params, D, D_no_kappa, L, N)
 #     sampler_2.set_rng_state(rng_state_1, rng_inc_1)
 #     sampler_2.sample(
 #         posterior,

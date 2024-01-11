@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from beetroots.inversion.plots.map_shaper import MapShaper
-from beetroots.simulations.astro.real_data.real_data_nn_direct_posterior import (
+from beetroots.simulations.astro.real_data.real_data_nn import (
     SimulationRealDataNNDirectPosterior,
 )
 

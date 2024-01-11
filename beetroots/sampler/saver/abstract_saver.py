@@ -9,21 +9,24 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class Saver:
-    """enable to regularly save the progression of the markov chain to a `.hdf5` file"""
+    """enable to regularly save the progression of the Markov chain to a `.hdf5` file"""
 
     __slots__ = (
         "N",
         "D",
+        "D_sampling",
         "L",
         "results_path",
         "batch_size",
         "freq_save",
         "scaler",
         "t_last_save",
+        "t_last_init",
         "next_batch_size",
         "final_next_batch_size",
         "memory",
         "save_forward_map_evals",
+        "list_idx_sampling",
     )
 
     def __init__(
@@ -33,7 +36,7 @@ class Saver:
         D_sampling: int,
         L: int,
         scaler: Scaler,
-        results_path: Optional[str] = "",
+        results_path: str = "",
         batch_size: Optional[int] = None,
         freq_save: int = 1,
         save_forward_map_evals: bool = False,
@@ -46,55 +49,79 @@ class Saver:
         N : int
             total number of pixels to reconstruct
         D : int
-            total nunmber of physical parameters to reconstruct
+            total number of physical parameters
+        D_sampling : int
+            number of physical parameters that are optimized / sampled
         L : int
             number of observed lines
         scaler : Scaler
-            permets transformations from sampling space to interpretable space
+            contains the transformation of the Theta values from their scaled space (in which the sampling happens) to their natural space
         results_path : str
-            path towards the hdf5 output file, by default ""
+            path towards the ``.hdf5`` output file, by default ""
         batch_size : int, optional
             number of iterations between two saves on file, by default None
         freq_save : int, optional
             save one sample in every (freq_save). Used to save disk space., by default 1
         save_forward_map_evals: bool, optional
-            wether or not to save the forward model evaluations and gradients, by default False
+            wether to save the forward model evaluations and gradients, by default False
+        list_idx_sampling : Optional[List[int]], optional
+            contains the indices of the physical parameters to be sampled
         """
         self.N = N
+        r"""total number of pixels to reconstruct"""
         self.D = D
+        r"""total number of physical parameters"""
         self.D_sampling = D_sampling
+        r"""number of physical parameters that are optimized / sampled"""
         self.L = L
+        r"""number of observed lines"""
 
-        if list_idx_sampling is not None:
-            self.list_idx_sampling = list_idx_sampling
-        else:
-            self.list_idx_sampling = np.arange(self.D)
+        if list_idx_sampling is None:
+            list_idx_sampling = np.arange(self.D)
+
+        self.list_idx_sampling = list_idx_sampling
+        r"""1D np.ndarray: contains the indices of the physical parameters to be sampled"""
 
         self.results_path = results_path
+        r"""path towards the ``.hdf5`` output file"""
         if len(results_path) > 0 and not (os.path.isdir(results_path)):
             os.mkdir(results_path)
 
         self.batch_size = batch_size
+        r"""frequency of saves, i.e., "every ``batch_size`` new iterates to be saved, the memory is saved to an ``.hdf5`` file and re-initialized"""
+
         self.freq_save = freq_save
+        r"""frequency of saved iterates during the run (1 means that every iteration is saved)"""
+
         self.scaler = scaler
+        r"""contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens)"""
 
         # these two attributes are initialized by initialize_memory
         # updated during sampling
         self.t_last_save = 0
+        self.t_last_init = 0
         self.next_batch_size = 0
         self.final_next_batch_size = 0
         self.memory = dict()
 
         self.save_forward_map_evals = save_forward_map_evals
+        r"""wether to save the forward model evaluations and gradients"""
 
     def set_results_path(self, results_path: str) -> None:
+        r"""sets the path of the ``.hdf5`` file to a new value
+
+        Parameters
+        ----------
+        results_path : str
+            path towards the ``.hdf5`` output file
+        """
         self.results_path = results_path
         if len(results_path) > 0 and not (os.path.isdir(results_path)):
             os.mkdir(results_path)
         return
 
     def check_need_to_save(self, t: int) -> bool:
-        """checks wether or not the memory should be saved to a `.hdf5` file
+        """checks wether or not the memory should be saved to a ``.hdf5`` file
 
         Parameters
         ----------
@@ -129,20 +156,20 @@ class Saver:
         self,
         T_MC: int,
         t: int,
-        x: np.ndarray,
+        Theta: np.ndarray,
         forward_map_evals: dict = dict(),
         nll_utils: dict = dict(),
         dict_objective: dict = dict(),
         additional_sampling_log: dict = dict(),
     ) -> None:
-        """initializes the memory with the correct shapes"""
+        r"""initializes the memory with the correct shapes"""
         pass
 
     @abc.abstractmethod
     def update_memory(
         self,
         t: int,
-        x: np.ndarray,
+        Theta: np.ndarray,
         forward_map_evals: dict = dict(),
         nll_utils: dict = dict(),
         dict_objective: dict = dict(),
@@ -183,7 +210,16 @@ class Saver:
         list_arrays: List[np.ndarray],
         list_names: List[str],
     ) -> None:
-        """Saves additional content to a `.hdf5` file"""
+        r"""saves additional content to a ``.hdf5`` file
+
+        Parameters
+        ----------
+        list_arrays : List[np.ndarray]
+            list of the arrays to be saved
+        list_names : List[str]
+            list of names for the arrays to be saved in the ``.hdf5`` file
+        """
+        assert len(list_names) == len(list_arrays)
 
         with h5py.File(
             os.path.join(self.results_path, "mc_chains.hdf5"),

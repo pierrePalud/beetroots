@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 
@@ -24,7 +24,7 @@ class Likelihood(ABC):
 
         assert y.shape == (N, L)
 
-    def _update_observations(y: np.ndarray):
+    def _update_observations(self, y: np.ndarray):
         r"""Update observations :math:`y` to be updated as :math:`y_{\text{new}}`  whenever the likelihood object :math:`p(y \mid f(\theta)` is interpreted as
         a prior on :math:`y` with hyperparameter :math:`\theta`.
 
@@ -46,11 +46,20 @@ class Likelihood(ABC):
         self.y = y
 
     @abstractmethod
-    def neglog_pdf(self, forward_map_evals: dict, nll_utils: dict) -> float:
+    def neglog_pdf(
+        self,
+        forward_map_evals: dict,
+        nll_utils: dict,
+        pixelwise: bool = False,
+        full: bool = False,
+        idx: Optional[np.ndarray] = None,
+    ) -> Union[float, np.ndarray]:
         pass
 
     @abstractmethod
-    def sample_observation_model(self, forward_map_evals: dict) -> np.ndarray:
+    def sample_observation_model(
+        self, forward_map_evals: dict, rng: Optional[np.random.Generator]
+    ) -> np.ndarray:
         pass
 
     @abstractmethod
@@ -89,6 +98,7 @@ class Likelihood(ABC):
             pixelwise=True,
             idx=idx,
         )  # (N_candidates,)
+        assert isinstance(nll_candidates, np.ndarray)
         assert nll_candidates.shape == (N_candidates,)
 
         if return_forward_map_evals:
@@ -127,5 +137,10 @@ class Likelihood(ABC):
         return forward_map_evals
 
     @abstractmethod
-    def evaluate_all_nll_utils(self, Theta: np.ndarray) -> dict:
+    def evaluate_all_nll_utils(
+        self,
+        forward_map_evals: dict,
+        idx: Optional[np.ndarray],
+        compute_derivatives: bool,
+    ) -> dict:
         pass

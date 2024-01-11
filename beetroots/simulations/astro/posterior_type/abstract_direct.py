@@ -17,7 +17,7 @@ from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPri
 from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
 from beetroots.sampler.my_sampler import MySampler
 from beetroots.sampler.saver.my_saver import MySaver
-from beetroots.sampler.utils.psgldparams import PSGLDParams
+from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 from beetroots.simulations.astro.posterior_type.abstract_posterior_type import (
     SimulationPosteriorType,
 )
@@ -163,7 +163,7 @@ class SimulationMySampler(SimulationPosteriorType):
         self,
         dict_posteriors: Dict[str, Posterior],
         scaler: MyScaler,
-        psgld_params: PSGLDParams,
+        my_sampler_params: MySamplerParams,
         N_MCMC: int,
         T_MC: int,
         T_BI: int,
@@ -174,7 +174,7 @@ class SimulationMySampler(SimulationPosteriorType):
     ) -> None:
         tps_init = time.time()
 
-        sampler_ = MySampler(psgld_params, self.D_sampling, self.L, self.N)
+        sampler_ = MySampler(my_sampler_params, self.D_sampling, self.L, self.N)
 
         saver_ = MySaver(
             N=self.N,
@@ -237,7 +237,7 @@ class SimulationMySampler(SimulationPosteriorType):
         self,
         dict_posteriors: Dict[str, Posterior],
         scaler: MyScaler,
-        psgld_params: PSGLDParams,
+        my_sampler_params: MySamplerParams,
         N_MCMC: int,
         T_MC: int,
         T_BI: int,
@@ -266,7 +266,7 @@ class SimulationMySampler(SimulationPosteriorType):
     ) -> None:
         tps_init = time.time()
 
-        sampler_ = MySampler(psgld_params, self.D_sampling, self.L, self.N)
+        sampler_ = MySampler(my_sampler_params, self.D_sampling, self.L, self.N)
 
         saver_ = MySaver(
             self.N,

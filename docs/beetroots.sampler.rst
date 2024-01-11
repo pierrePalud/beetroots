@@ -21,22 +21,6 @@ beetroots.sampler.abstract\_sampler module
    :undoc-members:
    :show-inheritance:
 
-beetroots.sampler.entropy\_sampler module
------------------------------------------
-
-.. automodule:: beetroots.sampler.entropy_sampler
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beetroots.sampler.hierarchical\_sampler module
-----------------------------------------------
-
-.. automodule:: beetroots.sampler.hierarchical_sampler
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 beetroots.sampler.my\_sampler module
 ------------------------------------
 

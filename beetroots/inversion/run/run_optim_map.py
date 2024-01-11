@@ -11,29 +11,67 @@ import pandas as pd
 from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
 from beetroots.inversion.results.results_optim_mle import ResultsExtractorOptimMLE
 from beetroots.inversion.run.abstract_run import Run
+from beetroots.modelling.posterior import Posterior
 from beetroots.sampler.abstract_sampler import Sampler
 from beetroots.sampler.saver.abstract_saver import Saver
 from beetroots.space_transform.abstract_transform import Scaler
 
 
 class RunOptimMAP(Run):
+    r"""class that runs inversions using an optimization approach, considering all pixels / components at once"""
 
     __slots__ = ("path_data_csv_out", "max_workers")
 
     def __init__(self, path_data_csv_out: str, max_workers: int):
+        r"""
+
+        Parameters
+        ----------
+        path_data_csv_out : str
+            path to the folder where results are to be saved
+        max_workers : int
+            max number of workers that can be used to run the inversion
+        """
         self.path_data_csv_out = path_data_csv_out
+        r"""str: path to the folder where results are to be saved"""
+
         self.max_workers = max_workers
+        r"""int: max number of workers that can be used to run the inversion"""
 
     def prepare_run(
         self,
-        dict_posteriors: dict,
+        dict_posteriors: dict[str, Posterior],
         path_raw: str,
         N_runs: int,
         scaler: Scaler,
         start_from: Optional[str] = None,
         path_csv_mle: Optional[str] = None,
-        path_csv_map: Optional[str] = None,
     ) -> Optional[np.ndarray]:
+        r"""prepares the run in two ways :
+
+        * step 1 : creates empty folders to save the run results
+        * step 2 : reads ``Theta_0`` if specified (as the MLE)
+
+        Parameters
+        ----------
+        dict_posteriors : dict[str, Posterior]
+            dictionary of posterior distributions
+        path_raw : str
+            path to the folders where the ``.hdf5`` files are to be stored
+        N_runs : int
+            number of independent optimization runs to run per posterior distribution
+        scaler : Scaler
+            contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens)
+        start_from : Optional[str]
+            point at which the inversion will start, must be in [None, "MLE"]. For None, a random value is drawn uniformly in the scaled hypercube.
+        path_csv_mle : Optional[str]
+            path to the csv file containing the already estimated MLE
+
+        Returns
+        -------
+        Optional[np.ndarray]
+            starting point of the  (in scaled space) inversion, ``Theta_0``, if specified. Otherwise ``None``.
+        """
         # create empty folders to save the run results
         for seed in range(N_runs):
             for model_name in list(dict_posteriors.keys()):
@@ -50,11 +88,6 @@ class RunOptimMAP(Run):
             Theta_0, _ = result_extractor.read_estimator(model_name)
             Theta_0 = scaler.from_lin_to_scaled(Theta_0)
 
-        elif start_from == "MAP":
-            result_extractor = ResultsExtractorOptimMAP(path_csv_map)
-            Theta_0, _ = result_extractor.read_estimator(model_name)
-            Theta_0 = scaler.from_lin_to_scaled(Theta_0)
-
         else:
             Theta_0 = None
 
@@ -62,7 +95,7 @@ class RunOptimMAP(Run):
 
     def run(
         self,
-        dict_posteriors: dict,
+        dict_posteriors: dict[str, Posterior],
         sampler_: Sampler,
         saver_: Saver,
         N_runs: int,
@@ -72,6 +105,29 @@ class RunOptimMAP(Run):
         freq_save: int = 1,
         can_run_in_parallel: bool = True,
     ) -> None:
+        r"""runs the inversion
+
+        Parameters
+        ----------
+        dict_posteriors : dict[str, Posterior]
+            dictionary of posterior distributions
+        sampler_ : Sampler
+            optimizer
+        saver_ : Saver
+            object responsible for progressively saving the optimization run data during the run
+        N_runs : int
+            number of independent optimization runs to run per posterior distribution
+        max_iter : int
+            total duration of an optimization run
+        path_raw : str
+            path to the folders where the ``.hdf5`` files are to be stored
+        Theta_0 : Optional[np.ndarray], optional
+            starting point, by default None
+        freq_save : int, optional
+            frequency of saved iterates during the run (1 means that every iteration is saved), by default 1
+        can_run_in_parallel : bool, optional
+            wether the inversion can be run in parallel (may cause difficulties for forward maps based on neural networks run on GPU), by default True
+        """
         global _run_one_simulation_optim_map_all_pixels
 
         def _run_one_simulation_optim_map_all_pixels(dict_input: dict) -> dict:
@@ -129,7 +185,7 @@ class RunOptimMAP(Run):
 
     def main(
         self,
-        dict_posteriors: dict,
+        dict_posteriors: dict[str, Posterior],
         sampler_: Sampler,
         saver_: Saver,
         scaler: Scaler,
@@ -137,18 +193,43 @@ class RunOptimMAP(Run):
         max_iter: int,
         path_raw: str,
         path_csv_mle: Optional[str] = None,
-        path_csv_map: Optional[str] = None,
         start_from: Optional[str] = None,
         freq_save: int = 1,
         can_run_in_parallel: bool = True,
     ) -> None:
+        r"""sequentially calls ``prepare_run`` and ``run``
+
+        Parameters
+        ----------
+        dict_posteriors : dict[str, Posterior]
+            dictionary of posterior distributions
+        sampler_ : Sampler
+            optimizer
+        saver_ : Saver
+            object responsible for progressively saving the optimization run data during the run
+        scaler : Scaler
+            contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens)
+        N_runs : int
+            number of independent optimization runs to run per posterior distribution
+        max_iter : int
+            total duration of an optimization run
+        path_raw : str
+            path to the folders where the ``.hdf5`` files are to be stored
+        path_csv_mle : Optional[str]
+            path to the csv file containing the already estimated MLE
+        start_from : Optional[str], optional
+            _description_, by default None
+        freq_save : int, optional
+            frequency of saved iterates during the run (1 means that every iteration is saved), by default 1
+        can_run_in_parallel : bool, optional
+            wether the inversion can be run in parallel (may cause difficulties for forward maps based on neural networks run on GPU), by default True
+        """
         Theta_0 = self.prepare_run(
             dict_posteriors,
             path_raw,
             N_runs,
             scaler,
             path_csv_mle,
-            path_csv_map,
             start_from,
         )
         self.run(

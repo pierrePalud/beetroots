@@ -62,9 +62,6 @@ class ResultsExtractorMCMC(ResultsExtractor):
 
         self.max_workers = max_workers
 
-    def read_estimator(self):
-        pass
-
     def main(
         self,
         posterior: Posterior,

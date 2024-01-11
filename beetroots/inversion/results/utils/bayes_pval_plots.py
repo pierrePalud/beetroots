@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,9 +9,13 @@ from scipy.stats import beta
 
 from beetroots.inversion.plots.map_shaper import MapShaper
 from beetroots.inversion.results.utils.abstract_util import ResultsUtil
+from beetroots.sampler.abstract_sampler import Sampler
 
 
 class ResultsBayesPvalues(ResultsUtil):
+    r"""Bayesian model checking acounting for uncertainties on the p-value due to Monte Carlo evaluation.
+    The method is described in :cite:t:`paludProblemesInversesTest2023a`.
+    """
 
     __slots = (
         "model_name",
@@ -25,7 +29,8 @@ class ResultsBayesPvalues(ResultsUtil):
     CONFIDENCE_THRESHOLD_ALPHA = 0.05
     CONFIDENCE_THRESHOLD_DELTA = 0.1
 
-    ESS_OPTIM = 1_000  # should match value in my_sampler
+    ESS_OPTIM = Sampler.ESS_OPTIM * 1
+    r"""number of random reproduced observations to draw to evaluate the model checking p-value for optimization procedures"""
 
     def __init__(
         self,
@@ -51,7 +56,7 @@ class ResultsBayesPvalues(ResultsUtil):
 
         self.plot_ESS = plot_ESS
 
-    def read_data(self) -> pd.DataFrame:
+    def read_data(self) -> Tuple[Optional[pd.DataFrame], pd.DataFrame]:
         # ess
         if self.chain_type == "mcmc":
             if self.plot_ESS:
@@ -111,6 +116,7 @@ class ResultsBayesPvalues(ResultsUtil):
         print("starting Bayesian p-value plots")
 
         if self.plot_ESS:
+            assert df_ess_model is not None
             df_ess_overall = df_ess_model[(df_ess_model["seed"] == "overall")]
             df_ess = df_ess_overall.groupby("n")[["ess"]].min()
             df_ess = df_ess.sort_index()

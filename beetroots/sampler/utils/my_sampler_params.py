@@ -6,11 +6,8 @@ import numpy as np
 import pandas as pd
 
 
-class PSGLDParams(object):
-    """Data class that stores the parameters of the augmented PSGLD sampler
-
-    Note : selection_probas = (proba MTM, proba PMALA)
-    """
+class MySamplerParams(object):
+    r"""Dataclass that stores the parameters of the sampler proposed in :cite:t:`paludEfficientSamplingNon2023`"""
 
     __slots__ = (
         "initial_step_size",
@@ -32,20 +29,24 @@ class PSGLDParams(object):
         is_stochastic: bool = True,
         compute_correction_term: bool = True,
     ) -> None:
-        """
+        r"""
 
         Parameters
         ----------
         initial_step_size : float
-            step size used in the Position-dependent MALA transition kernel
+            step size used in the Position-dependent MALA transition kernel, denoted :math:`\epsilon` in the article
         extreme_grad : float
-            limit value that avoids division by zero when computing the RMSProp preconditioner
+            limit value that avoids division by zero when computing the RMSProp preconditioner, denoted :math:`\eta` in the article
         history_weight : float
-            weight of past values of `V` in the exponential decay (cf RMSProp preconditioner)
+            weight of past values of :math:`v` in the exponential decay (cf RMSProp preconditioner), denoted :math:`\alpha` in the article
+        selection_probas : np.ndarray of shape (2,)
+            vector of selection probabilities for the MTM and PMALA kernels, respectively, i.e., :math:`[p_{MTM}, 1 - p_{MTM}]`
+        k_mtm : int
+            number of candidates in the MTM kernel, denoted :math:`K` in the article
         is_stochastic : bool
             if True, the algorithm performs sampling, and optimization otherwise, by default True
         compute_correction_term : bool
-            wether or not to use the correction term during the sampling (only used if `is_stochastic=True`), by default True
+            wether or not to use the correction term (denoted :math:`\gamma` in the article) during the sampling (only used if `is_stochastic=True`), by default True
         """
         assert initial_step_size > 0
         assert extreme_grad > 0
@@ -71,41 +72,3 @@ class PSGLDParams(object):
 
         self.is_stochastic = is_stochastic
         self.compute_correction_term = compute_correction_term
-
-    def save_to_file(
-        self,
-        results_path: str,
-        filename: str = "sampling_params.csv",
-    ):
-        list_dict_ = [
-            {
-                "name": "selection probas",
-                "value": self.selection_probas,
-            },
-            {
-                "name": "stochastic (true) optimization (false)",
-                "value": self.is_stochastic,
-            },
-            {
-                "name": "step size",
-                "value": self.initial_step_size,
-            },
-            {
-                "name": "v damping",
-                "value": self.extreme_grad,
-            },
-            {
-                "name": "exponential decay rate",
-                "value": self.history_weight,
-            },
-            {
-                "name": "number of wether or not to compute the correction term",
-                "value": self.compute_correction_term,
-            },
-            {
-                "name": "number of candidates",
-                "value": self.k_mtm,
-            },
-        ]
-        df = pd.DataFrame(list_dict_)
-        df.to_csv(f"{results_path}/{filename}")

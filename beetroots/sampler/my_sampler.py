@@ -13,21 +13,19 @@ from beetroots.sampler.abstract_sampler import Sampler
 from beetroots.sampler.saver.abstract_saver import Saver
 from beetroots.sampler.utils import utils
 from beetroots.sampler.utils.mml import EBayesMMLELogRate
-from beetroots.sampler.utils.psgldparams import PSGLDParams
+from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 
 
 class MySampler(Sampler):
-    r"""Defines a sampler that randomly combines two transition kernels :
+    r"""Defines the sampler proposed in :cite:t:`paludEfficientSamplingNon2023` that randomly combines two transition kernels :
 
-    1. a independent MTM variable-at-a-time transition kernel
+    1. a independent MTM-chromatic Gibbs transition kernel
     2. a position-dependent MALA transition kernel with the RMSProp pre-conditioner
     """
 
-    ESS_OPTIM = 1_000
-
     def __init__(
         self,
-        psgld_params: PSGLDParams,
+        my_sampler_params: MySamplerParams,
         D: int,
         L: int,
         N: int,
@@ -37,76 +35,99 @@ class MySampler(Sampler):
 
         Parameters
         ----------
-        psgld_params : PSGLDParams
+        my_sampler_params : MySamplerParams
             contains the main parameters of the algorithm
         D : int
             total number of physical parameters to reconstruct
+        L : int
+            number of observables per component :math:`n`
         N : int
             total number of pixels to reconstruct
-        selection_probas : float
-            probability of running the MTM transition kernel at a given iteration
-        proba_unif : float
-            probability to choose a pixel to sample using a uniform distribution. The other option is via a softmax that gives more weight to pixels with higher negative log likelihood (only used when the MTM transition kernel is run)
-        k_mtm : int
-            number of candidates to simulate and evaluate in the MTM transition kernel
         rng : numpy.random.Generator, optional
             random number generator (for reproducibility), by default np.random.default_rng(42)
         """
+
         # P-MALA params
         # ! redefine size of params
-        self.eps0 = psgld_params.initial_step_size
-        self.lambda_ = psgld_params.extreme_grad
-        self.alpha = psgld_params.history_weight
+        self.eps0 = my_sampler_params.initial_step_size
+        r"""float: step size used in the Position-dependent MALA transition kernel, denoted :math:`\epsilon > 0` in the article"""
+
+        self.lambda_ = my_sampler_params.extreme_grad
+        r"""float: limit value that avoids division by zero when computing the RMSProp preconditioner, denoted :math:`\eta > 0` in the article"""
+
+        self.alpha = my_sampler_params.history_weight
+        r"""float: weight of past values of :math:`v` in the exponential decay (cf RMSProp preconditioner), denoted :math:`\alpha \in ]0,1[` in the article"""
 
         # MTM params
         # assert np.isclose(
-        #     int(pow(psgld_params.k_mtm, 1 / D)) ** D, psgld_params.k_mtm
+        #     int(pow(my_sampler_params.k_mtm, 1 / D)) ** D, my_sampler_params.k_mtm
         # ), "number of candidates for mtm needs to have an integer D-root"
-        self.k_mtm = psgld_params.k_mtm
+        self.k_mtm = my_sampler_params.k_mtm
+        r"""int: number of candidates in the MTM kernel, denoted :math:`K` in the article"""
 
         # overall
-        self.selection_probas = psgld_params.selection_probas
+        self.selection_probas = my_sampler_params.selection_probas
+        r"""np.ndarray: vector of selection probabilities for the MTM and PMALA kernels, respectively, i.e., :math:`[p_{MTM}, 1 - p_{MTM}]`"""
         assert (
             np.sum(self.selection_probas) == 1
         ), f"{self.selection_probas} should sum to 1"
 
-        self.stochastic = psgld_params.is_stochastic
-        self.compute_correction_term = psgld_params.compute_correction_term
+        self.stochastic = my_sampler_params.is_stochastic
+        r"""bool: if True, the algorithm performs sampling, and optimization otherwise"""
+
+        self.compute_correction_term = my_sampler_params.compute_correction_term
+        r"""bool: wether or not to use the correction term (denoted :math:`\gamma` in the article) during the sampling (only used if `is_stochastic=True`)"""
 
         self.D = D
+        r"""int: total number of physical parameters to reconstruct"""
         self.L = L
+        r"""int: number of observables per component :math:`n`"""
         self.N = N
+        r"""int: total number of pixels to reconstruct"""
 
         self.rng = rng
+        r"""numpy.random.Generator: random number generator (for reproducibility)"""
 
         # initialization values, not to be kept during sampling
         self.v = np.zeros((N * D,))
-        # self.u = np.zeros((N * D,))
-        self.current = {}
-        # self.additional_sampling_log = {}
+        r"""np.ndarray: RMSProp gradient variance vector, denoted :math:`v` in the article"""
 
-        self.list_lower_bounds_mcs = None
-        self.list_upper_bounds_mcs = None
+        self.current = {}
+        r"""dict: contains all the data about the current iterate (including the evaluations of the forward map and derivatives, etc.)"""
 
     def generate_random_start_Theta_1pix(
-        self, x, posterior: Posterior, idx_pix: np.ndarray
+        self, Theta: np.ndarray, posterior: Posterior, idx_pix: np.ndarray
     ) -> np.ndarray:
-        """generates a random element of the hypercube defined by the lower and upper bounds with stratified sampling
+        r"""draws a random vectors for components :math:`n` (e.g., a pixel :math:`\theta_n`). The distribution used to draw these vectors is:
+
+        * the smooth indicator prior
+        * a combination of the smooth indicator prior and of a Gaussian mixture defined with the set of all combinations of neighbors of component :math:`n`
 
         Parameters
         ----------
+        Theta : np.ndarray
+            current iterate
         posterior : Posterior
             contains the lower and upper bounds of the hypercube
+        idx_pix : np.ndarray
+            indices of the pixels
 
         Returns
         -------
-        x : np.array of shape (n_pix, self.k_mtm, D)
+        np.array of shape (n_pix, self.k_mtm, D)
             random element of the hypercube defined by the lower and upper bounds with uniform distribution
+
+        Raises
+        ------
+        ValueError : if ``posterior.prior_indicator`` is None
         """
         seed = self.rng.integers(0, 1_000_000_000)
         n_pix = idx_pix.size
 
-        if posterior.prior_indicator is not None and posterior.prior_spatial is None:
+        if posterior.prior_indicator is None:
+            raise ValueError("The Posterior has no specified smooth indicator prior")
+
+        if posterior.prior_spatial is None:
             # * sample from smooth indicator prior
             return utils.sample_smooth_indicator(
                 posterior.prior_indicator.lower_bounds,
@@ -116,12 +137,9 @@ class MySampler(Sampler):
                 seed=seed,
             ).reshape((n_pix, self.k_mtm, self.D))
 
-        if (
-            posterior.prior_indicator is not None
-            and posterior.prior_spatial is not None
-        ):
+        else:
             return utils.sample_conditional_spatial_and_indicator_prior(
-                x,
+                Theta,
                 posterior.prior_spatial.list_edges,
                 posterior.prior_spatial.weights,
                 posterior.prior_indicator.lower_bounds,
@@ -131,11 +149,6 @@ class MySampler(Sampler):
                 k_mtm=self.k_mtm,
                 seed=seed,
             )  # (n_pix, self.k_mtm, D)
-
-        if posterior.prior_indicator is None:
-            raise NotImplementedError(
-                "no smooth indicator prior is not yet implemented"
-            )
 
     def _update_model_check_values(
         self,
@@ -246,17 +259,14 @@ class MySampler(Sampler):
 
         return dict_model_check
 
-    # TODO: to be updated extensively (change parameter format? or multiple variables? (list parameter))
     def sample(
         self,
         posterior: Posterior,
         saver: Saver,
         max_iter: int,
         Theta_0: Optional[np.ndarray] = None,
-        v0: Optional[np.ndarray] = None,
-        # sample_regu_weights: bool = True,
-        # T_BI_reguweights: Optional[int] = None,
         disable_progress_bar: bool = False,
+        #
         regu_spatial_N0: Union[int, float] = np.infty,
         regu_spatial_scale: float = 1.0,
         regu_spatial_vmin: float = 1e-8,
@@ -264,22 +274,31 @@ class MySampler(Sampler):
         #
         T_BI: int = 0,  # used only for clppd
     ) -> None:
-        """main method of the class, runs the sampler
+        r"""main method of the class, runs the sampler
 
         Parameters
         ----------
         posterior : Posterior
-            probabilistic model
+            probability distribution to be sampled
         saver : Saver
-            enables to save the progression of the sampling
+            object responsible for progressively saving the Markov chain data during the run
         max_iter : int
-            maximum size of the markov chain
-        Theta_0 : np.array, optional
-            starting point of the sampling (if None, it will be sampled randomly), by default None
-        v0 : np.array, optional
-            initial value of the v vector of RMSProp (if None, it will be initialized used the square of the gradient of the starting point), by default None
-        sample_regu_weights : bool, optional
-            wether or not to sample the regularization weights together with the maps of physical parameters, by default True
+            total duration of a Markov chain
+        Theta_0 : Optional[np.ndarray], optional
+            starting point, by default None
+        disable_progress_bar : bool, optional
+            wether to disable the progress bar, by default False
+        regu_spatial_N0 : Union[int, float], optional
+            number of iterations defining the initial update phase (for spatial regularization weight optimization). np.infty means that the optimization phase never starts, and that the weight optimization is not applied. by default np.infty
+        regu_spatial_scale : Optional[float], optional
+            scale parameter involved in the definition of the projected gradient
+            step size (for spatial regularization weight optimization). by default 1.0
+        regu_spatial_vmin : Optional[float], optional
+            lower limit of the admissible interval (for spatial regularization weight optimization), by default 1e-8
+        regu_spatial_vmax : Optional[float], optional
+            upper limit of the admissible interval (for spatial regularization weight optimization), by default 1e8
+        T_BI : int, optional
+            duration of the `Burn-in` phase, by default 0
         """
         additional_sampling_log = {}
 
@@ -287,6 +306,7 @@ class MySampler(Sampler):
             print("starting from a random point")
             Theta_0 = self.generate_random_start_Theta(posterior)  # (N, D)
 
+        assert Theta_0 is not None
         assert Theta_0.shape == (self.N, self.D)
 
         self.current = posterior.compute_all(Theta_0)
@@ -371,6 +391,8 @@ class MySampler(Sampler):
 
         for t in tqdm(range(1, max_iter + 1), disable=disable_progress_bar):
             if optimize_regu_weights and (self.N > 1):
+                assert posterior.prior_spatial is not None
+
                 if t >= regu_weights_optimizer.N0:
                     tau_t = self.sample_regu_hyperparams(
                         posterior,

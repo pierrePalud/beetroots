@@ -5,10 +5,19 @@ import numpy as np
 import pandas as pd
 
 from beetroots.inversion.plots.map_shaper import MapShaper
-from beetroots.simulations.astro import utils
-from beetroots.simulations.astro.real_data.real_data_nn_direct_posterior import (
+from beetroots.simulations.astro.real_data.real_data_nn import (
     SimulationRealDataNNDirectPosterior,
 )
+
+
+def read_point_challenger(
+    path_data_cloud: str,
+    filename: str,
+    point_name: str,
+) -> dict:
+    df_pt_challenger = pd.read_pickle(f"{path_data_cloud}/{filename}")
+    point_challenger = {"name": point_name, "value": df_pt_challenger.values}
+    return point_challenger
 
 
 def apply_data_transformation_3cases_rule(
@@ -176,7 +185,7 @@ if __name__ == "__main__":
     path_data_cloud += "/../../../../../data/carina"
 
     # * import Wu et al. 2018 values
-    point_challenger = utils.read_point_challenger(
+    point_challenger = read_point_challenger(
         path_data_cloud,
         filename="values_wu_et_al_2018.pkl",
         point_name="Wu et al., 2018",

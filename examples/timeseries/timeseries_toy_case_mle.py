@@ -29,7 +29,7 @@
 # from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
 # from beetroots.modelling.priors.tv_1D_prior import TVeps1DSpatialPrior
 # from beetroots.sampler import mysampler, saver
-# from beetroots.sampler.psgldparams import PSGLDParams
+# from beetroots.sampler.psgldparams import MySamplerParams
 # from beetroots.simulations.abstract_simulation import Simulation
 # from beetroots.simulations.analysis import utils as su
 # from beetroots.space_transform.id_transform import IdScaler
@@ -324,10 +324,10 @@
 #             Theta_true = self.scaler.from_scaled_to_lin(self.Theta_true_scaled)
 #             self.plot_estimator(Theta_true, "true", folder_path_inter)
 
-#     def run_optimization_MLE(self, psgld_params) -> None:
+#     def run_optimization_MLE(self, my_sampler_params) -> None:
 #         global _run_one_simulation_one_pixel
 
-#         psgld_params.save_to_file(self.path_data_csv_in, "algo_params_optim_MLE.csv")
+#         my_sampler_params.save_to_file(self.path_data_csv_in, "algo_params_optim_MLE.csv")
 
 #         for n in range(self.N):
 #             for model_name in list(self.dict_posteriors.keys()):
@@ -370,7 +370,7 @@
 #                 freq_save=1,
 #             )
 #             sampler = sampler.AugmentedPSGLD(
-#                 psgld_params,
+#                 my_sampler_params,
 #                 self.D,
 #                 self.D_no_kappa,
 #                 self.L,

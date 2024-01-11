@@ -42,10 +42,10 @@ It was also exploited to assert and compare the relevance of tracers and combina
    - ability to evaluate derivatives
 
    The package used to derive this approximation is `nnbma` (Neural Network-Based Model Approximation).
-   The GitHub repository can be found
-   `here <https://github.com/einigl/ism-model-nn-approximation>`_,
-   the package `here <https://pypi.org/project/nnbma/>`_
-   and the corresponding documentation `here <https://ism-model-nn-approximation.readthedocs.io/en/latest/?badge=latest>`_.
+   Here are the links towards the corresponding
+   `GitHub repository <https://github.com/einigl/ism-model-nn-approximation>`_,
+   `PyPi package <https://pypi.org/project/nnbma/>`_
+   and `documentation <https://ism-model-nn-approximation.readthedocs.io/en/latest/?badge=latest>`_.
    The paper presenting this package is
 
       P. Palud, L. Einig, F. Le Petit, E. Bron, P. Chainais, J. Chanussot, J. Pety, P.-A. Thouvenin and ORION-B consortium - **Neural network-based emulation of interstellar medium models**, *Astronomy & Astrophysics*, 2023, 678, pp.A198. DOI: `10.1051/0004-6361/202347074 <https://doi.org/10.1051/0004-6361/202347074>`_
@@ -55,7 +55,7 @@ It was also exploited to assert and compare the relevance of tracers and combina
 Installation
 ============
 
-To perform an inversion, we recommend installing the package.
+To prepare and perform an inversion, we recommend installing the package.
 The package can be installed with ``pip``:
 
 .. code-block:: bash
@@ -72,9 +72,6 @@ To clone, install and test the package, run:
    poetry install
    poetry shell
    poetry run pytest
-
-
-Alternatively, you can download a zip file.
 
 
 =======================================================
@@ -137,3 +134,10 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+References
+==========
+
+Here are the references used throughout this documentation:
+
+.. bibliography::

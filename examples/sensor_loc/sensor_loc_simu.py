@@ -15,7 +15,7 @@ from beetroots.modelling.posterior import Posterior
 from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
 from beetroots.sampler.my_sampler import MySampler
 from beetroots.sampler.saver.my_saver import MySaver
-from beetroots.sampler.utils.psgldparams import PSGLDParams
+from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 from beetroots.simulations.abstract_simulation import Simulation
 from beetroots.space_transform.id_transform import IdScaler
 
@@ -423,7 +423,7 @@ if __name__ == "__main__":
     )
 
     sampler_ = MySampler(
-        PSGLDParams(**params["sampling_params"]["mcmc"]),
+        MySamplerParams(**params["sampling_params"]["mcmc"]),
         simulation_sensor.D,
         simulation_sensor.L,
         simulation_sensor.N,

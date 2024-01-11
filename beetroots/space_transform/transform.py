@@ -102,10 +102,8 @@ class MyScaler(Scaler):
 
         else:
             self.D = Theta_grid_lin.shape[1]
-            self.D_no_kappa = D_no_kappa
+            self.D_no_kappa = D_no_kappa if D_no_kappa is not None else self.D
             assert self.D_no_kappa <= self.D
-
-            list_is_log
 
             assert isinstance(list_is_log, list) and len(list_is_log) == self.D
             self.list_is_log = list_is_log
