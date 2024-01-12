@@ -11,7 +11,6 @@ Welcome to beetroots's documentation!
    :caption: Contents:
 
 
-
 Beetroots (BayEsian invErsion with spaTial Regularization of nOisy multi-line ObservaTion mapS) is a Python package that performs Bayesian inference of physical parameters from multispectral-structured cubes with a dedicated sampling algorithm.
 Thanks to this sampling algorithm, `beetroots` provides maps of credibility intervals along with estimated maps.
 

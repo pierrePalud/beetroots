@@ -13,7 +13,7 @@ from beetroots.sampler.abstract_sampler import Sampler
 
 
 class ResultsBayesPvalues(ResultsUtil):
-    r"""Bayesian model checking acounting for uncertainties on the p-value due to Monte Carlo evaluation.
+    r"""Bayesian model checking accounting for uncertainties on the p-value due to Monte Carlo evaluation.
     The method is described in :cite:t:`paludProblemesInversesTest2023a`.
     """
 
@@ -27,7 +27,10 @@ class ResultsBayesPvalues(ResultsUtil):
     )
 
     CONFIDENCE_THRESHOLD_ALPHA = 0.05
+    r"""..., denoted :math:`\alpha` in the article"""
+
     CONFIDENCE_THRESHOLD_DELTA = 0.1
+    r"""..., denoted :math:`\delta` in the article"""
 
     ESS_OPTIM = Sampler.ESS_OPTIM * 1
     r"""number of random reproduced observations to draw to evaluate the model checking p-value for optimization procedures"""
@@ -43,6 +46,29 @@ class ResultsBayesPvalues(ResultsUtil):
         D_sampling: int,
         plot_ESS: bool,
     ):
+        """_summary_
+
+        _extended_summary_
+
+        Parameters
+        ----------
+        model_name : str
+            _description_
+        chain_type : str
+            _description_
+        path_img : str
+            _description_
+        path_data_csv_out : str
+            _description_
+        N_MCMC : int
+            _description_
+        N : int
+            _description_
+        D_sampling : int
+            _description_
+        plot_ESS : bool
+            _description_
+        """
         assert chain_type in ["mcmc", "optim_map", "optim_mle"]
 
         self.model_name = model_name

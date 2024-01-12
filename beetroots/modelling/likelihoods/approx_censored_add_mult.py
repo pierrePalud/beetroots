@@ -93,7 +93,14 @@ def gradient_cost_mu(
 
 
 class MixingModelsLikelihood(Likelihood):
-    r"""Class implementing a Gaussian likelihood model with lower censorship"""
+    r"""Class implementing a Gaussian likelihood model with lower censorship. This likelihood function is introduced in Section II.C of :cite:t:`paludEfficientSamplingNon2023`.
+
+    Note
+    ----
+    This likelihood is a parametric approximation of the true likelihood model.
+    The associated parameter, denoted :math:`a_\ell` in the article (as there is one such parameter per observable :math:`\ell `), should be adjusted before any inversion.
+    To adjust this parameter, see the ``beetroots.approx_optim`` subpackage.
+    """
 
     __slots__ = (
         "N",

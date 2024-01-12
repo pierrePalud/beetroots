@@ -16,9 +16,12 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class ResultsExtractorOptimMLE(ResultsExtractor):
-    """This class does not use the same utils as optim_MAP ans MCMC to exploit the pixel-wise nature of the optimisation approach."""
+    """This class does not use the same utils as optim_MAP and MCMC to exploit the pixel-wise nature of the optimisation approach.
 
-    # TODO: slots
+    .. warning::
+
+        Unfinished class
+    """
 
     def __init__(
         self,
@@ -32,19 +35,52 @@ class ResultsExtractorOptimMLE(ResultsExtractor):
         N: int,
         D: int,
     ):
+        r"""
+
+        Parameters
+        ----------
+        path_data_csv_out_mle : str
+            path to the csv file in which the performance of estimators is to be saved
+        path_img : str
+            path to the folder in which images are to be saved
+        path_raw : str
+            path to the raw ``.hdf5`` files
+        N_MCMC : int
+            number of optimization procedures to run per posterior distribution
+        T_OPTI_MLE : int
+            total size of each optimization procedure
+        freq_save : int
+            frequency of saved iterates, 1 means that all iterates were saved (used to show correct optimization procedure sizes in chain plots)
+        max_workers : int
+            maximum number of workers that can be used for results extraction
+        N : int
+            number of pixels / components :math:`n`, i.e., number of inverse problems that were solved
+        D : int
+            dimension of each vector of physical parameter :math:`\theta_n`
+        """
         self.path_data_csv_out_mle = path_data_csv_out_mle
+        r"""str: path to the csv file in which the performance of estimators is to be saved"""
         self.path_img = path_img
+        r"""str: path to the folder in which images are to be saved"""
         self.path_raw = path_raw
+        r"""str: path to the raw ``.hdf5`` files"""
 
         self.N_MCMC = N_MCMC
+        r"""int: number of optimization procedures to run per posterior distribution"""
         self.T_OPTI_MLE = T_OPTI_MLE
+        r"""int: total size of each optimization procedure"""
         self.freq_save = freq_save
+        r"""int: frequency of saved iterates, 1 means that all iterates were saved (used to show correct optimization procedure sizes in chain plots)"""
         self.effective_T_MLE = self.T_OPTI_MLE // freq_save
+        r"""int: effective length of the optimization procedures in ``.hdf5`` files"""
 
         self.N = N
+        r"""number of pixels / components :math:`n`, i.e., number of inverse problems that were solved"""
         self.D = D
+        r"""dimension of each vector of physical parameter :math:`\theta_n`"""
 
         self.max_workers = max_workers
+        r"""int: maximum number of workers that can be used for results extraction"""
 
     @classmethod
     def read_estimator(
@@ -52,6 +88,22 @@ class ResultsExtractorOptimMLE(ResultsExtractor):
         path_data_csv_out_mle: str,
         model_name: str,
     ) -> Tuple[np.ndarray, pd.DataFrame]:
+        """reads the value of an already estimated MLE from a csv file.
+
+        Parameters
+        ----------
+        path_data_csv_out_optim_mle : str
+            path to the csv file containing an already estimated MLE
+        model_name : str
+            name of the model, used to identify the posterior distribution
+
+        Returns
+        -------
+        np.ndarray
+            MLE estimator
+        pd.DataFrame
+            original DataFrame read from the csv file
+        """
         path_file = f"{path_data_csv_out_mle}/results_MLE.csv"
         assert os.path.isfile(path_file), "The MLE has not been computed yet."
 

@@ -14,14 +14,23 @@ class ForwardMap(ABC):
         f : \theta_n \in \mathbb{R}^D \mapsto f(\theta_n) \in \mathbb{R}^L
     """
 
-    __slots__ = ("D", "L", "N")
+    __slots__ = (
+        "D",
+        "L",
+        "N",
+        "dict_fixed_values_scaled",
+        "list_indices_to_sample",
+        "list_indices_fixed",
+        "D_sampling",
+        "arr_fixed_values",
+    )
 
     def __init__(
         self,
         D: int,
         L: int,
         N: int,
-        dict_fixed_values_scaled: Optional[dict[str, float]] = {},
+        dict_fixed_values_scaled: dict[str, Optional[float]] = {},
     ) -> None:
         self.D = D
         """int: dimensionality of input space"""
@@ -33,7 +42,7 @@ class ForwardMap(ABC):
         self.set_sampled_and_fixed_entries(dict_fixed_values_scaled)
 
     def set_sampled_and_fixed_entries(
-        self, dict_fixed_values_scaled: Optional[dict[str, float]] = {}
+        self, dict_fixed_values_scaled: dict[str, Optional[float]] = {}
     ) -> None:
         # manually fixed values, constant during sampling / optim
         self.dict_fixed_values_scaled = dict_fixed_values_scaled

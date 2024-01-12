@@ -18,7 +18,7 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class ResultsExtractorOptimMAP(ResultsExtractor):
-
+    r"""extractor of inference results for the data of the optimization runs that that was saved."""
     __slots__ = (
         "path_data_csv_out_optim_map",
         "path_img",
@@ -41,16 +41,45 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
         freq_save: int,
         max_workers: int,
     ):
+        r"""
+
+        Parameters
+        ----------
+        path_data_csv_out_optim_map : str
+            path to the csv file in which the performance of estimators is to be saved
+        path_img : str
+            path to the folder in which images are to be saved
+        path_raw : str
+            path to the raw ``.hdf5`` files
+        N_MCMC : int
+            number of optimization procedures to run per posterior distribution
+        T_MC : int
+            total size of each optimization procedure
+        T_BI : int
+            duration of the `Burn-in` phase
+        freq_save : int
+            frequency of saved iterates, 1 means that all iterates were saved (used to show correct optimization procedure sizes in chain plots)
+        max_workers : int
+            maximum number of workers that can be used for results extraction
+        """
         self.path_data_csv_out_optim_map = path_data_csv_out_optim_map
+        r"""str: path to the csv file in which the performance of estimators is to be saved"""
         self.path_img = path_img
+        r"""str: path to the folder in which images are to be saved"""
         self.path_raw = path_raw
+        r"""str: path to the raw ``.hdf5`` files"""
 
         self.N_MCMC = N_MCMC
+        r"""int: number of optimization procedures to run per posterior distribution"""
         self.T_MC = T_MC
+        r"""int: total size of each optimization procedure"""
         self.T_BI = T_BI
+        r"""int: duration of the `Burn-in` phase"""
         self.freq_save = freq_save
+        r"""int: frequency of saved iterates, 1 means that all iterates were saved (used to show correct optimization procedure sizes in chain plots)"""
 
         self.max_workers = max_workers
+        r"""int: maximum number of workers that can be used for results extraction"""
 
     @classmethod
     def read_estimator(
@@ -58,6 +87,22 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
         path_data_csv_out_optim_map: str,
         model_name: str,
     ) -> Tuple[np.ndarray, pd.DataFrame]:
+        r"""reads the value of an already estimated MAP from a csv file.
+
+        Parameters
+        ----------
+        path_data_csv_out_optim_map : str
+            path to the csv file containing an already estimated MAP
+        model_name : str
+            name of the model, used to identify the posterior distribution
+
+        Returns
+        -------
+        np.ndarray
+            MAP estimator
+        pd.DataFrame
+            original DataFrame read from the csv file
+        """
         path_file = f"{path_data_csv_out_optim_map}/"
         path_file += f"estimation_Theta_{model_name}_MAP_optim_map.csv"
         assert os.path.isfile(path_file), f"no MAP at {path_file}"
@@ -88,6 +133,31 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
         estimator_plot: PlotsEstimator,
         Theta_true_scaled: Optional[np.ndarray] = None,
     ):
+        r"""performs the data extraction, in this order:
+
+        * step 1 : clppd
+        * step 2 : kernel analysis
+        * step 3 : objective evolution
+        * step 4 : MAP estimator from samples
+        * step 5 : model checking with Bayesian p-value
+
+        Parameters
+        ----------
+        posterior : Posterior
+            probability distribution. The goal of the optimization procedure was to find its mode, i.e., the minimum of its negative log pdf.
+        model_name : str
+            name of the model, used to identify the posterior distribution
+        scaler : Scaler
+            contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens) and its inverse
+        list_idx_sampling : List[int]
+            indices of the physical parameters that were sampled (the other ones were fixed)
+        list_fixed_values : List[float]
+            list of used values for the parameters fixed during the sampling
+        estimator_plot : PlotsEstimator
+            object used to plot the estimator figures
+        Theta_true_scaled : Optional[np.ndarray], optional
+            true value for the inferred physical parameter :math:`\Theta` (only possible for toy cases), by default None
+        """
         list_mcmc_folders = [
             f"{x[0]}/mc_chains.hdf5"
             for x in os.walk(f"{self.path_raw}/{model_name}")

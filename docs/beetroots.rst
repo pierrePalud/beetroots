@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    beetroots.approx_optim
-   beetroots.entropy
    beetroots.inversion
    beetroots.modelling
    beetroots.sampler

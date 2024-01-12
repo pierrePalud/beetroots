@@ -34,7 +34,7 @@ class NeuralNetworkApprox(ExpForwardMap):
     def __init__(
         self,
         model_name: str,
-        dict_fixed_values_scaled: Dict["str", "float"],
+        dict_fixed_values_scaled: Dict[str, Optional[float]],
         device: Optional[str] = None,
     ):
         self.network = NeuralNetwork.load(

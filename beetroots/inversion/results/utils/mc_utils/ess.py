@@ -1,4 +1,4 @@
-"""implementation of ESS computation, from Gelman et. al, book  Bayesian Data Analysis
+"""implementation of ESS computation, from :cite:t:`gelmanBayesianDataAnalysis2015a`
 
 Original implementation : https://github.com/jwalton3141/jwalton3141.github.io/blob/master/assets/posts/ESS/rwmh.py
 
@@ -11,10 +11,19 @@ import numpy as np
 
 @nb.jit(nopython=True)
 def compute_ess(Theta: np.ndarray) -> float:
-    """Compute the effective sample size of estimand of interest. Vectorised implementation.
+    r"""Computes the effective sample size of estimand of interest for one physical parameter :math:`\theta_{nd}`. Vectorized implementation.
 
-    Theta must be a 2D array of shape (m_chains, n_iters)
+    Parameters
+    ----------
+    Theta : np.ndarray of shape (m_chains, n_iters)
+        values of the ``n_iters`` iterates for each of the ``m_chains`` Markov chains associated to one physical parameter :math:`\theta_{nd}`
+
+    Returns
+    -------
+    float
+        ESS for physical parameter :math:`\theta_{nd}`
     """
+
     # if len(Theta.shape) == 1:
     #     Theta = Theta.reshape((1, -1))
     # assert (
@@ -47,7 +56,18 @@ def compute_ess(Theta: np.ndarray) -> float:
 
 @nb.jit(nopython=True)
 def gelman_rubin(Theta: np.ndarray) -> float:
-    """Estimate the marginal posterior variance. Vectorised implementation."""
+    r"""Estimates the marginal posterior variance. Vectorized implementation.
+
+    Parameters
+    ----------
+    Theta : np.ndarray of shape (m_chains, n_iters)
+        values of the ``n_iters`` iterates for each of the ``m_chains`` Markov chains associated to one physical parameter :math:`\theta_{nd}`
+
+    Returns
+    -------
+    float
+        marginal posterior variance
+    """
     m_chains, n_iters = Theta.shape
 
     mean_arr = np.sum(Theta, axis=1) / n_iters

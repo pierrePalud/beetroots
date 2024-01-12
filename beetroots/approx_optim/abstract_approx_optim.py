@@ -12,6 +12,10 @@ from beetroots.approx_optim.approach_type import utils
 
 
 class ApproxParamsOptim(abc.ABC):
+    r"""Optimization of an approximation parameter for the likelihood function ``beetroots.modelling.likelihoods.approx_censored_add_mult.MixingModelsLikelihood``.
+    The optimization framework used to adjust this parameter is introduced in Appendix A of :cite:t:`paludEfficientSamplingNon2023`.
+    """
+
     def __init__(
         self,
         list_lines,
@@ -47,6 +51,8 @@ class ApproxParamsOptim(abc.ABC):
             self.N = 1
             sigma_m = sigma_m * np.ones((self.N, self.L))
 
+        assert isinstance(sigma_a, np.ndarray)
+        assert isinstance(sigma_m, np.ndarray)
         self.sigma_a = sigma_a
         self.sigma_m = sigma_m
 
@@ -368,7 +374,7 @@ class ApproxParamsOptim(abc.ABC):
         df_best.to_csv(f"{self.path_output_sim}/best_params.csv", index=False)
         return df_best
 
-    def setup_params_bounds(self) -> Tuple[List[Dict[str, float]], np.ndarray]:
+    def setup_params_bounds(self):
         """_summary_
 
         _extended_summary_
@@ -387,14 +393,18 @@ class ApproxParamsOptim(abc.ABC):
         """
         # log10_f0 = log10(ratio std of noises)
         # ie value of f at which noise variances are equal
-        var_eps_m = np.exp(self.sigma_m**2) * (np.exp(self.sigma_m**2) - 1)
-        log10_f0 = 0.5 * (2 * np.log(self.sigma_a) - np.log(var_eps_m)) / np.log(10)
+        var_eps_m: np.ndarray = np.exp(self.sigma_m**2) * (
+            np.exp(self.sigma_m**2) - 1
+        )
+        log10_f0: np.ndarray = (
+            0.5 * (2 * np.log(self.sigma_a) - np.log(var_eps_m)) / np.log(10)
+        )
 
-        bounds_a0_low = log10_f0 - 2  # (N, L)
-        bounds_a0_high = log10_f0 + 8  # (N, L)
+        bounds_a0_low: np.ndarray = log10_f0 - 2  # (N, L)
+        bounds_a0_high: np.ndarray = log10_f0 + 8  # (N, L)
 
         bounds_a1_low = 0.01
-        bounds_a1_high = 2
+        bounds_a1_high = 2.0
 
         return (
             log10_f0,

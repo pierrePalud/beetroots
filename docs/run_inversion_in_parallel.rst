@@ -1,5 +1,5 @@
-Run inversions in parallel
-==========================
+Run multiple inversions in parallel
+===================================
 
 Multiple input files.
 

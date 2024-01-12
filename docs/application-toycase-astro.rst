@@ -1,5 +1,5 @@
-Application to a synthetic map
-==============================
+Application to a synthetic ISM map
+================================================
 
 With nn-based approximation of forward model:
 

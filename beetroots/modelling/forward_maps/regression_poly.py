@@ -175,8 +175,8 @@ class PolynomialApprox(ExpForwardMap):
     def __init__(
         self,
         model_name: str,
-        dict_fixed_values_scaled: dict[str, float],
-        angle: int,
+        dict_fixed_values_scaled: dict[str, Optional[float]],
+        angle: float,
     ):
         filepath = f"{self.SIMU_PATH}/models/{model_name}/model.pickle"
         assert filepath[-7:] == ".pickle", "incorrect format"

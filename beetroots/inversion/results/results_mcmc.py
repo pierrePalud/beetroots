@@ -28,6 +28,7 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class ResultsExtractorMCMC(ResultsExtractor):
+    r"""extractor of inference results for the Markov chain data that was saved."""
 
     __slots__ = (
         "path_data_csv_out_mcmc",
@@ -51,16 +52,45 @@ class ResultsExtractorMCMC(ResultsExtractor):
         freq_save: int,
         max_workers: int,
     ):
+        r"""
+
+        Parameters
+        ----------
+        path_data_csv_out_mcmc : str
+            path to the csv file in which the performance of estimators is to be saved
+        path_img : str
+            path to the folder in which images are to be saved
+        path_raw : str
+            path to the raw ``.hdf5`` files
+        N_MCMC : int
+            number of Markov chains to run per posterior distribution
+        T_MC : int
+            total size of each Markov chain
+        T_BI : int
+            duration of the `Burn-in` phase
+        freq_save : int
+            frequency of saved iterates, 1 means that all iterates were saved (used to show correct Markov chain sizes in chain plots)
+        max_workers : int
+            maximum number of workers that can be used for results extraction
+        """
         self.path_data_csv_out_mcmc = path_data_csv_out_mcmc
+        r"""str: path to the csv file in which the performance of estimators is to be saved"""
         self.path_img = path_img
+        r"""str: path to the folder in which images are to be saved"""
         self.path_raw = path_raw
+        r"""str: path to the raw ``.hdf5`` files"""
 
         self.N_MCMC = N_MCMC
+        r"""int: number of Markov chains to run per posterior distribution"""
         self.T_MC = T_MC
+        r"""int: total size of each Markov chain"""
         self.T_BI = T_BI
+        r"""int: duration of the `Burn-in` phase"""
         self.freq_save = freq_save
+        r"""int: frequency of saved iterates, 1 means that all iterates were saved (used to show correct Markov chain sizes in chain plots)"""
 
         self.max_workers = max_workers
+        r"""int: maximum number of workers that can be used for results extraction"""
 
     def main(
         self,
@@ -89,6 +119,65 @@ class ResultsExtractorMCMC(ResultsExtractor):
         point_challenger: Dict = {},
         list_CI: List[int] = [68, 90, 95, 99],
     ):
+        r"""performs the data extraction, in this order:
+
+        * step 1 : clppd (see ``beetroots.inversion.results.utils.clppd``)
+        * step 2 : kernel analysis (see ``beetroots.inversion.results.utils.kernel``)
+        * step 3 : objective evolution (see ``beetroots.inversion.results.utils.objective``) (the objective is the negative log posterior pdf)
+        * step 4 : MAP estimator from samples (see ``beetroots.inversion.results.utils.lowest_obj_estimator``)
+        * step 5 : deal with whole Markov chain for MMSE and histograms, in a pixel-wise approach to avoid overloading the memory (see ``beetroots.inversion.results.utils.mc``)
+        * step 6 : save global MMSE performance (see ``beetroots.inversion.results.utils.mmse_ci``)
+        * step 7 (if map) : plot maps of ESS (see ``beetroots.inversion.results.utils.ess_plots``)
+        * step 8 : model checking with Bayesian p-value computation (see ``beetroots.inversion.results.utils.bayes_pval_plots``)
+        * step 9 (if the true value is known): plot how many components have their true value between min and max of Markov chain (see ``beetroots.inversion.results.utils.valid_mc``)
+        * step 10 : plot comparison of distributions of :math:`y_n` and :math:`f(\theta_n)` for all :math:`n \in [\![1, N]\!]` (see ``beetroots.inversion.results.utils.y_f_Theta``)
+        * step 11 (if ``analyze_regularization_weight``) : analysis of the regularization weight :math:`\tau` automatic tuning (see ``beetroots.inversion.results.utils.regularization_weights``)
+
+        Parameters
+        ----------
+        posterior : Posterior
+            probability distribution used to generate the Markov chain(s)
+        model_name : str
+            name of the model, used to identify the posterior distribution
+        scaler : Scaler
+            contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens) and its inverse
+        list_names : List[str]
+            names of the D physical parameters to appear in plots (for instance, $P_{th}$ for thermal pressure)
+        list_idx_sampling : List[int]
+            indices of the physical parameters that were sampled (the other ones were fixed)
+        list_fixed_values : List[float]
+            list of used values for the parameters fixed during the sampling
+        plot_1D_chains : bool
+            wether to plot each of the :math:`N \times D` 1D chains and histograms for each physical parameter :math:`\theta_{nd}`
+        plot_2D_chains : bool
+            wether to plot each of the :math:`N \times D \times (D-1)` 2D chains and histograms for pairs of parameters :math:`(\theta_{n d_1}, \theta_{n d_2})` with :math:`1 \leq d_1 < d_2 \leq D`
+        plot_ESS : bool
+            wether to plot the Effective sample size maps (only used when :math:`N > 1`)
+        plot_comparisons_yspace : bool
+            whether to plot comparisons of the distribution on :math:`y_n` and :math:`\mathcal{A}(f(\theta_n))` (with :math:`\mathcal{A}` the noise model). Offers a visualization to understand the model checking based on the Bayesian p-value :cite:p:`paludProblemesInversesTest2023a`
+        estimator_plot : Optional[PlotsEstimator], optional
+            object used to plot the estimator figures, by default None
+        analyze_regularization_weight : bool, optional
+            wether to analyze the evaluation of the regularization weight :math:`\tau`, by default False
+        Theta_true_scaled : Optional[np.ndarray], optional
+            true value for the inferred physical parameter :math:`\Theta` (only possible for toy cases), by default None
+        list_lines_fit : Optional[List[str]], optional
+            names of the observables used for the inversion, by default None
+        list_lines_valid : List[str], optional
+            names of the available observables not used for the inversion (can be used for model checking), by default []
+        y_valid : Optional[np.ndarray], optional
+            observation values for the observables not used for inversion. If provided, must have shape (N, L_valid). by default None
+        sigma_a_valid : Optional[np.ndarray], optional
+            additive noise standard deviation values for the observables not used for inversion. If provided, must have shape (N, L_valid). by default None
+        omega_valid : Optional[np.ndarray], optional
+            censor threshold values for the observables not used for inversion. If provided, must have shape (N, L_valid)., by default None
+        sigma_m_valid : Optional[np.ndarray], optional
+            multiplicative noise standard deviation values for the observables not used for inversion. If provided, must have shape (N, L_valid)., by default None
+        point_challenger : Dict, optional
+            other estimator that can come from the literature, provided to be compared with the inference results, by default {}
+        list_CI : List[int], optional
+            list of credibility intervals to evaluate (in percent), by default [68, 90, 95, 99]
+        """
         list_mcmc_folders = [
             f"{x[0]}/mc_chains.hdf5"
             for x in os.walk(f"{self.path_raw}/{model_name}")
@@ -301,7 +390,7 @@ class ResultsExtractorMCMC(ResultsExtractor):
                 D_sampling=D_sampling,
             ).main(list_names, list_idx_sampling)
 
-        # plot comparison of distributions of y and f(x)
+        # plot comparison of distributions of y and f(\theta)
         if plot_comparisons_yspace and list_lines_fit is not None:
             comparison_y_f_Theta = ResultsDistributionComparisonYandFTheta(
                 model_name,

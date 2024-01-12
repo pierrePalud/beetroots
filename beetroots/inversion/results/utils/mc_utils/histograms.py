@@ -33,6 +33,7 @@ def plot_1D_hist(
     plt.figure(figsize=(8, 6))
     plt.title(title)
 
+    assert lower_bounds_lin is not None
     if list_Theta_lin_seed.min() > 0 and lower_bounds_lin.min() > 0:
         plt.hist(np.log10(list_Theta_lin_nd), bins=100, label="samples")
     else:
@@ -45,6 +46,7 @@ def plot_1D_hist(
             plt.axvline(estimator, c="orange", ls="-", label="mean")
 
     if np.all([IC_low is not None, IC_high is not None]):
+        assert IC_low is not None and IC_high is not None
         if list_Theta_lin_seed.min() > 0 and lower_bounds_lin.min() > 0:
             plt.axvline(np.log10(IC_low), c="k", ls="--", label="CI")
             plt.axvline(np.log10(IC_high), c="k", ls="--")
@@ -96,6 +98,8 @@ def plot_1D_chain(
         lower_bounds_lin = np.min(list_Theta_lin_nd) * np.ones((10,))
     if upper_bounds_lin is None:
         upper_bounds_lin = np.max(list_Theta_lin_nd) * np.ones((10,))
+
+    assert lower_bounds_lin is not None
 
     plt.figure(figsize=(8, 6))
     plt.title(title)
@@ -337,12 +341,12 @@ def plot_2D_proba_contours(
     #     (self.T_MC - self.T_BI, self.N, self.D),
     #     (self.N_MCMC * (self.T_MC - self.T_BI), self.N, self.D),
     # ]
-    def _set_edges_and_hist(n_per_axis):
+    def _set_edges_and_hist(n_per_axis: int):
         list_Theta_lin_seed_used = list_Theta_lin_seed * 1
 
         # x-axis
         if list_Theta_lin_seed[:, 0].min() > 0 and lower_bounds_lin[d1] > 0:
-            xedges = np.linspace(
+            x_edges = np.linspace(
                 np.log10(lower_bounds_lin[d1]) - 0.1,
                 np.log10(upper_bounds_lin[d1]) + 0.1,
                 n_per_axis,
@@ -350,7 +354,7 @@ def plot_2D_proba_contours(
             list_Theta_lin_seed_used[:, 0] = np.log10(list_Theta_lin_seed_used[:, 0])
             is_theta_log = True
         else:
-            xedges = np.linspace(
+            x_edges = np.linspace(
                 lower_bounds_lin[d1] - 0.1,
                 upper_bounds_lin[d1] + 0.1,
                 n_per_axis,
@@ -359,7 +363,7 @@ def plot_2D_proba_contours(
 
         # y-axis
         if list_Theta_lin_seed[:, 1].min() > 0 and lower_bounds_lin[d2] > 0:
-            yedges = np.linspace(
+            y_edges = np.linspace(
                 np.log10(lower_bounds_lin[d2]) - 0.1,
                 np.log10(upper_bounds_lin[d2]) + 0.1,
                 n_per_axis,
@@ -367,26 +371,26 @@ def plot_2D_proba_contours(
             list_Theta_lin_seed_used[:, 1] = np.log10(list_Theta_lin_seed_used[:, 1])
             is_y_log = True
         else:
-            yedges = np.linspace(
+            y_edges = np.linspace(
                 lower_bounds_lin[d2] - 0.1,
                 upper_bounds_lin[d2] + 0.1,
                 n_per_axis,
             )
             is_y_log = False
 
-        H, xedges, yedges = np.histogram2d(
+        H, x_edges, y_edges = np.histogram2d(
             list_Theta_lin_seed_used[:, 0].flatten(),
             list_Theta_lin_seed_used[:, 1].flatten(),
-            bins=(xedges, yedges),
+            bins=(x_edges, y_edges),
         )
-        return H, xedges, yedges, is_theta_log, is_y_log
+        return H, x_edges, y_edges, is_theta_log, is_y_log
 
     n_per_axis = 100
 
     #! Contour levels must be increasing, ie percentiles must be decreasing
     percentiles_arr = np.array([0.95, 0.68])
 
-    H, xedges, yedges, is_theta_log, is_y_log = _set_edges_and_hist(n_per_axis)
+    H, x_edges, y_edges, is_theta_log, is_y_log = _set_edges_and_hist(n_per_axis)
     H /= H.sum()
     t = np.linspace(0, H.max(), 1_000)
     integral = ((H >= t[:, None, None]) * H).sum(axis=(1, 2))
@@ -400,7 +404,7 @@ def plot_2D_proba_contours(
     # solutions set.
     while (integral[-1] > percentiles_arr[-1]) and (n_per_axis < 5e2):
         n_per_axis *= 2  # refine histogram grid
-        H, xedges, yedges = _set_edges_and_hist(n_per_axis)
+        H, x_edges, y_edges, _, _ = _set_edges_and_hist(n_per_axis)
         H /= H.sum()
         t = np.linspace(0, H.max(), 1_000)
         integral = ((H >= t[:, None, None]) * H).sum(axis=(1, 2))
@@ -430,7 +434,7 @@ def plot_2D_proba_contours(
         plt.contour(
             H.T,
             t_contours,
-            extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
+            extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
             label=f"{100 * percentile} %",
         )
 

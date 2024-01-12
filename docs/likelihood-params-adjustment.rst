@@ -1,5 +1,5 @@
-Adjusting likelihood parameter
-==============================
+How to adjust the likelihood approximation parameter
+====================================================
 
 Mixture of additive Gaussian noise and multiplicative lognormal noise sources.
 How to adjust the parameter presented in \[1\] ?

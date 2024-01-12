@@ -1,3 +1,6 @@
+r"""contains the validation schema that ensures that the ``.yaml`` input file, that depicts the inversion configuration, has a correct structure.
+"""
+
 schema = {
     "simu_init": {
         "required": True,
@@ -27,3 +30,4 @@ schema = {
         },
     },
 }
+r"""validation schema that ensures that the ``.yaml`` input file, that depicts the inversion configuration, has a correct structure"""

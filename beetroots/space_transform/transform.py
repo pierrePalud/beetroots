@@ -94,9 +94,14 @@ class MyScaler(Scaler):
         """
         if mean_ is not None and std_ is not None and list_is_log is not None:
             self.D_no_kappa = mean_.size * 1
+            r"""int: number of physical parameters that require a standard scaler"""
             self.D = self.D_no_kappa + 1
+            r"""int: total number of physical parameters that require a standard scaler, including the scaling factor :math:`\kappa`"""
             self.mean_ = mean_
+            r"""np.ndarray of shape (D,): mean of the D components :math:`\theta_d`, used in the data normalization"""
             self.std_ = std_
+            r"""np.ndarray of shape (D,): standard deviation of the D components :math:`\theta_d`, used in the data normalization"""
+
             assert len(list_is_log) == self.D, f"{self.D}, {len(list_is_log)}"
             self.list_is_log = list_is_log
 

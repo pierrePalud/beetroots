@@ -2,7 +2,7 @@
 import os
 import pickle
 import warnings
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 
@@ -16,20 +16,19 @@ warnings.filterwarnings("ignore")
 
 
 class SimulationNN(SimulationForwardMap):
+    r"""abstract class for to set up the forward map to an already defined neural network for an inversion of astrophysical data"""
+
     def setup_forward_map(
         self,
         forward_model_name: str,
         force_use_cpu: bool,
-        dict_fixed_params: Dict[str, float],
+        dict_fixed_params: Dict[str, Optional[float]],
         dict_is_log_scale_params: Dict[str, bool],
     ) -> Tuple[MyScaler, NeuralNetworkApprox]:
-        models_path = f"{os.path.dirname(os.path.abspath(__file__))}"
-        models_path += "/../../../../../data/models"
-
         print(f"fixed values: {dict_fixed_params}")
 
         with open(
-            f"{models_path}/{forward_model_name}/scaler.pickle",
+            f"{self.MODELS_PATH}/{forward_model_name}/scaler.pickle",
             "rb",
         ) as file_:
             scaler_sklearn = pickle.load(file_)
@@ -45,19 +44,9 @@ class SimulationNN(SimulationForwardMap):
         # angle_scaled = (angle - 30.0) / 20.0
 
         # eg {"kappa":None, "Pth":None, "G0":None, "AV":None, "angle":0.}
-        arr_fixed_values = np.ones((1, len(dict_fixed_params)))
-        for i, name in enumerate(dict_fixed_params.keys()):
-            if dict_fixed_params[name] is not None:
-                arr_fixed_values[0, i] = dict_fixed_params[name] * 1
-
-        arr_fixed_values_scaled = scaler.from_lin_to_scaled(arr_fixed_values)
-
-        dict_fixed_params_scaled = {
-            name: arr_fixed_values_scaled[0, i]
-            if dict_fixed_params[name] is not None
-            else None
-            for i, name in enumerate(dict_fixed_params.keys())
-        }
+        dict_fixed_params_scaled = self.scale_dict_fixed_params(
+            scaler, dict_fixed_params
+        )
 
         # load forward model
         forward_map = NeuralNetworkApprox(

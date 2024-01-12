@@ -32,7 +32,7 @@ extensions = [
     # Official Sphinx extensions
     # https://www.sphinx-doc.org/en/master/usage/extensions/index.html
     "sphinx.ext.autodoc",  # Include documentation from docstrings
-    # "sphinx.ext.autosectionlabel",  # Allow reference sections using its title
+    "sphinx.ext.autosectionlabel",  # Allow reference sections using its title
     # "sphinx.ext.autosummary",  # Generate autodoc summaries
     "sphinx.ext.coverage",  # Collect doc coverage stats
     "sphinx.ext.doctest",  # Test snippets in the documentation
@@ -77,6 +77,9 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "*_old*", "tests*"]
 # sphinxcontrib-bibtex
 bibtex_bibfiles = ["biblio.bib"]
 bibtex_reference_style = "author_year"
+
+bibtex_bibliography_header = ""
+bibtex_footbibliography_header = bibtex_bibliography_header
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
