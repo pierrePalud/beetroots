@@ -159,6 +159,7 @@ class NeuralNetworkApprox(ExpForwardMap):
         compute_lin: bool = True,
         compute_log: bool = True,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         r"""gathers the evaluation of the forward map in linear and log scale and of the associated derivatives. Permits to limit repeating computations, but requires the storage in memory of the result.
 
@@ -172,6 +173,9 @@ class NeuralNetworkApprox(ExpForwardMap):
             wether or not to compute the log-forward model (and possibly the gradient and diagonal of the Hessian), by default True
         compute_derivatives : bool, optional
             wether or not to evaluate the derivatives of the forward map, by default True
+        compute_derivatives_2nd_order : bool, optional
+            wether or not to evaluate the 2nd order derivatives of the forward map, by default True
+
 
         Returns
         -------
@@ -197,6 +201,12 @@ class NeuralNetworkApprox(ExpForwardMap):
             #! integrated intensities and deriviatives in log10 scale
             log_f_Theta = self.network.forward(_Theta).detach().numpy()  # (N, L)
 
+            assert log_f_Theta.shape == (
+                N_pix,
+                self.L,
+            ), f"{log_f_Theta.shape} is not ({N_pix}, {self.L})"
+            assert np.max(np.abs(log_f_Theta)) > 0
+
             grad_log_f_Theta = (
                 self.jacobian_network(_Theta)
                 .detach()
@@ -204,40 +214,39 @@ class NeuralNetworkApprox(ExpForwardMap):
             ).transpose(
                 (0, 2, 1)
             )  # (N, D, L)
-            hess_full_log_f_Theta = (
-                self.hessian_network(_Theta)
-                .detach()
-                .numpy()  # .to(self.network.device)
-            )  # (N, L, D, D)
-            hess_diag_log_f_Theta = hess_full_log_f_Theta.diagonal(
-                offset=0, axis1=2, axis2=3
-            ).transpose(
-                (0, 2, 1)
-            )  # (N, D, L)
 
-            assert log_f_Theta.shape == (
-                N_pix,
-                self.L,
-            ), f"{log_f_Theta.shape} is not ({N_pix}, {self.L})"
             assert grad_log_f_Theta.shape == (
                 N_pix,
                 self.D_sampling,
                 self.L,
             ), f"{grad_log_f_Theta.shape} is not ({N_pix}, {self.D_sampling}, {self.L})"
-            assert hess_diag_log_f_Theta.shape == (
-                N_pix,
-                self.D_sampling,
-                self.L,
-            ), f"{hess_diag_log_f_Theta.shape} is not ({N_pix}, {self.D_sampling}, {self.L})"
-
-            assert np.max(np.abs(log_f_Theta)) > 0
             assert np.max(np.abs(grad_log_f_Theta)) > 0
-            assert np.max(np.abs(hess_diag_log_f_Theta)) > 0
 
             log_f_Theta *= self.LOGE_10
             grad_log_f_Theta = grad_log_f_Theta[:, :, :] * self.LOGE_10
-            hess_diag_log_f_Theta = hess_diag_log_f_Theta[:, :, :] * self.LOGE_10
 
+            if compute_derivatives_2nd_order:
+                hess_full_log_f_Theta = (
+                    self.hessian_network(_Theta)
+                    .detach()
+                    .numpy()  # .to(self.network.device)
+                )  # (N, L, D, D)
+                hess_diag_log_f_Theta = hess_full_log_f_Theta.diagonal(
+                    offset=0, axis1=2, axis2=3
+                ).transpose(
+                    (0, 2, 1)
+                )  # (N, D, L)
+
+                assert hess_diag_log_f_Theta.shape == (
+                    N_pix,
+                    self.D_sampling,
+                    self.L,
+                ), f"{hess_diag_log_f_Theta.shape} is not ({N_pix}, {self.D_sampling}, {self.L})"
+                assert np.max(np.abs(hess_diag_log_f_Theta)) > 0
+
+                hess_diag_log_f_Theta = hess_diag_log_f_Theta[:, :, :] * self.LOGE_10
+
+            # add log kappa
             log_f_Theta = Theta_combined[:, 0][:, None] + log_f_Theta
 
             if compute_log:
@@ -254,16 +263,22 @@ class NeuralNetworkApprox(ExpForwardMap):
                     )
                 forward_map_evals["grad_log_f_Theta"] = grad_log_f_Theta_full
 
-                hess_diag_log_f_Theta_full = np.zeros((N_pix, self.D_sampling, self.L))
-                if 0 in self.list_indices_to_sample:
-                    hess_diag_log_f_Theta_full[:, 1:, :] = (
-                        hess_diag_log_f_Theta[:, self.list_indices_to_sample[1:], :] * 1
+                if compute_derivatives_2nd_order:
+                    hess_diag_log_f_Theta_full = np.zeros(
+                        (N_pix, self.D_sampling, self.L)
                     )
-                else:
-                    hess_diag_log_f_Theta_full[:, :, :] = (
-                        hess_diag_log_f_Theta[:, self.list_indices_to_sample, :] * 1
-                    )
-                forward_map_evals["hess_diag_log_f_Theta"] = hess_diag_log_f_Theta_full
+                    if 0 in self.list_indices_to_sample:
+                        hess_diag_log_f_Theta_full[:, 1:, :] = (
+                            hess_diag_log_f_Theta[:, self.list_indices_to_sample[1:], :]
+                            * 1
+                        )
+                    else:
+                        hess_diag_log_f_Theta_full[:, :, :] = (
+                            hess_diag_log_f_Theta[:, self.list_indices_to_sample, :] * 1
+                        )
+                    forward_map_evals[
+                        "hess_diag_log_f_Theta"
+                    ] = hess_diag_log_f_Theta_full
 
             if compute_lin:
                 f_Theta = np.exp(log_f_Theta)
@@ -275,9 +290,10 @@ class NeuralNetworkApprox(ExpForwardMap):
                 )
 
                 # (N_pix, D, L)
-                forward_map_evals["hess_diag_f_Theta"] = f_Theta[:, None, :] * (
-                    hess_diag_log_f_Theta_full + grad_log_f_Theta_full**2
-                )
+                if compute_derivatives_2nd_order:
+                    forward_map_evals["hess_diag_f_Theta"] = f_Theta[:, None, :] * (
+                        hess_diag_log_f_Theta_full + grad_log_f_Theta_full**2
+                    )
 
             return forward_map_evals
 

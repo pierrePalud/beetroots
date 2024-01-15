@@ -148,11 +148,18 @@ class GaussianLikelihood(Likelihood):
         return hess_diag
 
     def evaluate_all_forward_map(
-        self, Theta: np.ndarray, compute_derivatives: bool
+        self,
+        Theta: np.ndarray,
+        compute_derivatives: bool,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         assert len(Theta.shape) == 2 and Theta.shape[1] == self.D
         forward_map_evals = self.forward_map.compute_all(
-            Theta, True, False, compute_derivatives
+            Theta,
+            True,
+            False,
+            compute_derivatives,
+            compute_derivatives_2nd_order,
         )
         return forward_map_evals
 
@@ -161,15 +168,10 @@ class GaussianLikelihood(Likelihood):
         forward_map_evals: dict,
         idx: Optional[np.ndarray] = None,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         nll_utils = {}
         return nll_utils
-
-    def gradient_variable_neglog_pdf(self, forward_map_evals: dict, nll_utils: dict):
-        raise NotImplementedError("")
-
-    def hess_diag_variable_neglog_pdf(self, forward_map_evals: dict, nll_utils: dict):
-        raise NotImplementedError("")
 
     def sample_observation_model(
         self,

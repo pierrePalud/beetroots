@@ -46,7 +46,7 @@ class ResultsMMSEandCI(ResultsUtil):
         assert len(df_estim) == self.N * self.D
         return df_estim
 
-    def create_folders(self, list_CI) -> Tuple[str, List[str]]:
+    def create_folders(self, list_CI: List[int]) -> Tuple[str, dict[int, str]]:
         folder_path = f"{self.path_img}/estimators"
         folder_path_inter = f"{folder_path}/{self.model_name}"
         folder_path_MMSE = f"{folder_path_inter}/MMSE"
@@ -72,7 +72,7 @@ class ResultsMMSEandCI(ResultsUtil):
         list_idx_sampling: List[int],
         list_fixed_values: np.ndarray,
         list_CI: List[int],
-    ) -> None:
+    ) -> pd.DataFrame:
         estimator_name = "MMSE"
 
         df_estim = self.read_data()
@@ -99,10 +99,13 @@ class ResultsMMSEandCI(ResultsUtil):
 
         forward_map_evals = posterior.likelihood.evaluate_all_forward_map(
             Theta_mmse_scaled,
-            True,
+            compute_derivatives=False,
+            compute_derivatives_2nd_order=False,
         )
         nll_utils = posterior.likelihood.evaluate_all_nll_utils(
             forward_map_evals,
+            compute_derivatives=False,
+            compute_derivatives_2nd_order=False,
         )
         objective_mmse = posterior.neglog_pdf(
             Theta_mmse_scaled, forward_map_evals, nll_utils

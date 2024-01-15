@@ -249,48 +249,6 @@ class CensoredLogNormalLikelihood(Likelihood):
         )
         return grad_  # (N, D, L)
 
-    def gradient_variable_neglog_pdf(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        """[summary]
-
-        [extended_summary]
-
-        Parameters
-        ----------
-        x : np.ndarray of shape (N, D)
-            [description]
-        f_Theta : np.ndarray of shape (N, L), optional
-            image of x via forward map, by default None
-        grad_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-
-        Returns
-        -------
-        np.ndarray of shape (N, D)
-            [description]
-        """
-        # if f_Theta is None:
-        #     f_Theta = self.forward_map.evaluate(x)  # (N, L)
-        # if grad_f_Theta is None:
-        #     grad_f_Theta = self.forward_map.gradient(x)  # (N, D, L)
-
-        grad_ = np.where(
-            (self.y == self.omega),
-            0,
-            self.gradient_variable_neglog_pdf_au(forward_map_evals, nll_utils),
-        )  # (N, L)
-
-        return grad_
-
-    def gradient_variable_neglog_pdf_au(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        grad_ = (
-            1 + (self.logy - forward_map_evals["f_Theta"]) / self.sigma**2
-        ) / self.y  # (N, L)
-        return grad_
-
     def hess_diag_neglog_pdf(
         self, forward_map_evals: dict, nll_utils: dict
     ) -> np.ndarray:
@@ -358,70 +316,15 @@ class CensoredLogNormalLikelihood(Likelihood):
             * (forward_map_evals["f_Theta"] - self.logy)[:, None, :]
         )  # (N, D, L)
 
-    def hess_diag_neglog_pdf(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        r"""[summary]
-
-        [extended_summary]
-
-        Parameters
-        ----------
-        x : np.ndarray of shape (N, D)
-            [description]
-        f_Theta : np.ndarray of shape (N, L), optional
-            [description], by default None
-        grad_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-        hess_diag_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-
-        Returns
-        -------
-        np.ndarray of shape (N, D, L)
-            [description]
-        """
-        hess_diag = np.where(
-            (self.y == self.omega)[:, None, :],
-            0,
-            self.hess_diag_variable_neglog_pdf_au(forward_map_evals, nll_utils),
-        )  # (N, L)
-        return hess_diag
-
-    def hess_diag_variable_neglog_pdf(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        r"""Hessian w.r.t to the variable of the log-normal distribution.
-
-        [extended_summary]
-
-        Parameters
-        ----------
-        x : np.ndarray of shape (N, D)
-            [description]
-        f_Theta : np.ndarray of shape (N, L), optional
-            [description], by default None
-        grad_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-        hess_diag_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-
-        Returns
-        -------
-        np.ndarray of shape (N, L)
-            [description]
-        """
-        hess_diag = (
-            (1 - self.logy + forward_map_evals["f_Theta"]) / self.sigma**2 - 1
-        ) / (self.y**2)
-        return hess_diag  # (N, L)
-
     def evaluate_all_forward_map(
-        self, Theta: np.ndarray, compute_derivatives: bool
+        self,
+        Theta: np.ndarray,
+        compute_derivatives: bool,
+        compute_derivatives_2nd_order: bool,
     ) -> dict:
         assert len(Theta.shape) == 2 and Theta.shape[1] == self.D
         forward_map_evals = self.forward_map.compute_all(
-            Theta, True, False, compute_derivatives
+            Theta, True, False, compute_derivatives, compute_derivatives_2nd_order
         )
         return forward_map_evals
 
@@ -430,6 +333,7 @@ class CensoredLogNormalLikelihood(Likelihood):
         forward_map_evals: dict,
         idx: Optional[np.ndarray] = None,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         nll_utils = {}
         return nll_utils

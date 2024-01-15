@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 
@@ -118,26 +118,12 @@ class Posterior:
     def neglog_pdf_priors(
         self,
         Theta: np.ndarray,
-        update_prior: bool = False,
-        theta: dict = None,
         full: bool = False,
     ) -> Union[float, np.ndarray]:
         if full:
             nl_priors = np.zeros((self.N, self.L))
         else:
             nl_priors = 0.0
-
-        # TODO: to be revised here (make sure the gradient is properly computed)
-        if self.prior is not None:
-            # ! plugging Theta as "observations" for the prior (any likelihood object here) (rather inefficient, since it needs to be done each time...)
-            if update_prior:
-                self.prior._update_observations(Theta)
-
-            nl_priors_prior_full = self.prior.neglog_pdf(theta, {}, full=full)
-            if full:
-                nl_priors += nl_priors_prior_full
-            else:
-                nl_priors += np.sum(nl_priors_prior_full)
 
         if self.prior_spatial is not None:
             nl_prior_spatial = self.prior_spatial.neglog_pdf(Theta, pixelwise=full)
@@ -163,8 +149,6 @@ class Posterior:
         Theta: np.ndarray,
         forward_map_evals: dict,
         nll_utils: dict,
-        update_prior: bool = False,
-        theta: dict = None,
         full: bool = False,
     ) -> float:
         if full:
@@ -178,33 +162,22 @@ class Posterior:
             full=full,
         )
 
-        out += self.neglog_pdf_priors(Theta, update_prior, theta, full=full)
+        out += self.neglog_pdf_priors(Theta, full=full)
 
         # assert np.sum(np.isnan(nll)) == 0, np.sum(np.isnan(nll))
         # assert np.sum(np.isnan(nl_priors)) == 0, np.sum(np.isnan(nl_priors))
-
         return out
 
     def grad_neglog_pdf(
         self,
         Theta: np.ndarray,
-        forward_map_evals: dict,
-        nll_utils: dict,
-        update_prior=False,
-        theta: dict = None,  # hyperparameter dictionary
+        forward_map_evals: dict[str, Union[float, np.ndarray]],
+        nll_utils: dict[str, Union[float, np.ndarray]],
     ) -> np.ndarray:
         grad_ = self.likelihood.gradient_neglog_pdf(
             forward_map_evals, nll_utils
         )  # (N, D)
         # assert grad_.shape == (self.N, self.D), grad_nll.shape
-
-        if self.prior is not None:
-            if update_prior:
-                self.prior._update_observations(Theta)
-            grad_ += self.prior.gradient_variable_neglog_pdf(theta, {})[
-                :, None, :
-            ]  # (N, 1, L)
-            grad_ = np.squeeze(grad_)
 
         if self.prior_spatial is not None:
             # grad_nl_prior_spatial = self.prior_spatial.gradient_neglog_pdf(Theta)
@@ -230,21 +203,11 @@ class Posterior:
         Theta: np.ndarray,
         forward_map_evals: dict,
         nll_utils: dict,
-        update_prior=False,
-        theta: dict = None,  # hyperparameter dictionary
     ) -> np.ndarray:
         hess_diag = self.likelihood.hess_diag_neglog_pdf(
             forward_map_evals, nll_utils
         )  # (N, D)
         # assert hess_diag.shape == (self.N, self.D)
-
-        if self.prior is not None:
-            if update_prior:
-                # ! prior is, in this case, defined using a likelihood object
-                self.prior._update_observations(Theta)
-            # ! dirty patch to take into account the facet that the forward map is identity (revise the whole code to properly accommodate this option)
-            hess_diag += self.prior.hess_diag_variable_neglog_pdf(theta, {})[:, None, :]
-            hess_diag = np.squeeze(hess_diag)
 
         if self.prior_spatial is not None:
             # hess_diag_nl_prior_spatial = self.prior_spatial.hess_diag_neglog_pdf(Theta)
@@ -264,20 +227,18 @@ class Posterior:
     def compute_all_for_saver(
         self,
         Theta: np.ndarray,
-        forward_map_evals: dict,
+        forward_map_evals: dict[str, Union[float, np.ndarray]],
         nll_utils: dict,
-        update_prior=False,
-        theta: dict = None,
-    ) -> dict:
+    ) -> Tuple[dict[str, Union[float, np.ndarray]], np.ndarray]:
         """computes negative log pdf of likelihood, priors and posterior (detailed values to be saved, not to be used in sampling)
 
         Parameters
         ----------
         Theta : np.ndarray of shape (N, D)
             current iterate
-        forward_map_evals : dict[str, np.ndarray]
+        forward_map_evals : dict[str, Union[float, np.ndarray]]
             output of the ``likelihood.evaluate_all_forward_map()`` method
-        nll_utils : dict[str, np.,ndarray]
+        nll_utils : [str, Union[float, np.ndarray]]
             output of the ``likelihood.evaluate_all_nll_utils()`` method
 
         Returns
@@ -320,18 +281,6 @@ class Posterior:
         nl_posterior += np.sum(nl_prior_indicator)
         dict_objective["objective"] = nl_posterior
 
-        # ! the two methods are equivalent (checked with commented assert)
-        # nl_posterior_v2 = self.neglog_pdf(
-        #     Theta, forward_map_evals, nll_utils, update_prior, theta
-        # )
-        # assert np.isclose(
-        #     nl_posterior, nl_posterior_v2
-        # ), f"{nl_posterior}, {nl_posterior_v2}"
-
-        # dict_objective["objective"] = self.neglog_pdf(
-        #     Theta, forward_map_evals, nll_utils, update_prior, theta
-        # )
-
         return dict_objective, nll_full
 
     def compute_all(
@@ -339,9 +288,8 @@ class Posterior:
         Theta: np.ndarray,
         forward_map_evals: dict = {},
         nll_utils: dict = {},
-        update_prior: bool = False,
-        theta: dict = {},
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         r"""compute negative log pdf and derivatives of the posterior distribution
 
@@ -353,10 +301,6 @@ class Posterior:
             output of the ``likelihood.evaluate_all_forward_map()`` method, by default {}
         nll_utils : dict[str, np.ndarray], optional
             output of the ``likelihood.evaluate_all_nll_utils()`` method, by default {}
-        update_prior : bool, optional
-            Deprecated, by default False
-        theta : dict, optional
-            Deprecated, by default {}
         compute_derivatives : bool, optional
             wether to compte derivatives, by default True
 
@@ -369,27 +313,19 @@ class Posterior:
 
         if forward_map_evals == {}:
             forward_map_evals = self.likelihood.evaluate_all_forward_map(
-                Theta, compute_derivatives
+                Theta, compute_derivatives, compute_derivatives_2nd_order
             )
 
         if nll_utils == {}:
             nll_utils = self.likelihood.evaluate_all_nll_utils(
-                forward_map_evals, None, compute_derivatives
+                forward_map_evals,
+                None,
+                compute_derivatives,
+                compute_derivatives_2nd_order,
             )
 
         nll = self.likelihood.neglog_pdf(forward_map_evals, nll_utils)
         nll_utils["nll"] = nll  # float
-
-        if self.prior is not None:
-            # need to evaluate the prior, using the hyperparameters theta
-            if update_prior:
-                self.prior._update_observations(Theta)
-                # self.prior._update_observations(theta["f_Theta"])
-                assert np.sum(np.isnan(self.prior.logy)) == 0, f"{Theta}"
-                assert np.all(self.prior.y > 0), f"{Theta}"
-
-            nl_prior = self.prior.neglog_pdf(theta, {})
-            nll_utils["nl_prior"] = nl_prior  # (D,)
 
         if self.prior_indicator is not None:
             nl_prior_indicator = self.prior_indicator.neglog_pdf(Theta)
@@ -401,8 +337,6 @@ class Posterior:
             Theta,
             forward_map_evals,
             nll_utils,
-            update_prior=False,
-            theta=theta,
             full=True,
         )  # (N, L)
         nlpdf_pix = np.sum(nlpdf_full, axis=1)
@@ -410,7 +344,6 @@ class Posterior:
         iterate = {
             "Theta": Theta,
             "forward_map_evals": forward_map_evals,
-            "theta": theta,
             "nll_utils": nll_utils,
             "objective_pix": nlpdf_pix,
         }
@@ -420,15 +353,12 @@ class Posterior:
                 Theta,
                 forward_map_evals,
                 nll_utils,
-                update_prior=False,
-                theta=theta,
             )
-            iterate["hess_diag"] = self.hess_diag_neglog_pdf(
-                Theta,
-                forward_map_evals,
-                nll_utils,
-                update_prior=False,
-                theta=theta,
-            )
+            if compute_derivatives_2nd_order:
+                iterate["hess_diag"] = self.hess_diag_neglog_pdf(
+                    Theta,
+                    forward_map_evals,
+                    nll_utils,
+                )
 
         return iterate

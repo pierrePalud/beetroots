@@ -20,14 +20,6 @@ beetroots.simulations.abstract\_simulation module
    :undoc-members:
    :show-inheritance:
 
-beetroots.simulations.data\_validation module
----------------------------------------------
-
-.. automodule:: beetroots.simulations.data_validation
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

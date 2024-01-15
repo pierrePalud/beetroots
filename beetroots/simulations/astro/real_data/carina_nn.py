@@ -5,9 +5,8 @@ import numpy as np
 import pandas as pd
 
 from beetroots.inversion.plots.map_shaper import MapShaper
-from beetroots.simulations.astro.real_data.real_data_nn import (
-    SimulationRealDataNNDirectPosterior,
-)
+from beetroots.simulations.astro import data_validation
+from beetroots.simulations.astro.real_data.real_data_nn import SimulationRealDataNN
 
 
 def read_point_challenger(
@@ -63,7 +62,7 @@ def apply_data_transformation_3cases_rule_alternative(
     return df_int_inter, df_err_inter, df_censor_inter
 
 
-class SimulationAstroCarina(SimulationRealDataNNDirectPosterior):
+class SimulationAstroCarina(SimulationRealDataNN):
     def setup_observation(
         self,
         data_int_path: str,
@@ -191,11 +190,13 @@ if __name__ == "__main__":
         point_name="Wu et al., 2018",
     )
 
-    params = SimulationRealDataNNDirectPosterior.load_params(path_data_cloud)
-
-    simulation = SimulationRealDataNNDirectPosterior(
-        **params["simu_init"], params=params
+    params = SimulationRealDataNN.load_params(path_data_cloud)
+    SimulationRealDataNN.check_input_params_file(
+        params,
+        data_validation.schema,
     )
+
+    simulation = SimulationRealDataNN(**params["simu_init"], params=params)
 
     simulation.main(
         params=params,

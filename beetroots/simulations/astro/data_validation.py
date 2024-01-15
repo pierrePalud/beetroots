@@ -23,15 +23,8 @@ schema = {
         "type": "dict",
         "schema": {
             "name": {"type": "string", "allowed": ["L2-laplacian", "L2-gradient"]},
-            "use_next_nearest_neighbours": {"type": "boolean"},
+            "use_next_nearest_neighbors": {"type": "boolean"},
             "initial_regu_weights": {"type": "list"},
-            "use_clustering": {"type": "boolean"},
-            "n_clusters": {"nullable": True, "type": "integer", "min": 2},
-            "cluster_algo": {
-                "nullable": True,
-                "type": "string",
-                "allowed": ["spectral_clustering", "kmeans"],
-            },
         },
     },
     # sampling params

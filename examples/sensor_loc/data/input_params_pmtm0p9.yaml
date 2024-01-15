@@ -33,8 +33,8 @@ sampling_params:
 run_params:
   mcmc:
     N_MCMC: 1
-    T_MC: 30_000
-    T_BI: 5_000
+    T_MC: 3_000 # 30_000
+    T_BI: 500 # 5_000
     plot_1D_chains: true
     plot_2D_chains: true
     plot_ESS: true

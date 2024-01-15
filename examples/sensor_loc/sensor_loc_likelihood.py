@@ -243,6 +243,7 @@ class SensorLocalizationLikelihood(Likelihood):
         forward_map_evals: dict,
         idx: Optional[np.ndarray] = None,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         nll_utils = {}
         return nll_utils
@@ -258,17 +259,3 @@ class SensorLocalizationLikelihood(Likelihood):
         y_rep = forward_map_evals["f_Theta"] + eps
         y_rep = np.where(self.mask == 1, y_rep, 0.0)
         return y_rep
-
-    def gradient_variable_neglog_pdf(
-        self,
-        forward_map_evals: dict,
-        nll_utils: dict,
-    ):
-        raise NotImplementedError("")
-
-    def hess_diag_variable_neglog_pdf(
-        self,
-        forward_map_evals: dict,
-        nll_utils: dict,
-    ):
-        raise NotImplementedError("")

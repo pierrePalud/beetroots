@@ -75,11 +75,8 @@ mixing_model_params_filename: ["params_for_gaussian_only.csv"]
 with_spatial_prior: false
 # spatial_prior:
 #   name: "L2-laplacian"
-#   use_next_nearest_neighbours: false
+#   use_next_nearest_neighbors: false
 #   initial_regu_weights: [1.0, 1.0, 1.0, 1.0]
-#   use_clustering: false
-#   n_clusters: null
-#   cluster_algo: null  # "spectral_clustering",
 #
 # sampling params
 sampling_params:

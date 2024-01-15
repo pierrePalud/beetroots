@@ -6,6 +6,7 @@ import numpy as np
 from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
 from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 from beetroots.simulations.abstract_simulation import Simulation
+from beetroots.simulations.astro import data_validation
 from beetroots.simulations.astro.forward_map.abstract_poly_reg import (
     SimulationPolynomialReg,
 )
@@ -15,7 +16,7 @@ from beetroots.simulations.astro.posterior_type.abstract_direct import (
 )
 
 
-class SimulationToyCaseNNDirectPosterior(
+class SimulationToyCaseNN(
     Simulation, SimulationToyCase, SimulationPolynomialReg, SimulationMySampler
 ):
     __slots__ = (
@@ -191,11 +192,8 @@ if __name__ == "__main__":
     # basic example for debugging purposes
     spatial_prior_params = SpatialPriorParams(
         name="L2-laplacian",
-        use_next_nearest_neighbours=False,
+        use_next_nearest_neighbors=False,
         initial_regu_weights=initial_regu_weights,
-        use_clustering=False,
-        n_clusters=None,  # 4,
-        cluster_algo=None,  # "spectral_clustering",
     )
 
     list_lines_fit = [
@@ -211,7 +209,7 @@ if __name__ == "__main__":
         "co_v0_j13__v0_j12",
     ]
 
-    simulation = SimulationToyCaseNNDirectPosterior(
+    simulation = SimulationToyCaseNN(
         N_1_side**2,
         max_workers=30,
         list_lines_fit=list_lines_fit,

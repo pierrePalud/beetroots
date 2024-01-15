@@ -10,7 +10,6 @@ import yaml
 from cerberus import Validator
 
 from beetroots.inversion.reporting.report_astro import ReportAstro
-from beetroots.simulations import data_validation
 
 warnings.filterwarnings("ignore")
 
@@ -245,8 +244,12 @@ class Simulation(abc.ABC):
         with open(os.path.abspath(f"{path_data_cloud}/{yaml_file}")) as f:
             params = yaml.safe_load(f)
 
+        return params
+
+    @classmethod
+    def check_input_params_file(cls, params: dict, schema: dict) -> None:
         # inputs validation
-        v = Validator(data_validation.schema, allow_unknown=True)
+        v = Validator(schema, allow_unknown=True)
         is_input_correct: bool = v.validate(params)
 
         print(f"is input file correct: {is_input_correct}")
@@ -254,7 +257,7 @@ class Simulation(abc.ABC):
         if not is_input_correct:
             print(f"identified errors: {v.errors}")
 
-        return params
+        return None
 
     def generate_report(
         self,

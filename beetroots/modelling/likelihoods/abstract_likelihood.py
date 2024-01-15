@@ -85,11 +85,14 @@ class Likelihood(ABC):
         N_candidates = candidates.shape[0]
         n_pix = idx.size
 
-        forward_map_evals = self.evaluate_all_forward_map(candidates, False)
+        forward_map_evals = self.evaluate_all_forward_map(
+            candidates, compute_derivatives=False, compute_derivatives_2nd_order=False
+        )
         nll_utils = self.evaluate_all_nll_utils(
             forward_map_evals,
             idx=idx,
             compute_derivatives=False,
+            compute_derivatives_2nd_order=False,
         )
 
         nll_candidates = self.neglog_pdf(
@@ -108,39 +111,29 @@ class Likelihood(ABC):
             return nll_candidates
 
     @abstractmethod
-    def gradient_variable_neglog_pdf(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        """method used in hierarchical settings, where the likelihood can be used as a prior in a conditional distribution."""
-        pass
-
-    @abstractmethod
     def hess_diag_neglog_pdf(
         self, forward_map_evals: dict, nll_utils: dict
     ) -> np.ndarray:
         pass
 
-    @abstractmethod
-    def hess_diag_variable_neglog_pdf(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        """method used in hierarchical settings, where the likelihood can be used as a prior in a conditional distribution."""
-        pass
-
     def evaluate_all_forward_map(
-        self, Theta: np.ndarray, compute_derivatives: bool
-    ) -> dict:
+        self,
+        Theta: np.ndarray,
+        compute_derivatives: bool,
+        compute_derivatives_2nd_order: bool,
+    ) -> dict[str, Union[float, np.ndarray]]:
         assert len(Theta.shape) == 2 and Theta.shape[1] == self.D
         forward_map_evals = self.forward_map.compute_all(
-            Theta, True, True, compute_derivatives
+            Theta, True, True, compute_derivatives, compute_derivatives_2nd_order
         )
         return forward_map_evals
 
     @abstractmethod
     def evaluate_all_nll_utils(
         self,
-        forward_map_evals: dict,
+        forward_map_evals: dict[str, Union[float, np.ndarray]],
         idx: Optional[np.ndarray],
         compute_derivatives: bool,
-    ) -> dict:
+        compute_derivatives_2nd_order: bool,
+    ) -> dict[str, Union[float, np.ndarray]]:
         pass

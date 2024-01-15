@@ -112,7 +112,7 @@ class SensorLocalizationSimulation(Simulation):
             transparent=True,
             bbox_inches="tight",
         )
-        plt.show()
+        plt.close()
         return df_sensors, list_detections
 
     def _read_mc_values(self, N_MCMC: int, T_BI: int) -> np.ndarray:
@@ -206,7 +206,7 @@ class SensorLocalizationSimulation(Simulation):
             transparent=True,
             bbox_inches="tight",
         )
-        plt.show()
+        plt.close()
 
     def read_true_positions(self) -> np.ndarray:
         filename = f"{os.path.dirname(os.path.abspath(__file__))}/data/sensors_localizations_rescaled.csv"

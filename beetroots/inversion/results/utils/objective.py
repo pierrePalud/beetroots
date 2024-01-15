@@ -46,7 +46,9 @@ class ResultsObjective(ResultsUtil):
         self.D = D
         self.L = L
 
-    def read_data(self, list_chains_folders: List[str]) -> np.ndarray:
+    def read_data(
+        self, list_chains_folders: List[str]
+    ) -> Tuple[np.ndarray, np.ndarray]:
         list_objective = np.zeros((self.N_MCMC, self.effective_T_MC))
         list_nll = np.zeros((self.N_MCMC, self.effective_T_MC))
         # list_nl_prior_indicator = np.zeros((self.N_MCMC, self.effective_T_MC))
@@ -332,7 +334,7 @@ class ResultsObjective(ResultsUtil):
     def find_lowest_objective(
         self,
         list_objective: np.ndarray,
-    ) -> Tuple[float, float]:
+    ) -> Tuple[int, float]:
         # compute index of sampling MAP
         list_objective_no_BI = list_objective.flatten()
         idx_lowest_obj = int(np.argmin(list_objective_no_BI))
@@ -343,7 +345,7 @@ class ResultsObjective(ResultsUtil):
         self,
         list_chains_folders: List[str],
         objective_true: Optional[float],
-    ) -> None:
+    ) -> Tuple[int, float]:
         list_objective, list_nll = self.read_data(list_chains_folders)
         folder_objective = self.create_folders()
 

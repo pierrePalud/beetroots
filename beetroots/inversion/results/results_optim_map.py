@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -128,7 +128,7 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
         scaler: Scaler,
         #
         list_idx_sampling: List[int],
-        list_fixed_values: List[float],
+        list_fixed_values: Union[List[float], np.ndarray],
         #
         estimator_plot: PlotsEstimator,
         Theta_true_scaled: Optional[np.ndarray] = None,
@@ -202,10 +202,13 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
         if Theta_true_scaled is not None:
             forward_map_evals = posterior.likelihood.evaluate_all_forward_map(
                 Theta_true_scaled,
-                True,
+                compute_derivatives=False,
+                compute_derivatives_2nd_order=False,
             )
             nll_utils = posterior.likelihood.evaluate_all_nll_utils(
                 forward_map_evals,
+                compute_derivatives=False,
+                compute_derivatives_2nd_order=False,
             )
             objective_true = posterior.neglog_pdf(
                 Theta_true_scaled, forward_map_evals, nll_utils

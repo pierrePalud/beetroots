@@ -165,31 +165,6 @@ class LogNormalLikelihood(Likelihood):
 
         return grad_
 
-    def gradient_variable_neglog_pdf(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        """Gradient w.r.t to the variable of the log-normal distribution.
-
-        Parameters
-        ----------
-        x : np.ndarray of shape (N, D)
-            [description]
-        f_Theta : np.ndarray of shape (N, L), optional
-            image of x via forward map, by default None
-        grad_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-
-        Returns
-        -------
-        np.ndarray of shape (N, L)
-            [description]
-        """
-        grad_ = (
-            1 + (self.logy - forward_map_evals["log_f_Theta"]) / self.sigma**2
-        ) / self.y  # (N, L)
-
-        return grad_
-
     def hess_diag_neglog_pdf(
         self, forward_map_evals: dict, nll_utils: dict
     ) -> np.ndarray:
@@ -223,48 +198,24 @@ class LogNormalLikelihood(Likelihood):
 
         return hess_diag
 
-    def hess_diag_variable_neglog_pdf(
-        self, forward_map_evals: dict, nll_utils: dict
-    ) -> np.ndarray:
-        r"""Hessian w.r.t to the variable of the log-normal distribution.
-
-        [extended_summary]
-
-        Parameters
-        ----------
-        x : np.ndarray of shape (N, D)
-            [description]
-        f_Theta : np.ndarray of shape (N, L), optional
-            [description], by default None
-        grad_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-        hess_diag_f_Theta : np.ndarray of shape (N, D, L), optional
-            [description], by default None
-
-        Returns
-        -------
-        np.ndarray of shape (N, L)
-            [description]
-        """
-        hess_diag = (
-            (1 - self.logy + forward_map_evals["log_f_Theta"]) / self.sigma**2 - 1
-        ) / (self.y**2)
-        return hess_diag  # (N, L)
-
     def evaluate_all_forward_map(
-        self, Theta: np.ndarray, compute_derivatives: bool
+        self,
+        Theta: np.ndarray,
+        compute_derivatives: bool,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         assert len(Theta.shape) == 2 and Theta.shape[1] == self.D
         forward_map_evals = self.forward_map.compute_all(
-            Theta, True, True, compute_derivatives
+            Theta, True, True, compute_derivatives, compute_derivatives_2nd_order
         )
         return forward_map_evals
 
     def evaluate_all_nll_utils(
         self,
         forward_map_evals: dict,
-        idx: int = None,
+        idx: Optional[int] = None,
         compute_derivatives: bool = False,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         nll_utils = {}
         return nll_utils

@@ -7,7 +7,7 @@
                 <mxCell id="L4C_hvJvdw_0AWo91kCd-748" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=none;align=left;container=1;" parent="1" vertex="1">
                     <mxGeometry x="-470" y="1750" width="960" height="308" as="geometry"/>
                 </mxCell>
-                <mxCell id="L4C_hvJvdw_0AWo91kCd-646" value="SimulationToyCasePolyRegDirectPosterior" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" parent="L4C_hvJvdw_0AWo91kCd-748" vertex="1" collapsed="1">
+                <mxCell id="L4C_hvJvdw_0AWo91kCd-646" value="SimulationToyCasePolyReg" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" parent="L4C_hvJvdw_0AWo91kCd-748" vertex="1" collapsed="1">
                     <mxGeometry x="233" y="100" width="240" height="26" as="geometry">
                         <mxRectangle x="-450" y="2094" width="160" height="138" as="alternateBounds"/>
                     </mxGeometry>
@@ -1401,7 +1401,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="L4C_hvJvdw_0AWo91kCd-623" value="SimulationRealDataNNDirectPosterior" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" parent="1" vertex="1" collapsed="1">
+                <mxCell id="L4C_hvJvdw_0AWo91kCd-623" value="SimulationRealDataNN" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" parent="1" vertex="1" collapsed="1">
                     <mxGeometry x="-222" y="1783" width="210" height="26" as="geometry">
                         <mxRectangle x="-450" y="2094" width="160" height="138" as="alternateBounds"/>
                     </mxGeometry>
@@ -1429,7 +1429,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="L4C_hvJvdw_0AWo91kCd-634" value="SimulationToyCaseNNDirectPosterior" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" parent="1" vertex="1" collapsed="1">
+                <mxCell id="L4C_hvJvdw_0AWo91kCd-634" value="SimulationToyCaseNN" style="swimlane;fontStyle=2;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;marginBottom=0;rounded=0;shadow=0;strokeWidth=1;" parent="1" vertex="1" collapsed="1">
                     <mxGeometry x="-222" y="1815" width="210" height="26" as="geometry">
                         <mxRectangle x="-450" y="2094" width="160" height="138" as="alternateBounds"/>
                     </mxGeometry>

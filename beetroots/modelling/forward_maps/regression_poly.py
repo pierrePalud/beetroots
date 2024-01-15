@@ -395,6 +395,7 @@ class PolynomialApprox(ExpForwardMap):
         compute_lin: bool = True,
         compute_log: bool = True,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         r"""gathers the evaluation of the forward map in linear and log scale and of the associated derivatives. Permits to limit repeating computations, but requires the storage in memory of the result.
 
@@ -408,6 +409,8 @@ class PolynomialApprox(ExpForwardMap):
             wether or not to compute the log-forward model (and possibly the gradient and diagonal of the Hessian), by default True
         compute_derivatives : bool, optional
             wether or not to evaluate the derivatives of the forward map, by default True
+        compute_derivatives_2nd_order : bool, optional
+            wether or not to evaluate the 2nd order derivatives of the forward map, by default True
 
         Returns
         -------
@@ -424,13 +427,15 @@ class PolynomialApprox(ExpForwardMap):
         if compute_derivatives:
             log_f_Theta = self.evaluate_log(Theta)
             grad_log_f_Theta = self.gradient_log(Theta)
-            hess_diag_log_f_Theta = self.hess_diag(Theta)
 
             log_f_Theta *= self.LOGE_10
             grad_log_f_Theta = grad_log_f_Theta[:, : self.D_no_kappa, :] * self.LOGE_10
-            hess_diag_log_f_Theta = (
-                hess_diag_log_f_Theta[:, : self.D_no_kappa, :] * self.LOGE_10
-            )
+
+            if compute_derivatives_2nd_order:
+                hess_diag_log_f_Theta = self.hess_diag(Theta)
+                hess_diag_log_f_Theta = (
+                    hess_diag_log_f_Theta[:, : self.D_no_kappa, :] * self.LOGE_10
+                )
 
             log_f_Theta = Theta[:, 0][:, None] + log_f_Theta
 
@@ -441,9 +446,12 @@ class PolynomialApprox(ExpForwardMap):
                 grad_log_f_Theta_full[:, 1:, :] = grad_log_f_Theta * 1
                 forward_map_evals["grad_log_f_Theta"] = grad_log_f_Theta_full
 
-                hess_diag_log_f_Theta_full = np.zeros((N_pix, self.D, self.L))
-                hess_diag_log_f_Theta_full[:, 1:, :] = hess_diag_log_f_Theta * 1
-                forward_map_evals["hess_diag_log_f_Theta"] = hess_diag_log_f_Theta_full
+                if compute_derivatives_2nd_order:
+                    hess_diag_log_f_Theta_full = np.zeros((N_pix, self.D, self.L))
+                    hess_diag_log_f_Theta_full[:, 1:, :] = hess_diag_log_f_Theta * 1
+                    forward_map_evals[
+                        "hess_diag_log_f_Theta"
+                    ] = hess_diag_log_f_Theta_full
 
             if compute_lin:
                 f_Theta = np.exp(log_f_Theta)
@@ -454,10 +462,11 @@ class PolynomialApprox(ExpForwardMap):
                     grad_log_f_Theta_full * f_Theta[:, None, :]
                 )
 
-                # (N_pix, D, L)
-                forward_map_evals["hess_diag_f_Theta"] = f_Theta[:, None, :] * (
-                    hess_diag_log_f_Theta_full + grad_log_f_Theta_full**2
-                )
+                if compute_derivatives_2nd_order:
+                    # (N_pix, D, L)
+                    forward_map_evals["hess_diag_f_Theta"] = f_Theta[:, None, :] * (
+                        hess_diag_log_f_Theta_full + grad_log_f_Theta_full**2
+                    )
 
             return forward_map_evals
 

@@ -13,6 +13,17 @@ Subpackages
    beetroots.simulations.astro.real_data
    beetroots.simulations.astro.toy_case
 
+Submodules
+----------
+
+beetroots.simulations.astro.data\_validation module
+---------------------------------------------------
+
+.. automodule:: beetroots.simulations.astro.data_validation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

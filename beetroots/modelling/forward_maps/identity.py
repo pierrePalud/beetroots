@@ -1,6 +1,6 @@
 """Implementation of the identity forward map
 """
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 
@@ -17,13 +17,15 @@ class BasicForwardMap(ForwardMap):
     """
 
     def __init__(
-        self, L: int, N: int, dict_fixed_values_scaled: Optional[dict[str, float]] = {}
+        self, L: int, N: int, dict_fixed_values_scaled: dict[str, Optional[float]] = {}
     ):
-        # assert D == L
-        super().__init__(1, L, N, dict_fixed_values_scaled)
+        super().__init__(L, L, N, dict_fixed_values_scaled)
+
+        self.output_subset = np.arange(self.D)
+        r"""List[int]: subset of outputs to be predicted. Can be updated with ``restrict_to_output_subset``"""
 
     def evaluate(self, Theta: np.ndarray) -> np.ndarray:
-        return Theta  # (N, L)
+        return Theta[:, self.output_subset]  # (N, L)
 
     def gradient(self, Theta: np.ndarray) -> np.ndarray:
         return np.ones((Theta.shape[0], self.L, self.L))  # (N, D, L)
@@ -37,6 +39,7 @@ class BasicForwardMap(ForwardMap):
         compute_lin: bool = True,
         compute_log: bool = False,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         r"""gathers the evaluation of the forward map in linear and log scale and of the associated derivatives. Permits to limit repeating computations, but requires the storage in memory of the result.
 
@@ -50,6 +53,8 @@ class BasicForwardMap(ForwardMap):
             always considered as False. Kept for this class for consistency.
         compute_derivatives : bool, optional
             wether or not to evaluate the derivatives of the forward map, by default True
+        compute_derivatives_2nd_order : bool, optional
+            wether or not to evaluate the 2nd order derivatives of the forward map, by default True
 
         Returns
         -------
@@ -57,10 +62,19 @@ class BasicForwardMap(ForwardMap):
             dictionary with the `f_Theta` entry and possibly `grad_f_Theta`, and `hess_diag_f_Theta`, depending on the input booleans.
         """
         forward_map_evals = dict()
-        forward_map_evals["f_Theta"] = self.evaluate(Theta)
+        forward_map_evals["f_Theta"] = self.evaluate(Theta)[:, self.output_subset]
 
         if compute_derivatives:
             forward_map_evals["grad_f_Theta"] = self.gradient(Theta)
-            forward_map_evals["hess_diag_f_Theta"] = self.hess_diag(Theta)
+
+            if compute_derivatives_2nd_order:
+                forward_map_evals["hess_diag_f_Theta"] = self.hess_diag(Theta)
 
         return forward_map_evals
+
+    def restrict_to_output_subset(self, list_observables: List[int]) -> None:
+        for idx in list_observables:
+            assert 0 <= idx <= self.D
+
+        self.output_subset = list_observables
+        self.L = len(list_observables)

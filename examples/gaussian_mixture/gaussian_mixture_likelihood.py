@@ -206,6 +206,7 @@ class GaussianMixtureLikelihood(Likelihood):
         forward_map_evals: dict,
         idx: Optional[np.ndarray] = None,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         nll_utils = {}
         return nll_utils
@@ -218,17 +219,3 @@ class GaussianMixtureLikelihood(Likelihood):
         # to be disregarded, as model checking does not make sense
         # in this example
         return forward_map_evals["f_Theta"]
-
-    def gradient_variable_neglog_pdf(
-        self,
-        forward_map_evals: dict,
-        nll_utils: dict,
-    ):
-        raise NotImplementedError("")
-
-    def hess_diag_variable_neglog_pdf(
-        self,
-        forward_map_evals: dict,
-        nll_utils: dict,
-    ):
-        raise NotImplementedError("")

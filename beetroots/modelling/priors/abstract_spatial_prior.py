@@ -11,34 +11,31 @@ from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
 
 def build_list_edges(
     df: pd.DataFrame,
-    df_clusters: Union[pd.Series, None] = None,
-    use_next_nearest_neighbours: bool = True,
+    use_next_nearest_neighbors: bool = True,
 ) -> np.ndarray:
-    """builds the list of edges necessary in the rest of the functions of this file
+    r"""builds the list of edges necessary in the rest of the functions of this file
 
     Parameters
     ----------
     df : pandas.DataFrame
         observation map data. The index needs to contain 2 columns (one for the x-coordinate of the pixel and one for its y-coordinate)
-    df_clusters : pandas.Series or None
-        Series that contain the correspondence of pixels and clusters
-        if None, we consider the signal as one unique cluster
+    use_next_nearest_neighbors : bool, optional
+        wether or not to use the next nearest neighbors, i.e., in diagonal, by default True
 
     Returns
     -------
     list_edges : numpy.array of shape (-1, 2)
         list of 2 by 2 neighboring relations without duplicates (each pair is ordered by lowest id to highest id)
     """
-    if df_clusters is None:
-        df_clusters = df.copy()
-        df_clusters = df_clusters.reset_index().set_index("idx")
-        df_clusters["clusters"] = 0
-        df_clusters = df_clusters["clusters"]
+    df_clusters = df.copy()
+    df_clusters = df_clusters.reset_index().set_index("idx")
+    df_clusters["clusters"] = 0
+    df_clusters = df_clusters["clusters"]
 
     list_edges = []
     list_considered_neighbours = (
         [(1, 0), (0, 1), (1, 1), (-1, 1)]
-        if use_next_nearest_neighbours
+        if use_next_nearest_neighbors
         else [(1, 0), (0, 1)]
     )
     for (x, y) in list(df.index):
@@ -63,7 +60,7 @@ class SpatialPrior(PriorProbaDistribution):
     __slots__ = (
         "D",
         "N",
-        "use_next_nearest_neighbours",
+        "use_next_nearest_neighbors",
         "list_edges",
         "dict_sites",
         "initial_weights",
@@ -81,27 +78,13 @@ class SpatialPrior(PriorProbaDistribution):
     ) -> None:
         super().__init__(D, N)
 
-        df_clusters = None
-        if spatial_prior_params.use_clustering:
-            path_ = f"{os.path.dirname(os.path.abspath(__file__))}/"
-            path_ += f"../../../../outputs/clustering/{cloud_name}_"
-            path_ += f"{spatial_prior_params.cluster_algo}/"
-            path_ += f"{spatial_prior_params.cluster_algo}.csv"
-
-            df_clusters = pd.read_csv(path_, index_col="idx")
-
-            col_name = f"cluster_k{spatial_prior_params.n_clusters}"
-            df_clusters = df_clusters[col_name]
-
         # list of neighboring relations
-        self.use_next_nearest_neighbours = (
-            spatial_prior_params.use_next_nearest_neighbours
+        self.use_next_nearest_neighbors = (
+            spatial_prior_params.use_next_nearest_neighbors
         )
         r"""bool: wether to use the next nearest neighbors (i.e., neighbors in diagonal)"""
 
-        self.list_edges = build_list_edges(
-            df, df_clusters, self.use_next_nearest_neighbours
-        )
+        self.list_edges = build_list_edges(df, self.use_next_nearest_neighbors)
         r"""np.ndarray: set of edges in the graph induced by the spatial regularization"""
 
         self.dict_sites = self.build_sites(df)
@@ -145,7 +128,7 @@ class SpatialPrior(PriorProbaDistribution):
         dict[int, np.ndarray]
             set of sites and corresponding pixels. Forms a partition of the full set of pixels.
         """
-        if self.use_next_nearest_neighbours:
+        if self.use_next_nearest_neighbors:
             dict_sites_raw = {i: [] for i in range(4)}
             for (x, y) in list(df.index):
                 idx_site = 2 * (x % 2) + y % 2

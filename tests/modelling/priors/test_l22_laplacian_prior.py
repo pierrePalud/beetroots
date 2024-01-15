@@ -30,19 +30,13 @@ def build_test_1():
 
     spatial_prior_params = SpatialPriorParams(
         name="L2-laplacian",
-        use_next_nearest_neighbours=False,
+        use_next_nearest_neighbors=False,
         initial_regu_weights=np.ones((D,)),
-        use_clustering=False,
-        n_clusters=None,  # None,
-        cluster_algo=None,  # None,
     )
     spatial_prior_params_full = SpatialPriorParams(
         name="L2-laplacian",
-        use_next_nearest_neighbours=False,
+        use_next_nearest_neighbors=False,
         initial_regu_weights=np.ones((D_full,)),
-        use_clustering=False,
-        n_clusters=None,  # None,
-        cluster_algo=None,  # None,
     )
 
     prior = L22LaplacianSpatialPrior(
@@ -84,19 +78,13 @@ def build_test_local():
 
     spatial_prior_params = SpatialPriorParams(
         name="L2-laplacian",
-        use_next_nearest_neighbours=False,
+        use_next_nearest_neighbors=False,
         initial_regu_weights=np.ones((D,)),
-        use_clustering=False,
-        n_clusters=None,  # None,
-        cluster_algo=None,  # None,
     )
     spatial_prior_params_full = SpatialPriorParams(
         name="L2-laplacian",
-        use_next_nearest_neighbours=False,
+        use_next_nearest_neighbors=False,
         initial_regu_weights=np.ones((D_full,)),
-        use_clustering=False,
-        n_clusters=None,  # None,
-        cluster_algo=None,  # None,
     )
 
     prior = L22LaplacianSpatialPrior(

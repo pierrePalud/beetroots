@@ -1,5 +1,7 @@
 """Forward model to the sensor localization problem: computes all pairwise distances
 """
+from typing import List, Tuple, Union
+
 import numba as nb
 import numpy as np
 
@@ -213,19 +215,19 @@ class SensorLocForwardMap(ForwardMap):
         compute_lin: bool = True,
         compute_log: bool = True,  # unused, just to match the signature
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict:
         forward_map_evals = dict()
         forward_map_evals["Theta"] = Theta * 1
 
-        f_Theta = self.evaluate(Theta)
-
-        #! not necessarily N (in candidates testing case for MTM)
-        N_pix = f_Theta.shape[0]
-        forward_map_evals["f_Theta"] = f_Theta
-        # print(forward_map_evals["f_Theta"])
+        forward_map_evals["f_Theta"] = self.evaluate(Theta)
 
         if compute_derivatives:
             forward_map_evals["grad_f_Theta"] = self.gradient(Theta)
-            forward_map_evals["hess_diag_f_Theta"] = self.hess_diag(Theta)
+            if compute_derivatives_2nd_order:
+                forward_map_evals["hess_diag_f_Theta"] = self.hess_diag(Theta)
 
         return forward_map_evals
+
+    def restrict_to_output_subset(self, list_observables: List[Union[int, str]]):
+        raise NotImplementedError("should not be necessary for this example.")

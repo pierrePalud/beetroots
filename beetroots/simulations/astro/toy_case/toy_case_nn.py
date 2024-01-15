@@ -6,6 +6,7 @@ import numpy as np
 from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
 from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 from beetroots.simulations.abstract_simulation import Simulation
+from beetroots.simulations.astro import data_validation
 from beetroots.simulations.astro.forward_map.abstract_nn import SimulationNN
 from beetroots.simulations.astro.observation.abstract_toy_case import SimulationToyCase
 from beetroots.simulations.astro.posterior_type.abstract_direct import (
@@ -13,7 +14,7 @@ from beetroots.simulations.astro.posterior_type.abstract_direct import (
 )
 
 
-class SimulationToyCaseNNDirectPosterior(
+class SimulationToyCaseNN(
     Simulation, SimulationToyCase, SimulationNN, SimulationMySampler
 ):
     __slots__ = (
@@ -180,10 +181,12 @@ if __name__ == "__main__":
     path_data_cloud = f"{os.path.dirname(os.path.abspath(__file__))}"
     path_data_cloud += "/../../../../data/toycases"
 
-    params = SimulationToyCaseNNDirectPosterior.load_params(path_data_cloud)
+    params = SimulationToyCaseNN.load_params(path_data_cloud)
 
-    simulation = SimulationToyCaseNNDirectPosterior(
-        **params["simu_init"], params=params
+    simulation = SimulationToyCaseNN(**params["simu_init"], params=params)
+    SimulationToyCaseNN.check_input_params_file(
+        params,
+        data_validation.schema,
     )
 
     simulation.main(

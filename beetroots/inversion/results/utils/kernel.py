@@ -42,7 +42,7 @@ class ResultsKernels(ResultsUtil):
     def read_data(
         self,
         list_chains_folders: List[str],
-    ) -> Tuple[np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         list_type = np.zeros((self.N_run, self.effective_T))
         list_accepted = np.zeros((self.N_run, self.effective_T))
         list_log_proba = np.zeros((self.N_run, self.effective_T))
@@ -55,7 +55,7 @@ class ResultsKernels(ResultsUtil):
 
         return list_type, list_accepted, list_log_proba
 
-    def create_folders(self) -> Tuple[str]:
+    def create_folders(self) -> Tuple[str, str]:
         folder_path_inter = f"{self.path_img}/accepted_freq"
         folder_path_inter2 = f"{folder_path_inter}/{self.chain_type}"
         folder_path_accept_freq = f"{folder_path_inter2}/{self.model_name}"

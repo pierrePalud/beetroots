@@ -1,7 +1,7 @@
 """Abstract forward map
 """
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional, Union
 
 import numpy as np
 
@@ -127,6 +127,7 @@ class ForwardMap(ABC):
         compute_lin: bool = True,
         compute_log: bool = True,
         compute_derivatives: bool = True,
+        compute_derivatives_2nd_order: bool = True,
     ) -> dict[str, np.ndarray]:
         r"""gathers the evaluation of the forward map in linear and log scale and of the associated derivatives. Permits to limit repeating computations, but requires the storage in memory of the result.
 
@@ -140,10 +141,23 @@ class ForwardMap(ABC):
             wether or not to compute the log-forward model (and possibly the gradient and diagonal of the Hessian), by default True
         compute_derivatives : bool, optional
             wether or not to evaluate the derivatives of the forward map, by default True
+        compute_derivatives_2nd_order : bool, optional
+            wether or not to evaluate the 2nd order derivatives of the forward map, by default True
 
         Returns
         -------
         forward_map_evals : dict[str, np.ndarray]
             dictionary with entries such as `f_Theta`, `log_f_Theta`, `grad_f_Theta`, `grad_log_f_Theta`, `hess_diag_f_Theta` and `hess_diag_log_f_Theta`, depending on the input booleans.
+        """
+        pass
+
+    @abstractmethod
+    def restrict_to_output_subset(self, list_observables: List[Union[int, str]]):
+        r"""restricts the list of outputs to be predicted to a subset, either identified by their indices or by names
+
+        Parameters
+        ----------
+        list_observables : List[Union[int, str]]
+            subset of outputs to be predicted
         """
         pass

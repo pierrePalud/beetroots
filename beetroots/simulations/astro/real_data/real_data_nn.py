@@ -5,6 +5,7 @@ import numpy as np
 from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
 from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 from beetroots.simulations.abstract_simulation import Simulation
+from beetroots.simulations.astro import data_validation
 from beetroots.simulations.astro.forward_map.abstract_nn import SimulationNN
 from beetroots.simulations.astro.observation.abstract_real_data import (
     SimulationRealData,
@@ -14,7 +15,7 @@ from beetroots.simulations.astro.posterior_type.abstract_direct import (
 )
 
 
-class SimulationRealDataNNDirectPosterior(
+class SimulationRealDataNN(
     Simulation, SimulationRealData, SimulationNN, SimulationMySampler
 ):
     __slots__ = (

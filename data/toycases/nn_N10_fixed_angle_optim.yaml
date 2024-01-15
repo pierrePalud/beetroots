@@ -22,8 +22,8 @@ simu_init:
     - "co_v0_j12__v0_j11"
     - "co_v0_j13__v0_j12"
 #
-to_run_optim_map: true
-to_run_mcmc: false
+to_run_optim_map: false
+to_run_mcmc: true
 #
 forward_model:
   forward_model_name: "meudon_pdr_model_dense"
@@ -68,11 +68,8 @@ mixing_model_params_filename: ["best_params.csv"]
 with_spatial_prior: true
 spatial_prior:
   name: "L2-laplacian"
-  use_next_nearest_neighbours: false
+  use_next_nearest_neighbors: false
   initial_regu_weights: [1.0, 1.0, 1.0, 1.0, 1.0]
-  use_clustering: false
-  n_clusters: null
-  cluster_algo: null  # "spectral_clustering",
 #
 # sampling params
 sampling_params:
@@ -99,7 +96,7 @@ sampling_params:
     selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
     k_mtm: 100
     is_stochastic: true
-    compute_correction_term: true
+    compute_correction_term: false
 #
 # run params
 run_params:
@@ -112,7 +109,7 @@ run_params:
     start_from: null
   mcmc:
     N_MCMC: 1
-    T_MC: 200 #3_000
+    T_MC: 500 #3_000
     T_BI: 50
     plot_1D_chains: true
     plot_2D_chains: true

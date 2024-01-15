@@ -78,6 +78,11 @@ class MySampler(Sampler):
         self.compute_correction_term = my_sampler_params.compute_correction_term
         r"""bool: wether or not to use the correction term (denoted :math:`\gamma` in the article) during the sampling (only used if `is_stochastic=True`)"""
 
+        self.compute_derivatives_2nd_order = (
+            self.stochastic and self.compute_correction_term
+        )
+        r"""bool: wether to compute the expensive second order derivatives terms. Only true when the sampler runs a Markov chain (2nd order never used in optimization) and when the correction term denoted :math:`\gamma` is to be computed."""
+
         self.D = D
         r"""int: total number of physical parameters to reconstruct"""
         self.L = L
@@ -309,7 +314,9 @@ class MySampler(Sampler):
         assert Theta_0 is not None
         assert Theta_0.shape == (self.N, self.D)
 
-        self.current = posterior.compute_all(Theta_0)
+        self.current = posterior.compute_all(
+            Theta_0, compute_derivatives_2nd_order=self.compute_derivatives_2nd_order
+        )
 
         assert np.isnan(self.current["objective"]) == 0
         assert np.sum(np.isnan(self.current["grad"])) == 0
@@ -409,6 +416,7 @@ class MySampler(Sampler):
                         self.current["Theta"],
                         self.current["forward_map_evals"],
                         self.current["nll_utils"],
+                        compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
                     )
 
                 additional_sampling_log["tau"] = posterior.prior_spatial.weights * 1
@@ -792,7 +800,10 @@ class MySampler(Sampler):
                 candidate_full = new_Theta * 1
                 candidate_full[idx_pix, :] = mu_current * 1
 
-                candidate_all = posterior.compute_all(candidate_full)
+                candidate_all = posterior.compute_all(
+                    candidate_full,
+                    compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                )
                 grad_cand = candidate_all["grad"][idx_pix, :] * 1
                 v_cand = (
                     self.alpha * v_current + (1 - self.alpha) * grad_cand**2
@@ -870,7 +881,10 @@ class MySampler(Sampler):
                 self.j_t = j.flatten()
 
                 if accept_arr.max() > 0:  # if at least one accept
-                    self.current = posterior.compute_all(new_Theta)
+                    self.current = posterior.compute_all(
+                        new_Theta,
+                        compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                    )
 
             # after loop
             return accept_total.mean(), log_proba_accept_total.mean()
@@ -896,6 +910,7 @@ class MySampler(Sampler):
 
             candidate_all = posterior.compute_all(
                 mu_current.reshape((self.N, self.D)),
+                compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
             )
             if candidate_all["objective"] < self.current["objective"]:
                 self.current = copy.copy(candidate_all)
@@ -904,7 +919,8 @@ class MySampler(Sampler):
             else:
                 candidate = mu_current + z_t  # (N * D,)
                 candidate_all = posterior.compute_all(
-                    candidate.reshape((self.N, self.D))
+                    candidate.reshape((self.N, self.D)),
+                    compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
                 )
 
                 if candidate_all["objective"] < self.current["objective"]:
@@ -1128,7 +1144,10 @@ class MySampler(Sampler):
         # *------
         # * once all sites have been dealt with, update global parameters
         if accept_total.max() > 0:  # if at least one accept
-            self.current = posterior.compute_all(new_Theta)
+            self.current = posterior.compute_all(
+                new_Theta,
+                compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+            )
 
             new_v = self.v.reshape((self.N, self.D))
             new_v = np.where(
