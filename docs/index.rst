@@ -11,7 +11,7 @@ Welcome to beetroots's documentation!
    :caption: Contents:
 
 
-Beetroots (BayEsian invErsion with spaTial Regularization of nOisy multi-line ObservaTion mapS) is a Python package that performs Bayesian inference of physical parameters from multispectral-structured cubes with a dedicated sampling algorithm.
+Beetroots (BayEsian infErence with spaTial Regularization of nOisy multi-line ObservaTion mapS) is a Python package that performs Bayesian inference of physical parameters from multispectral-structured cubes with a dedicated sampling algorithm.
 Thanks to this sampling algorithm, `beetroots` provides maps of credibility intervals along with estimated maps.
 
 The sampling algorithm is introduced in
@@ -77,7 +77,14 @@ To clone, install and test the package, run:
 Package structure and how to adapt it to your use cases
 =======================================================
 
-TODO: correct.
+This package is large and contains a lot of python modules.
+To facilitate code exploration and use, here is an un-rigorous UML class diagram of the code:
+
+.. image:: ./examples/img/uml_classes/uml_classes_diagram.svg
+   :width: 100%
+   :alt: UML class diagram
+   :align: center
+
 
 The ``run_simulations.sh`` file is used to run a sampling process.
 The sampling process to run and the corresponding main params are defined in ``beetroots/__main__.py``.
