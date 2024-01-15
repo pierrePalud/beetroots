@@ -12,7 +12,7 @@ class SimulationForwardMap(abc.ABC):
     r"""abstract class for to set up the forward map for an inversion of astrophysical data"""
 
     MODELS_PATH = os.path.abspath(
-        f"{os.path.dirname(os.path.abspath(__file__))}/../../../../../data/models"
+        f"{os.path.dirname(os.path.abspath(__file__))}/../../../../data/models"
     )
     r"""str: path to the folder containing all the already defined and saved models (i.e., polynomials or neural networks)"""
 

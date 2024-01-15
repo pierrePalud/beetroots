@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
@@ -45,7 +45,7 @@ class SimulationToyCaseNNDirectPosterior(
         self,
         forward_model_name: str,
         force_use_cpu: bool,
-        fixed_params: Dict[str, float],
+        fixed_params: Dict[str, Optional[float]],
         is_log_scale_params: Dict[str, bool],
         #
         sigma_a_float: float,
@@ -178,7 +178,7 @@ class SimulationToyCaseNNDirectPosterior(
 
 if __name__ == "__main__":
     path_data_cloud = f"{os.path.dirname(os.path.abspath(__file__))}"
-    path_data_cloud += "/../../../../../data/toycases"
+    path_data_cloud += "/../../../../data/toycases"
 
     params = SimulationToyCaseNNDirectPosterior.load_params(path_data_cloud)
 

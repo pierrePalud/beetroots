@@ -57,9 +57,11 @@ class SimulationToyCase(SimulationObservation):
         sigma_m: np.ndarray,
         omega: np.ndarray,
     ) -> pd.DataFrame:
-        data_int_path = f"{os.path.dirname(os.path.abspath(__file__))}"
-        data_int_path += "/../../../../../data/toycases/"
-        data_int_path += f"{self.cloud_name}.pkl"
+        data_int_path = os.path.abspath(
+            f"{os.path.dirname(os.path.abspath(__file__))}/../../../../data/toycases"
+        )
+
+        data_int_path += f"/{self.cloud_name}.pkl"
         syn_map = pd.read_pickle(data_int_path)
 
         for col in ["idx", "X", "Y"] + self.list_names:

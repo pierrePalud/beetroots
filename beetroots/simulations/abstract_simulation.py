@@ -158,7 +158,7 @@ class Simulation(abc.ABC):
 
         # path to the outputs dir
         if folder_path is None:
-            path_ouput_general = f"{os.path.abspath(__file__)}/../../../../outputs"
+            path_ouput_general = f"{os.path.abspath(__file__)}/../../../outputs"
         else:
             path_ouput_general = f"{folder_path}/outputs"
 

@@ -9,7 +9,7 @@ poetry shell
 ```
 
 ```bash
-poetry run python beetroots/simulations/astro/real_data/omc1_nn_direct_posterior.py input_params_45per_with_spatial_regu_lines1234.yaml
+poetry run python beetroots/simulations/astro/real_data/omc1_nn.py input_params_45per_with_spatial_regu_lines1234.yaml
 ```
 
 **Carefull: this multiplicative noise really requires the optimization of approx params.**

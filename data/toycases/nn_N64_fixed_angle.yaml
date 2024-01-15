@@ -22,7 +22,7 @@ simu_init:
     - "co_v0_j12__v0_j11"
     - "co_v0_j13__v0_j12"
 #
-to_run_optim_map: false
+to_run_optim_map: true
 to_run_mcmc: true
 #
 forward_model:
@@ -88,7 +88,7 @@ sampling_params:
     initial_step_size:  5.0e-4
     extreme_grad: 1.0e-5
     history_weight: 0.99
-    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
+    selection_probas: [0.2, 0.8] # (p_mtm, p_pmala)
     k_mtm: 20
     is_stochastic: false
     compute_correction_term: false
@@ -105,14 +105,14 @@ sampling_params:
 run_params:
   map:
     N_MCMC: 1
-    T_MC: 200 #2000
+    T_MC: 500 #2000
     T_BI: 20 # 100
     batch_size: 20
     freq_save: 1
     start_from: null
   mcmc:
     N_MCMC: 1
-    T_MC: 150 #10_000
+    T_MC: 500 #10_000
     T_BI: 15 #2_500
     plot_1D_chains: true
     plot_2D_chains: true
@@ -120,7 +120,7 @@ run_params:
     plot_comparisons_yspace: true
     batch_size: 10
     freq_save: 1
-    start_from: null
+    start_from: "MAP"
     regu_spatial_N0: !!float inf # sets to infinite
     regu_spatial_scale: 1.0
     regu_spatial_vmin: 1.0e-8

@@ -12,15 +12,20 @@ schema = {
             # "params_names": {},
         },
     },
-    "with_spatial_prior": {"required": True, "type": "bool"},
+    #
+    "to_run_optim_map": {"required": True, "type": "boolean"},
+    "to_run_mcmc": {"required": True, "type": "boolean"},
+    #
+    # spatial prior
+    "with_spatial_prior": {"required": True, "type": "boolean"},
     "spatial_prior": {
         "required": False,
         "type": "dict",
         "schema": {
             "name": {"type": "string", "allowed": ["L2-laplacian", "L2-gradient"]},
-            "use_next_nearest_neighbours": {"type": "bool"},
+            "use_next_nearest_neighbours": {"type": "boolean"},
             "initial_regu_weights": {"type": "list"},
-            "use_clustering": {"type": "bool"},
+            "use_clustering": {"type": "boolean"},
             "n_clusters": {"nullable": True, "type": "integer", "min": 2},
             "cluster_algo": {
                 "nullable": True,
@@ -29,5 +34,6 @@ schema = {
             },
         },
     },
+    # sampling params
 }
 r"""validation schema that ensures that the ``.yaml`` input file, that depicts the inversion configuration, has a correct structure"""
