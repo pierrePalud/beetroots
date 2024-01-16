@@ -80,7 +80,7 @@ Package structure and how to adapt it to your use cases
 This package is large and contains a lot of python modules.
 To facilitate code exploration and use, here is an un-rigorous UML class diagram of the code:
 
-.. image:: ./examples/img/uml_classes/uml_classes_diagram.svg
+.. image:: img/uml_classes/uml_classes_diagram.svg
    :width: 100%
    :alt: UML class diagram
    :align: center

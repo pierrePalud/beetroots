@@ -39,6 +39,7 @@ class SimulationRealData(SimulationObservation):
         self.list_lines_valid = list(
             set(list(df_int.columns)) - set(self.list_lines_fit)
         )
+        r"""List[str]: list of observed lines not used for inference, that can be used for validation"""
         self.list_lines_valid.remove("idx")
         self.list_lines_valid.sort()
 
@@ -65,6 +66,7 @@ class SimulationRealData(SimulationObservation):
             )
 
         self.N = len(df_int_fit)
+        r"""int: number of pixels / components in the observation"""
 
         # * correct values (censoring / errors / etc.)
         df_censor_fit = df_err_fit.copy()
@@ -87,7 +89,9 @@ class SimulationRealData(SimulationObservation):
         omega_valid = df_censor_valid.drop("idx", 1).values
 
         self.Theta_true_scaled = None
+        r"""Optional[np.ndarray]: true values of the physical parameters. Always ``None`` for real applications."""
         self.map_shaper = MapShaper(df_int)
+        r"""MapShaper: defines the transformation from vectors to 2D maps"""
 
         # * save observation
         if save_obs:

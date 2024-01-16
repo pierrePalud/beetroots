@@ -27,7 +27,7 @@ sampling_params:
     selection_probas: [0.1, 0.9] # (p_mtm, p_pmala)
     k_mtm: 1_000
     is_stochastic: true
-    compute_correction_term: true
+    compute_correction_term: false
 #
 # run params
 run_params:

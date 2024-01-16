@@ -248,6 +248,15 @@ class Simulation(abc.ABC):
 
     @classmethod
     def check_input_params_file(cls, params: dict, schema: dict) -> None:
+        r"""checks the validity of the params contained in the ``.yaml`` input file using the cerberus python package
+
+        Parameters
+        ----------
+        params : dict
+            content of the ``.yaml`` file
+        schema : dict
+            cerberus validation schema
+        """
         # inputs validation
         v = Validator(schema, allow_unknown=True)
         is_input_correct: bool = v.validate(params)

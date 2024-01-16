@@ -15,7 +15,7 @@ We then propose **detailed walkthroughs for three examples**:
 * Sampling from a :ref:`Two-dimensional Gaussian mixture`
 * Solving the :ref:`Sensor localization problem` introduced in :cite:t:`ihlerNonparametricBeliefPropagation2005`
 * An :ref:`Application to a synthetic ISM map`, introduced in Section IV.C of :cite:t:`paludEfficientSamplingNon2023`
-* An :ref:`Application to the Carina Nebula`, a 176-pixel observation already analyzed in :cite:t:`wuConstrainingPhysicalConditions2018`
+* An :ref:`Application to NGC 7023`, a 1-pixel observation already analyzed in :cite:t:`joblinStructurePhotodissociationFronts2018`
 
 
 Finally, we present **secondary yet important features** of the ``beetroots`` package:
@@ -39,7 +39,7 @@ Finally, we present **secondary yet important features** of the ``beetroots`` pa
    sensor-loc
    sensor_loc_pb_definition
    application-toycase-astro
-   application-carina-astro
+   application-ngc7023-astro
 
    .. run_inversion_in_parallel
 

@@ -27,14 +27,14 @@ sampling_params:
     selection_probas: [0.9, 0.1] # (p_mtm, p_pmala)
     k_mtm: 1_000
     is_stochastic: true
-    compute_correction_term: true
+    compute_correction_term: false
 #
 # run params
 run_params:
   mcmc:
     N_MCMC: 1
-    T_MC: 30_000
-    T_BI: 5_000
+    T_MC: 5_000 # 30_000
+    T_BI: 500 # 5_000
     plot_1D_chains: true
     plot_2D_chains: true
     plot_ESS: true
