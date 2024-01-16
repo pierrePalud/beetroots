@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry] # https://python-poetry.org/docs/pyproject/
 name = "beetroots"
-version = "0.2.0"
+version = "1.0.0"
 description = "Beetroots (BayEsian infErence with spaTial Regularization of nOisy multi-line ObservaTion mapS)"
 keywords = [
     "Bayesian inference",
