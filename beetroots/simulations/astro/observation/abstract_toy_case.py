@@ -118,7 +118,7 @@ class SimulationToyCase(SimulationObservation):
 
         # * save observation
         df_observation = syn_map.copy()
-        df_observation = df_observation.drop(self.list_names, 1)
+        df_observation = df_observation.drop(columns=self.list_names)
         df_observation.loc[:, self.list_lines_fit] = y * 1
         df_observation.to_csv(f"{self.path_data_csv_in}/observation_maps.csv")
 

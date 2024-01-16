@@ -28,10 +28,10 @@ simu_init:
   name: "bo_nn_ngc7023"
   D: 5
   D_no_kappa: 4
-  K: 30
+  K: 20
   log10_f_grid_size: 100
-  N_samples_y: 200_000 # 250_000
-  max_workers: 5
+  N_samples_y: 10_000 # 200_000 # 250_000
+  max_workers: 3
 #
 main_params:
   dict_forward_model:

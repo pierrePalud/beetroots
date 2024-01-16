@@ -18,6 +18,8 @@ from beetroots.approx_optim.approach_type.abstract_approach_type import Approach
 
 
 class BayesianOptimizationApproach(ApproachType):
+    r"""implements a Bayesian optimization approach to adjust the likelihood parameter"""
+
     def optimization(
         self,
         first_points: List,
@@ -31,7 +33,7 @@ class BayesianOptimizationApproach(ApproachType):
         n: int,
         ell: int,
     ) -> None:
-        """Perform Bayesian optimization
+        """performs Bayesian optimization
 
         Parameters
         ----------
@@ -89,12 +91,7 @@ class BayesianOptimizationApproach(ApproachType):
             )
 
         # perform optimization
-        optimizer.maximize(
-            init_points=init_points,
-            n_iter=n_iter,
-            # Gaussian Process parameters
-            alpha=1e-2,
-        )
+        optimizer.maximize(init_points=init_points, n_iter=n_iter)
         return
 
     def plots_postprocessing(
@@ -105,7 +102,7 @@ class BayesianOptimizationApproach(ApproachType):
         bounds_a1_high: float,
         n_iter: int,
     ) -> None:
-        """Make some plots after the optimization process to facilitate the execution understanding
+        """makes some plots after the optimization process to facilitate the execution understanding
 
         Parameters
         ----------
@@ -142,7 +139,7 @@ class BayesianOptimizationApproach(ApproachType):
         bounds_a1_low: float,
         bounds_a1_high: float,
     ) -> None:
-        """Plot the sequence of sampled points with the order as colorbar
+        """plots the sequence of sampled points with the order as colorbar
 
         Parameters
         ----------

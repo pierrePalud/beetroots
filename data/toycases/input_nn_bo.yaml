@@ -1,36 +1,27 @@
 list_lines:
+  - "co_v0_j4__v0_j3"
+  - "co_v0_j5__v0_j4"
+  - "co_v0_j6__v0_j5"
+  - "co_v0_j7__v0_j6"
+  - "co_v0_j8__v0_j7"
+  - "co_v0_j9__v0_j8"
+  - "co_v0_j10__v0_j9"
   - "co_v0_j11__v0_j10"
   - "co_v0_j12__v0_j11"
   - "co_v0_j13__v0_j12"
-  - "co_v0_j15__v0_j14"
-  - "co_v0_j16__v0_j15"
-  - "co_v0_j17__v0_j16"
-  - "co_v0_j18__v0_j17"
-  - "co_v0_j19__v0_j18"
-  #
-  - "h2_v0_j2__v0_j0"
-  - "h2_v0_j3__v0_j1"
-  - "h2_v0_j4__v0_j2"
-  - "h2_v0_j5__v0_j3"
-  - "h2_v0_j6__v0_j4"
-  - "h2_v0_j7__v0_j5"
-  #
-  - "chp_j1__j0"
-  - "chp_j2__j1"
-  - "chp_j3__j2"
 #
-filename_int: "Nebula_NGC_7023_Int.pkl"
-filename_err: "Nebula_NGC_7023_Err.pkl"
-#
-sigma_m_float_linscale: 1.3
+# for toycase, the noise variances are constant all over the map
+# and for all lines
+sigma_a: 1.38715e-10
+sigma_m_float_linscale: 1.1
 #
 simu_init:
-  name: "bo_nn_ngc7023"
+  name: "bo_nn_toycase"
   D: 5
   D_no_kappa: 4
   K: 30
   log10_f_grid_size: 100
-  N_samples_y: 200_000 # 250_000
+  N_samples_y: 10_000 # 200_000 # 250_000
   max_workers: 5
 #
 main_params:
@@ -42,7 +33,7 @@ main_params:
       P: null
       radm: null
       Avmax: null
-      angle: 60.0
+      angle: 0.0
     is_log_scale_params: # defines the scale to work with for each param (either log or lin)
       kappa: True
       P: True

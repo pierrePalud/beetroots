@@ -2,9 +2,11 @@ import abc
 
 
 class ApproxOptimForwardMap(abc.ABC):
+    r"""abstract class that handles the generation of a dataset of :math:`\log_{10} f_{\ell}(\theta)` values"""
+
     @abc.abstractmethod
     def compute_log10_f_Theta(self):
-        r"""Evaluates $\log_{10} f$ on a list of `self.N_samples_theta` $x$ values, each randomly generated in the hypercube defined by its lower and upper bounds.
+        r"""Evaluates :math:`\log_{10} f` on a list of ``self.N_samples_theta`` :math:`\theta` values, each randomly generated in the hypercube defined by its lower and upper bounds.
 
         Parameters
         ----------
@@ -20,6 +22,6 @@ class ApproxOptimForwardMap(abc.ABC):
         Returns
         -------
         np.ndarray of shape (self.N_samples_theta, L)
-            evaluations of the `self.N_samples_theta` $x$ values for the L considered lines.
+            evaluations of the ``self.N_samples_theta`` :math:`\theta` values for the L considered lines.
         """
         pass

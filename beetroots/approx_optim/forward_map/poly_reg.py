@@ -9,6 +9,15 @@ from beetroots.simulations.astro.forward_map.abstract_poly_reg import (
 
 
 class ApproxOptimPolynomialReg(ApproxOptimForwardMap):
+    r"""handles the generation of a dataset of :math:`\log_{10} f_{\ell}(\theta)` values  for a polynomial forward map
+
+    .. warning::
+
+            Unfinished class.
+            Needs to be updated for D_sampling to remove the angle parameter.
+            Needs work on the :class:`.PolynomialApprox` class
+    """
+
     def compute_log10_f_Theta(
         self,
         forward_model_name: str,
@@ -16,6 +25,12 @@ class ApproxOptimPolynomialReg(ApproxOptimForwardMap):
         lower_bounds_lin: np.ndarray,
         upper_bounds_lin: np.ndarray,
     ):
+        r""".. warning::
+
+        Unfinished method.
+        Needs to be updated for D_sampling to remove the angle parameter.
+        Needs work on the :class:`.PolynomialApprox` class
+        """
         simulation = SimulationPolynomialReg()
         simulation.list_lines_fit = self.list_lines * 1
         scaler, forward_map = simulation.setup_forward_map(

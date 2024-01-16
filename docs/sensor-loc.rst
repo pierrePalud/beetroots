@@ -101,14 +101,14 @@ To run the sampling (from ``beetroot``'s root folder):
 
 .. code:: bash
 
-    poetry run python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p9.yaml
+    python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p9.yaml
 
 
 or
 
 .. code:: bash
 
-    poetry run python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p1.yaml
+    python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p1.yaml
 
 The difference between the two input files is the selection probability of the MTM kernel: 0.9 in the first case, and 0.1 in the latter.
 
@@ -174,7 +174,7 @@ By running
 
 .. code:: bash
 
-    poetry run python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p9_false.yaml
+    python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p9_false.yaml
 
 one can identify the problematic observation.
 Indeed, the ``data/output/mcmc/pvalues_analysis.csv`` file identifies the three sensors that are affected by the alteration.

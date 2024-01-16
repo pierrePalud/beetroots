@@ -76,7 +76,7 @@ class Simulation(abc.ABC):
         r"""List[str]: names of the physical parameters in figures, e.g., $P_{th}$ for the thermal pressure"""
 
         self.D = len(self.list_names)  # Number of physical parameters
-        r"""int: total number of physical parameters"""
+        r"""int: total number of physical parameters involved in the forward map"""
 
         self.list_fixed_values = list(params["forward_model"]["fixed_params"].values())
         r"""List[float | None] list of values for the physical parameters that are not to be samples"""

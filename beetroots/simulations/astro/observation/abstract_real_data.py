@@ -10,15 +10,53 @@ from beetroots.simulations.astro.observation.abstract_observation import (
 
 
 class SimulationRealData(SimulationObservation):
+    r"""abstract class that reads the observation data for real observations"""
+
     def setup_observation(
         self,
         data_int_path: str,
         data_err_path: str,
         save_obs: bool = True,
-    ) -> Tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[
+        pd.DataFrame,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+    ]:
+        r"""reads the observation data for real observations
+
+        Parameters
+        ----------
+        data_int_path : str
+            path to the ``.pkl`` file that contains the observation maps
+        data_err_path : str
+            path to the ``.pkl`` file that contains the maps of additive noise standard deviation
+        save_obs : bool, optional
+            by default True
+
+        Returns
+        -------
+        df_int_fit : pd.DataFrame
+            DataFrame containing the observations used for inference
+        y_fit : np.ndarray of shape (N, L)
+            observations to be used for inference
+        sigma_a_fit : np.ndarray of shape (N, L)
+            additive noise standard deviations associated with the observations used for inference
+        omega_fit : np.ndarray of shape (N, L)
+            censor threshold associated with the observations used for inference
+        y_valid : np.ndarray of shape (N, L_valid)
+            observations that are not to be used for inference
+        sigma_a_valid : np.ndarray of shape (N, L_valid)
+            additive noise standard deviations associated with the observations not used for inference
+        omega_valid : np.ndarray of shape (N, L_valid)
+            censor threshold associated with the observations not used for inference
+        """
         # * read observations
-        df_int = pd.read_pickle(data_int_path)
-        df_err = pd.read_pickle(data_err_path)
+        df_int: pd.DataFrame = pd.read_pickle(data_int_path)
+        df_err: pd.DataFrame = pd.read_pickle(data_err_path)
         assert list(df_int.index.names) == ["X", "Y"]
         assert list(df_err.index.names) == ["X", "Y"]
         assert len(df_int) == len(df_err)
@@ -77,16 +115,16 @@ class SimulationRealData(SimulationObservation):
         # df_censor.iloc[:, :-1] *= 3 # with potential censorship
         df_censor_valid.iloc[:, :-1] = 1e-60  # no censorship
 
-        y_fit = np.nan_to_num(df_int_fit.drop("idx", 1).values, nan=1e-15)
-        sigma_a_fit = np.nan_to_num(df_err_fit.drop("idx", 1).values, nan=1)
-        omega_fit = df_censor_fit.drop("idx", 1).values
+        y_fit = np.nan_to_num(df_int_fit.drop(columns="idx").values, nan=1e-15)
+        sigma_a_fit = np.nan_to_num(df_err_fit.drop(columns="idx").values, nan=1)
+        omega_fit = df_censor_fit.drop(columns="idx").values
 
-        y_valid = np.nan_to_num(df_int_valid.drop("idx", 1).values, nan=1e-15)
+        y_valid = np.nan_to_num(df_int_valid.drop(columns="idx").values, nan=1e-15)
         sigma_a_valid = np.nan_to_num(
-            df_err_valid.drop("idx", 1).values,
+            df_err_valid.drop(columns="idx").values,
             nan=1,
         )
-        omega_valid = df_censor_valid.drop("idx", 1).values
+        omega_valid = df_censor_valid.drop(columns="idx").values
 
         self.Theta_true_scaled = None
         r"""Optional[np.ndarray]: true values of the physical parameters. Always ``None`` for real applications."""

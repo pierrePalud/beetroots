@@ -1,13 +1,13 @@
 Application to NGC 7023
 ================================
 
-Example of real case, already studied in :cite:t:`joblinStructurePhotodissociationFronts2018`.
-
-
-
+In this example, we consider a real cloud, NGC 7023, with observations already studied in :cite:t:`joblinStructurePhotodissociationFronts2018`.
 
 Python Simulation preparation
 -----------------------------
+
+Here are the classes that are necessary to sample from this distribution.
+The green classes indicate the already implemented classes, and the red classes indicate the classes to implement.
 
 .. image:: img/simulation-structures/astro-appli.svg
    :width: 85%
@@ -214,4 +214,37 @@ Sampling
 
 .. code:: bash
 
-    poetry run python examples/ngc7023/ngc7023_nn.py input_params.yaml
+    python examples/ngc7023/ngc7023_nn.py input_params.yaml
+
+
+Results
+-------
+
+Among other things, the code plots multiple pairplot histograms:
+
+.. image:: img/ngc7023/hist2D/hist2D_n0_d10_d23_overall_chain.PNG
+    :width: 30%
+.. image:: img/ngc7023/hist2D/hist2D_n0_d11_d23_overall_chain.PNG
+    :width: 30%
+.. image:: img/ngc7023/hist2D/hist2D_n0_d12_d23_overall_chain.PNG
+    :width: 30%
+
+|
+
+.. image:: img/ngc7023/hist2D/hist2D_n0_d10_d22_overall_chain.PNG
+    :width: 30%
+.. image:: img/ngc7023/hist2D/hist2D_n0_d11_d22_overall_chain.PNG
+    :width: 30%
+
+|
+
+.. image:: img/ngc7023/hist2D/hist2D_n0_d10_d21_overall_chain.PNG
+    :width: 30%
+
+and compares the reproduced observations with the considered observation model (see also the Bayesian p-value):
+
+.. image:: img/ngc7023/yfx_fit.PNG
+    :width: 80%
+    :align: center
+
+Both the histograms and line predictions are compatible with those found in :cite:t:`joblinStructurePhotodissociationFronts2018`.

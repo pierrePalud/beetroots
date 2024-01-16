@@ -18,7 +18,7 @@ class ApproxParamsOptim(abc.ABC):
 
     def __init__(
         self,
-        list_lines,
+        list_lines: List[str],
         name: str,
         D: int,
         D_no_kappa: int,
@@ -32,37 +32,80 @@ class ApproxParamsOptim(abc.ABC):
         medium_size: int = 20,
         bigger_size: int = 24,
     ):
+        r"""
+
+        Parameters
+        ----------
+        list_lines : List[str]
+            names of the observables for which the likelihood parameter needs to be adjusted
+        name : str
+            name of the process, to be used in the output folder name
+        D : int
+            total number of physical parameters involved in the forward map
+        D_no_kappa : int
+            total number of physical parameters involved in the forward map except for the scaling parameter :math:`\kappa` (if it is part of the considered physical parameters)
+        K : int
+            the number of sampled theta values is :math:`K^D`
+        log10_f_grid_size : int
+            number of points in the grid on :math:`\log f_\ell(\theta)
+        N_samples_y : int
+            number of samples for :math:`y_\ell`
+        max_workers : int
+            maximum number of workers that can be used for optimization or results extraction
+        sigma_a : Union[np.ndarray, float]
+            standard deviation of the additive Gaussian noise
+        sigma_m : Union[np.ndarray, float]
+            standard deviation parameter of the multiplicative lognormal noise
+        small_size : int, optional
+            size for basic text, axes titles, xticks and yticks, by default 16
+        medium_size : int, optional
+            size of the axis labels, by default 20
+        bigger_size : int, optional
+            size of the figure title, by default 24
+        """
         self.max_workers = max_workers
+        r"""int: maximum number of workers that can be used for optimization or results extraction"""
 
         self.list_lines = list_lines
+        r"""List[str]: names of the observables for which the likelihood parameter needs to be adjusted"""
         self.L = len(list_lines)
 
         if isinstance(sigma_a, np.ndarray):
             assert len(sigma_a.shape) == 2, f"{sigma_a.shape}"
             assert sigma_a.shape[1] == self.L
-            self.N = sigma_a.shape[0]
+            N = sigma_a.shape[0]
         else:
-            self.N = 1
-            sigma_a = sigma_a * np.ones((self.N, self.L))
+            N = 1
+            sigma_a = sigma_a * np.ones((N, self.L))
 
         if isinstance(sigma_m, np.ndarray):
-            assert sigma_m.shape == (self.N, self.L), f"{sigma_m.shape}"
+            assert sigma_m.shape == (N, self.L), f"{sigma_m.shape}"
         else:
-            self.N = 1
-            sigma_m = sigma_m * np.ones((self.N, self.L))
+            N = 1
+            sigma_m = sigma_m * np.ones((N, self.L))
+
+        self.N = N
+        r"""int: number of pixels / components for which the optimization needs to be performed"""
 
         assert isinstance(sigma_a, np.ndarray)
         assert isinstance(sigma_m, np.ndarray)
         self.sigma_a = sigma_a
+        r"""np.ndarray: standard deviations of the additive Gaussian noise"""
         self.sigma_m = sigma_m
+        r"""np.ndarray: standard deviation parameter of the multiplicative lognormal noise"""
 
         self.D = D
+        r"""int: total number of physical parameters involved in the forward map"""
+
         self.D_no_kappa = D_no_kappa
+        r"""int: total number of physical parameters involved in the forward map except for the scaling parameter :math:`\kappa` (if it is part of the considered physical parameters)"""
 
         self.K = K
-        self.N_samples_y = N_samples_y  # number of samples on $y_\ell$
-        self.N_samples_Theta = K**D  # to build pdf of $P(theta)$
+        r"""int: the number of sampled theta values is ``K^D_sampling``"""
+        self.N_samples_y = N_samples_y
+        r"""int: number of samples for :math:`y_\ell`"""
         self.log10_f_grid_size = log10_f_grid_size  # nb points P(theta) grid
+        r"""int: number of points in the grid on :math:`\log_{10} f_\ell(\theta)`"""
 
         self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
         self.create_empty_output_folders(name)
@@ -73,7 +116,17 @@ class ApproxParamsOptim(abc.ABC):
         medium_size: int = 20,
         bigger_size: int = 24,
     ) -> None:
-        """Defines text sizes on matplotlib plots"""
+        r"""defines text sizes on matplotlib plots
+
+        Parameters
+        ----------
+        small_size : int, optional
+            size for basic text, axes titles, xticks and yticks, by default 16
+        medium_size : int, optional
+            size of the axis labels, by default 20
+        bigger_size : int, optional
+            size of the figure title, by default 24
+        """
         plt.rc("font", size=small_size)  # controls default text sizes
         plt.rc("axes", titlesize=small_size)  # fontsize of the axes title
         plt.rc("axes", labelsize=medium_size)  # fontsize of the x and y labels
@@ -84,7 +137,7 @@ class ApproxParamsOptim(abc.ABC):
         return
 
     def create_empty_output_folders(self, name: str) -> None:
-        r"""creates the output directories
+        r"""creates the directories that receive the results of the likelihood parameter optimization
 
         Parameters
         ----------
@@ -95,18 +148,27 @@ class ApproxParamsOptim(abc.ABC):
         dt_str = now.strftime("%Y-%m-%d_%H")
 
         # path to the outputs dir
-        path_ouput_general = f"{os.path.abspath(__file__)}/../../../../outputs"
-        path_ouput_general = os.path.abspath(path_ouput_general)
+        path_ouput_general = os.path.abspath(
+            f"{os.path.abspath(__file__)}/../../../outputs"
+        )
 
-        path_output_sim = f"{path_ouput_general}/approx_optim_{name}_{dt_str}"
-        self.path_output_sim = os.path.abspath(path_output_sim)
+        self.path_output_sim = os.path.abspath(
+            f"{path_ouput_general}/approx_optim_{name}_{dt_str}"
+        )
+        r"""str: path to the output root folder, e.g., ``./outputs/simu1``"""
 
-        self.path_img = path_output_sim + "/img"
+        self.path_img = self.path_output_sim + "/img"
+        r"""str: path to the output image folder, e.g., ``./outputs/simu1/img``"""
         self.path_img_hist = self.path_img + "/hist"
+        r"""str: path to the histogram image folder, e.g., ``./outputs/simu1/img/hist``"""
         self.path_img_hist_final = self.path_img + "/hist_final"
+        r"""str: path to the final histogram image folder, e.g., ``./outputs/simu1/img/hist_final``"""
         self.path_img_final = self.path_img + "/final"
-        self.path_logs = path_output_sim + "/logs"
-        self.path_params = path_output_sim + "/optim_params"
+        r"""str: path to the final image folder, e.g., ``./outputs/simu1/img/final``"""
+        self.path_logs = self.path_output_sim + "/logs"
+        r"""str: path to the procedure logs, e.g., ``./outputs/logs``"""
+        self.path_params = self.path_output_sim + "/optim_params"
+        r"""str: path to the adjusted likelihood parameters, e.g., ``./outputs/optim_params``"""
 
         for folder_path in [
             path_ouput_general,
@@ -123,35 +185,37 @@ class ApproxParamsOptim(abc.ABC):
 
         return
 
-    def sample_Theta(
+    def sample_theta(
         self,
         lower_bounds: np.ndarray,
         upper_bounds: np.ndarray,
     ) -> np.ndarray:
-        r"""sample $\theta$ from Stratified MC in cube
+        r"""sample :math:`\theta` from Stratified MC in cube
 
         Parameters
         ----------
         K : int
             total number of samples per axis
         lower_bounds : np.ndarray of shape (D,)
-            lower bounds of cube on $\theta$
+            lower bounds of cube on :math:`\theta`
         upper_bounds : np.ndarray of shape (D,)
-            upper bounds of cube on $\theta$
+            upper bounds of cube on :math:`\theta`
 
         Returns
         -------
         np.ndarray of shape (N_samples, D)
-            $\theta$ samples
+            :math:`\theta` samples
         """
+        print("starting generation of theta values with Stratified MC")
         rng = np.random.default_rng(42)
+        D_sampling: int = upper_bounds.size
 
         delta_upper_lower = np.array(
-            [upper_bounds[d] - lower_bounds[d] for d in range(self.D)]
+            [upper_bounds[d] - lower_bounds[d] for d in range(D_sampling)]
         )
         list_lower_bounds = [
             np.arange(self.K) / self.K * delta_upper_lower[d] + lower_bounds[d]
-            for d in range(self.D)
+            for d in range(D_sampling)
         ]
         list_lower_bounds = np.meshgrid(*list_lower_bounds)
         list_lower_bounds = [
@@ -165,6 +229,7 @@ class ApproxParamsOptim(abc.ABC):
             )
             list_samples.append(Vd)
         x = np.vstack(list_samples).T
+        print("generation of theta values with Stratified MC done")
         return x
 
     def plot_hist_log10_f_Theta(
@@ -176,18 +241,22 @@ class ApproxParamsOptim(abc.ABC):
         pdf_kde_log10_f_Theta: np.ndarray,
         ell: int,
     ) -> None:
-        """plots histogram of log10(f(\theta))
+        r"""plots histogram of :math:`log_{10}(f_\ell(\theta))`
 
         Parameters
         ----------
         log10_f_Theta : np.ndarray of shape (-1, 1)
-            array of values of f(x) for considered line
-        line : str
-            name of the line
+            array of values of :math:`\log_{10} f_\ell (\theta)` for considered line
+        log10_f_Theta_low: float
+            lower bound for :math:`\log_{10} f_\ell (\theta)` for the considered line
+        log10_f_Theta_high: float
+            upper bound for :math:`\log_{10} f_\ell (\theta)` for the considered line
+        list_log10_f_grid: np.ndarray
+            grid values of :math:`\log_{10} f_\ell (\theta)` for the considered line
+        pdf_kde_log10_f_Theta: np.ndarray
+            pdf of :math:`\log_{10} f_\ell (\theta)` evaluated with a kernel density estimator
         ell : int
             index of the line
-        img_path : str
-            path of folder where the figure is to be saved
         """
         plt.figure(figsize=(8, 6))
         plt.title(f"line {ell} : {self.list_lines[ell]}")
@@ -219,18 +288,26 @@ class ApproxParamsOptim(abc.ABC):
         ell: int,
         best_point: np.ndarray,
     ) -> None:
-        """plots histogram of log10(f(\theta))
+        r"""plots histogram of :math:`\log_{10} f_\ell (\theta)`
 
         Parameters
         ----------
         log10_f_Theta : np.ndarray of shape (-1, 1)
-            array of values of f(x) for considered line
-        line : str
-            name of the line
+            array of values of :math:`\log_{10} f_\ell (\theta)` for considered line
+        log10_f_Theta_low: float
+            lower bound for :math:`\log_{10} f_\ell (\theta)` for the considered line
+        log10_f_Theta_high: float
+            upper bound for :math:`\log_{10} f_\ell (\theta)` for the considered line
+        list_log10_f_grid: np.ndarray
+            grid values of :math:`\log_{10} f_\ell (\theta)` for the considered line
+        pdf_kde_log10_f_Theta: np.ndarray
+            pdf of :math:`\log_{10} f_\ell (\theta)` evaluated with a kernel density estimator
+        n : int
+            pixel / component index
         ell : int
             index of the line
-        img_path : str
-            path of folder where the figure is to be saved
+        best_point : np.ndarray
+            position for the best point, to be displayed
         """
         lambda_ = 1 - utils.compute_lambda(
             a0=best_point[0],
@@ -282,17 +359,19 @@ class ApproxParamsOptim(abc.ABC):
 
         return
 
-    def save_setup_to_json(self, n: int, ell: int, pbounds: Dict) -> None:
+    def save_setup_to_json(
+        self, n: int, ell: int, pbounds: Dict[str, np.ndarray]
+    ) -> None:
         """save optimization context and parameters
 
         Parameters
         ----------
-        n : _type_
-            _description_
-        ell : _type_
-            _description_
-        pbounds : _type_
-            _description_
+        n : int
+            pixel / component index
+        ell : int
+            observable index
+        pbounds : dict[str, np.ndarray]
+            contains the bounds on the parameters to be adjusted
         """
         optim_params = {
             "n": n,
@@ -301,7 +380,7 @@ class ApproxParamsOptim(abc.ABC):
             "sigma_a": self.sigma_a[n, ell],
             "sigma_m": self.sigma_m[n, ell],
             "K": self.K,
-            "N_samples_Theta": self.N_samples_Theta,
+            "N_samples_theta": self.N_samples_theta,
             "N_samples_y": self.N_samples_y,
             "log10_f_grid_size": self.log10_f_grid_size,
             "a0": {"low": pbounds["a0"][0], "high": pbounds["a0"][1]},
@@ -321,7 +400,7 @@ class ApproxParamsOptim(abc.ABC):
         return
 
     def rewrite_logs_correct_json_format(self) -> None:
-        """rewrites the log files with correct json format"""
+        r"""rewrites the log files with correct json format"""
         for ell in range(self.L):
             line = self.list_lines[ell] * 1
 
@@ -339,6 +418,13 @@ class ApproxParamsOptim(abc.ABC):
         return
 
     def extract_optimal_params(self) -> pd.DataFrame:
+        """extracts the adjusted likelihood parameters from the log files and gather them in a DataFrame
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with the set of evaluated optimal parameters for each component n and line ell
+        """
         self.rewrite_logs_correct_json_format()
 
         list_best = []
@@ -374,23 +460,25 @@ class ApproxParamsOptim(abc.ABC):
         df_best.to_csv(f"{self.path_output_sim}/best_params.csv", index=False)
         return df_best
 
-    def setup_params_bounds(self):
-        """_summary_
-
-        _extended_summary_
-
-        Parameters
-        ----------
-        sigma_a : Union[np.ndarray, float]
-            _description_
-        sigma_m : Union[np.ndarray, float]
-            _description_
+    def setup_params_bounds(
+        self,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, float]:
+        r"""sets the bounds on the parameters to be adjusted, defined here as transition interval center for ``a0`` position and width for ``a1``
 
         Returns
         -------
-        Tuple[List[Dict[str, float]], np.ndarray]
-            _description_
+        log10_f0 : np.ndarray of shape (N, L)
+            values of :math:`f_\ell(\theta) at which additive and multiplicative noise variances are equal
+        bounds_a0_low : np.ndarray of shape (N, L)
+            lower bounds on the center of the transition interval (defined as deltas around the ``log10_f0``)
+        bounds_a0_high : np.ndarray of shape (N, L)
+            upper bounds on the center of the transition interval (defined as deltas around the ``log10_f0``)
+        bounds_a1_low : float
+            lower value for the transition interval size
+        bounds_a1_high : float
+            upper value for the transition interval size
         """
+        print("starting definition of parameters bounds")
         # log10_f0 = log10(ratio std of noises)
         # ie value of f at which noise variances are equal
         var_eps_m: np.ndarray = np.exp(self.sigma_m**2) * (
@@ -405,6 +493,7 @@ class ApproxParamsOptim(abc.ABC):
 
         bounds_a1_low = 0.01
         bounds_a1_high = 2.0
+        print("definition of parameters bounds done")
 
         return (
             log10_f0,

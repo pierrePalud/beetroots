@@ -120,7 +120,7 @@ To check other input file: run with ``input_params_pmtm0p9.yaml``
 
 Output:
 
->>> poetry run python examples/gaussian_mixture/gaussian_mixture_simu.py input_params_pmtm0p9.yaml
+>>> python examples/gaussian_mixture/gaussian_mixture_simu.py input_params_pmtm0p9.yaml
 starting sampling
 starting from a random point
 100%|█████████████████████████████████████████████████████████| 10000/10000 [00:49<00:00, 200.76it/s]

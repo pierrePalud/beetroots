@@ -42,17 +42,17 @@ The paper presenting this package is
 To prepare and perform an inversion, we recommend installing the package.
 The package can be installed with `pip`:
 
-```
+```shell
 pip install beetroots
 ```
 
 or by cloning the repo.
 To clone, install and test the package, run:
 
-```
+```shell
 git clone git@github.com:pierrePalud/beetroots.git
 cd beetroots
-poetry install
+poetry install # or poetry install -E notebook -E docs for extra dependencies
 poetry shell
-poetry run pytest
+pytest
 ```

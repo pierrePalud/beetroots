@@ -49,7 +49,7 @@ def neg_log_pdf_mult(y, m_m, s_m):
 def compute_lambda(
     a0: float, a1: float, f_Theta_true: Union[float, np.ndarray]
 ) -> Union[float, np.ndarray]:
-    r"""carefull: a0 and a1 are in log, base 10, and computations require natural base
+    r"""careful: a0 and a1 are in log, base 10, and computations require natural base
 
     Parameters
     ----------
@@ -57,12 +57,12 @@ def compute_lambda(
         center of mixing interval
     a1 : float
         radius of mixing interval
-    f_Theta_true : float
-        value of true $f(x)$
+    f_Theta_true : Union[float, np.ndarray]
+        value of true :math:`f(\theta)`
 
     Returns
     -------
-    lambda: float
+    lambda: Union[float, np.ndarray]
         mixing parameter
     """
     log_fm1 = (a0 - a1) * LOG_10

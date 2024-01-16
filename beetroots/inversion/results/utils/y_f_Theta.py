@@ -112,7 +112,7 @@ class ResultsDistributionComparisonYandFTheta(ResultsUtil):
 
         forward_map.restrict_to_output_subset(list_lines)
 
-        print("starting plot comparison of distributions of y and f(x)")
+        print("starting plot comparison of distributions of y and f(theta)")
 
         Theta_MAP_lin_full = self.read_data()
         Theta_MAP_scaled_full = scaler.from_lin_to_scaled(Theta_MAP_lin_full)
@@ -175,11 +175,11 @@ class ResultsDistributionComparisonYandFTheta(ResultsUtil):
 
             plt.figure(figsize=(12, 8))
             if self.N > 1:
-                title = r"comparison of $f(x)$ and $y$ distributions for pixel"
+                title = r"comparison of $f(\theta)$ and $y$ distributions for pixel"
                 title += f" {n}"
                 plt.title(title)
             else:
-                plt.title(r"comparison of $f(x)$ and $y$ distributions")
+                plt.title(r"comparison of $f(\theta)$ and $y$ distributions")
 
             plt.xlabel("lines")
             plt.ylabel(r"$\log y$")
@@ -324,5 +324,5 @@ class ResultsDistributionComparisonYandFTheta(ResultsUtil):
             for params in tqdm(list_params):
                 _plot_one_distribution_comparison(params)
 
-        print("plot comparison of distributions of y and f(x) done")
+        print("plot comparison of distributions of y and f(theta) done")
         return

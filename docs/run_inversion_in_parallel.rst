@@ -55,7 +55,7 @@ To run one inversion:
     CURRENT_PATH=$(pwd)
     echo $CURRENT_PATH
 
-    poetry run python beetroots/simulations/astro/toy_case/toy_case_nn.py ${2}/${1}
+    python beetroots/simulations/astro/toy_case/toy_case_nn.py ${2}/${1}
 
     # delete resulting hdf5 files, as they are usually heavy
     find ./outputs -name "*.hdf5" -type f -delete

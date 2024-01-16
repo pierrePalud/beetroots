@@ -21,26 +21,10 @@ beetroots.approx\_optim.abstract\_approx\_optim module
    :undoc-members:
    :show-inheritance:
 
-beetroots.approx\_optim.approx\_optim\_grid\_old module
--------------------------------------------------------
-
-.. automodule:: beetroots.approx_optim.approx_optim_grid_old
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 beetroots.approx\_optim.nn\_bo module
 -------------------------------------
 
 .. automodule:: beetroots.approx_optim.nn_bo
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-beetroots.approx\_optim.nn\_bo\_orionbar module
------------------------------------------------
-
-.. automodule:: beetroots.approx_optim.nn_bo_orionbar
    :members:
    :undoc-members:
    :show-inheritance:

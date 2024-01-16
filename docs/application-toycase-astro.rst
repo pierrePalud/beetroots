@@ -196,7 +196,7 @@ With nn-based approximation of forward model:
 
 .. code:: bash
 
-    poetry run python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N64_fixed_angle.yaml
+    python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N64_fixed_angle.yaml
 
 
 Minimum mean square error (MMSE) estimator, i.e., mean of the iterates of the Markov chain (the average is evaluated in the scaled space):
@@ -235,9 +235,9 @@ For instance:
 
 .. code:: bash
 
-    poetry run python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N10_fixed_angle.yaml
+    python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N10_fixed_angle.yaml
 
 
 .. code:: bash
 
-    poetry run python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N10_fixed_AV.yaml
+    python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N10_fixed_AV.yaml

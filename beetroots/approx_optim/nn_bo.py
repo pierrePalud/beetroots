@@ -1,7 +1,8 @@
-from typing import List, Union
+from typing import Dict, List, Union
 
 import numpy as np
 from scipy.stats import gaussian_kde
+from tqdm.auto import tqdm
 
 from beetroots.approx_optim.abstract_approx_optim import ApproxParamsOptim
 from beetroots.approx_optim.approach_type.bo import BayesianOptimizationApproach
@@ -11,17 +12,39 @@ from beetroots.approx_optim.forward_map.nn import ApproxOptimNN
 class ApproxParamsOptimNNBO(
     ApproxParamsOptim, ApproxOptimNN, BayesianOptimizationApproach
 ):
+    r"""class that performs likelihood parameter optimization using Bayesian optimization for a neural network forward map"""
+
     def main(
         self,
-        dict_forward_model: str,
+        dict_forward_model: Dict[str, Union[str, bool, List[bool], List[float]]],
         lower_bounds_lin: Union[np.ndarray, List],
         upper_bounds_lin: Union[np.ndarray, List],
         n_iter: int,
     ):
-        assert isinstance(forward_model_name, str)
-        assert isinstance(angle, float)
-        assert isinstance(lower_bounds_lin, (np.ndarray, list))
-        assert isinstance(upper_bounds_lin, (np.ndarray, list))
+        r"""main method of the class, sets up the optimization problems and solves them
+
+        Parameters
+        ----------
+        dict_forward_model : Dict[str, Union[str, bool, List[bool], List[float]]]
+            contains the necessary information to load the forward model with the :class:`NeuralNetworkApprox`
+        lower_bounds_lin : Union[np.ndarray, List]
+            lower bounds on the physical parameters (in linear scale)
+        upper_bounds_lin : Union[np.ndarray, List]
+            upper bounds on the physical parameters (in linear scale)
+        n_iter : int
+            number of iterations for the Bayesian optimization
+        """
+
+        assert isinstance(dict_forward_model["forward_model_name"], str)
+        # assert isinstance(angle, float)
+
+        if isinstance(lower_bounds_lin, list):
+            lower_bounds_lin = np.array(lower_bounds_lin)
+        if isinstance(upper_bounds_lin, list):
+            upper_bounds_lin = np.array(upper_bounds_lin)
+
+        assert isinstance(lower_bounds_lin, np.ndarray)
+        assert isinstance(upper_bounds_lin, np.ndarray)
         assert isinstance(n_iter, int) and n_iter > 0
 
         if isinstance(lower_bounds_lin, list):
@@ -29,6 +52,21 @@ class ApproxParamsOptimNNBO(
         if isinstance(lower_bounds_lin, list):
             lower_bounds_lin = np.array(lower_bounds_lin)
 
+        self.list_idx_sampling = [
+            i
+            for i, v in enumerate(dict_forward_model["fixed_params"].values())
+            if v is None
+        ]
+        r"""List[int]: indices of physical parameters considered as variables for the likelihood parameter adjustment"""
+
+        self.D_sampling = len(self.list_idx_sampling)
+        r"""int: number of physical parameters considered as variables for the likelihood parameter adjustment"""
+
+        self.N_samples_theta = self.K**self.D_sampling
+        r"""int: number of samples for :math:`\theta` used to build the histogram of :math:`\log_{10} f_\ell(\theta)`"""
+
+        print("starting setup")
+        # step 1: set the bounds for the parameters to be adjusted
         (
             log10_f0,
             bounds_a0_low,
@@ -37,6 +75,7 @@ class ApproxParamsOptimNNBO(
             bounds_a1_high,
         ) = self.setup_params_bounds()
 
+        # step 2: compute the histogram of log f(theta)
         log10_f_Theta = self.compute_log10_f_Theta(
             dict_forward_model,
             lower_bounds_lin,
@@ -45,6 +84,8 @@ class ApproxParamsOptimNNBO(
         log10_f_Theta_low = log10_f_Theta.min(axis=0)  # (L,)
         log10_f_Theta_high = log10_f_Theta.max(axis=0)  # (L,)
 
+        # step 3: set the KDE on log10 f_\ell(theta)
+        print(r"starting evaluation of kde of log10 f_\ell(theta)")
         list_log10_f_grid = np.zeros((self.log10_f_grid_size, self.L))
         pdf_kde_log10_f_Theta = np.zeros((self.log10_f_grid_size, self.L))
         for ell in range(self.L):
@@ -57,8 +98,10 @@ class ApproxParamsOptimNNBO(
             pdf_kde_log10_f_Theta[:, ell] = kde_log10_f_Theta.pdf(
                 list_log10_f_grid[:, ell],
             )
+        print(r"evaluation of kde of log10 f_\ell(theta) done")
 
-        for ell in range(self.L):
+        print("Starting the optimization")
+        for ell in tqdm(range(self.L)):
             print(f"starting line {ell} ({self.list_lines[ell]})")
             self.plot_hist_log10_f_Theta(
                 log10_f_Theta[:, ell],
