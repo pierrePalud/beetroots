@@ -21,7 +21,6 @@ readme = "README.md"
 repository = "https://github.com/pierrePalud/beetroots"
 
 
-
 classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
@@ -135,5 +134,6 @@ disable = "C0330, C0326"
 max-line-length = "88"
 
 [tool.poetry.urls]
-# Documentation = "https://ism-model-nn-approximation.readthedocs.io/en/latest/"
+Documentation = "https://beetroots.readthedocs.io/en/latest/
+"
 "Bug Tracker" = "https://github.com/pierrePalud/beetroots/issues"
