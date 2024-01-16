@@ -134,6 +134,5 @@ disable = "C0330, C0326"
 max-line-length = "88"
 
 [tool.poetry.urls]
-Documentation = "https://beetroots.readthedocs.io/en/latest/
-"
+Documentation = "https://beetroots.readthedocs.io/en/latest/"
 "Bug Tracker" = "https://github.com/pierrePalud/beetroots/issues"
