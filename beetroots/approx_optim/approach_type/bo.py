@@ -200,8 +200,6 @@ class BayesianOptimizationApproach(ApproachType):
     ) -> None:
         """plot the state (both mean and standard deviations) of the Gaussian process at multiple steps of the optimization process.
 
-        _extended_summary_
-
         Parameters
         ----------
         bounds_a0_low : np.ndarray

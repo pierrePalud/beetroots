@@ -111,13 +111,13 @@ def hess_diag_penalty(
 
 
 class SmoothIndicatorPrior(PriorProbaDistribution):
-    r"""This prior encodes validity intervals :math:`[l_d, u_d]` the physical parameters :math:`\theta_{nd}`(for :math:`d \in [\![1, D]\!]`).
+    r"""This prior encodes validity intervals :math:`[\underline{\theta}_{d}, \overline{\theta}_{d}]]` the physical parameters :math:`\theta_{nd}` (for :math:`d \in [\![1, D]\!]`).
     The negative log of this prior is
 
     .. math::
 
-        \forall n, d, \quad \iota^{\Delta}_{[\underline{\theta}_{d}, \overline{\theta}^{d}]}(\theta_{n,d}) = \begin{cases}
-        0 \quad \text{ if } \theta_{n,d} \in [\underline{\theta}_{d}, \overline{\theta}^{d}]\\
+        \forall n, d, \quad \iota^{\Delta}_{[\underline{\theta}_{d}, \overline{\theta}_{d}]}(\theta_{n,d}) = \begin{cases}
+        0 \quad \text{ if } \theta_{n,d} \in [\underline{\theta}_{d}, \overline{\theta}_{d}]\\
         \left(\frac{\theta_{n,d} - \underline{\theta}_{d}}{\Delta} \right)^4 \quad \text{ if } \theta_{n,d} < \underline{\theta}_{d}\\
         \left(\frac{\theta_{n,d} - \overline{\theta}_{d}}{\Delta} \right)^4 \quad \text{ if } \theta_{n,d} > \overline{\theta}_{d}
         \end{cases}
@@ -144,17 +144,17 @@ class SmoothIndicatorPrior(PriorProbaDistribution):
     ) -> None:
         super().__init__(D, N)
         self.indicator_margin_scale = indicator_margin_scale
-        r"""scaling parameter :math:`\Delta`"""
+        r"""float: scaling parameter :math:`\Delta`"""
 
         self.lower_bounds_full = lower_bounds
-        r"""validity interval lower bounds of the full set of D physical parameters"""
+        r"""np.ndarray: validity interval lower bounds of the full set of D physical parameters"""
         self.upper_bounds_full = upper_bounds
-        r"""validity interval upper bounds of the full set of D physical parameters"""
+        r"""np.ndarray: validity interval upper bounds of the full set of D physical parameters"""
 
         self.lower_bounds = lower_bounds[list_idx_sampling]
-        r"""validity interval lower bounds of the set of sampled physical parameters"""
+        r"""np.ndarray: validity interval lower bounds of the set of sampled physical parameters"""
         self.upper_bounds = upper_bounds[list_idx_sampling]
-        r"""validity interval upper bounds of the set of sampled physical parameters"""
+        r"""np.ndarray: validity interval upper bounds of the set of sampled physical parameters"""
 
         assert (
             self.lower_bounds.size == self.D
@@ -170,8 +170,8 @@ class SmoothIndicatorPrior(PriorProbaDistribution):
 
         .. math::
 
-            \forall n, d, \quad \iota^{\Delta}_{[\underline{\theta}_{d}, \overline{\theta}^{d}]}(\theta_{n,d}) = \begin{cases}
-            0 \quad \text{ if } \theta_{n,d} \in [\underline{\theta}_{d}, \overline{\theta}^{d}]\\
+            \forall n, d, \quad \iota^{\Delta}_{[\underline{\theta}_{d}, \overline{\theta}_{d}]}(\theta_{n,d}) = \begin{cases}
+            0 \quad \text{ if } \theta_{n,d} \in [\underline{\theta}_{d}, \overline{\theta}_{d}]\\
             \left(\frac{\theta_{n,d} - \underline{\theta}_{d}}{\Delta} \right)^4 \quad \text{ if } \theta_{n,d} < \underline{\theta}_{d}\\
             \left(\frac{\theta_{n,d} - \overline{\theta}_{d}}{\Delta} \right)^4 \quad \text{ if } \theta_{n,d} > \overline{\theta}_{d}
             \end{cases}
@@ -210,8 +210,8 @@ class SmoothIndicatorPrior(PriorProbaDistribution):
 
         .. math::
 
-            \forall n, d, \quad \iota^{\Delta}_{[\underline{\theta}_{d}, \overline{\theta}^{d}]}(\theta_{n,d}) = \begin{cases}
-            0 \quad \text{ if } \theta_{n,d} \in [\underline{\theta}_{d}, \overline{\theta}^{d}]\\
+            \forall n, d, \quad \iota^{\Delta}_{[\underline{\theta}_{d}, \overline{\theta}_{d}]}(\theta_{n,d}) = \begin{cases}
+            0 \quad \text{ if } \theta_{n,d} \in [\underline{\theta}_{d}, \overline{\theta}_{d}]\\
             \left(\frac{\theta_{n,d} - \underline{\theta}_{d}}{\Delta} \right)^4 \quad \text{ if } \theta_{n,d} < \underline{\theta}_{d}\\
             \left(\frac{\theta_{n,d} - \overline{\theta}_{d}}{\Delta} \right)^4 \quad \text{ if } \theta_{n,d} > \overline{\theta}_{d}
             \end{cases}

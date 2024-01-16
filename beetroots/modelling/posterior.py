@@ -10,7 +10,6 @@ class Posterior:
         "L",
         "N",
         "likelihood",
-        "prior",
         "prior_spatial",
         "prior_indicator",
         "dict_sites",
@@ -22,7 +21,6 @@ class Posterior:
         L: int,
         N: int,
         likelihood,
-        prior=None,
         prior_spatial=None,
         prior_indicator=None,
         separable: bool = True,
@@ -39,9 +37,6 @@ class Posterior:
 
         self.likelihood = likelihood
         """Likelihood: data-fidelity term"""
-
-        self.prior = prior
-        """Deprecated"""
 
         self.prior_spatial = prior_spatial
         """SpatialPrior: spatial prior term"""

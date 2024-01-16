@@ -167,9 +167,9 @@ class PolynomialApprox(ExpForwardMap):
     """
 
     LOGE_10 = np.log(10.0)
-    r"""float: natural log (base :math:`e` of 10, computed once and saved to limit redundant computations"""
+    r"""float: natural log (in base :math:`e`) of 10, computed once and saved to limit redundant computations"""
 
-    SIMU_PATH = f"{os.path.dirname(os.path.abspath(__file__))}/../../../data/"
+    SIMU_PATH = os.path.abspath(f"{os.path.dirname(os.path.abspath(__file__))}/../../../data/")
     r"""path to the folder containing the data of saved models"""
 
     def __init__(

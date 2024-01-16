@@ -46,9 +46,7 @@ class ResultsBayesPvalues(ResultsUtil):
         D_sampling: int,
         plot_ESS: bool,
     ):
-        """_summary_
-
-        _extended_summary_
+        """
 
         Parameters
         ----------

@@ -9,7 +9,8 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class Saver:
-    """enable to regularly save the progression of the Markov chain to a `.hdf5` file"""
+    r"""enable to regularly save the progression of the Markov chain to a ``.hdf5`` file
+    """
 
     __slots__ = (
         "N",
@@ -68,13 +69,13 @@ class Saver:
             contains the indices of the physical parameters to be sampled
         """
         self.N = N
-        r"""total number of pixels to reconstruct"""
+        r"""int: total number of pixels to reconstruct"""
         self.D = D
-        r"""total number of physical parameters"""
+        r"""int: total number of physical parameters"""
         self.D_sampling = D_sampling
-        r"""number of physical parameters that are optimized / sampled"""
+        r"""int: number of physical parameters that are optimized / sampled"""
         self.L = L
-        r"""number of observed lines"""
+        r"""int: number of observed lines"""
 
         if list_idx_sampling is None:
             list_idx_sampling = np.arange(self.D)
@@ -83,29 +84,34 @@ class Saver:
         r"""1D np.ndarray: contains the indices of the physical parameters to be sampled"""
 
         self.results_path = results_path
-        r"""path towards the ``.hdf5`` output file"""
+        r"""str: path towards the ``.hdf5`` output file"""
         if len(results_path) > 0 and not (os.path.isdir(results_path)):
             os.mkdir(results_path)
 
         self.batch_size = batch_size
-        r"""frequency of saves, i.e., "every ``batch_size`` new iterates to be saved, the memory is saved to an ``.hdf5`` file and re-initialized"""
+        r"""int: frequency of saves, i.e., "every ``batch_size`` new iterates to be saved, the memory is saved to an ``.hdf5`` file and re-initialized"""
 
         self.freq_save = freq_save
-        r"""frequency of saved iterates during the run (1 means that every iteration is saved)"""
+        r"""int: frequency of saved iterates during the run (1 means that every iteration is saved)"""
 
         self.scaler = scaler
-        r"""contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens)"""
+        r"""Scaler: contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens)"""
 
         # these two attributes are initialized by initialize_memory
         # updated during sampling
         self.t_last_save = 0
+        r"""int: time index of the last save of the memory to ``.hdf5`` file"""
         self.t_last_init = 0
+        r"""int: time index of the last memory initialization"""
         self.next_batch_size = 0
+        r"""int: number of iterates to be stored in the next batch, i.e., until next save to file"""
         self.final_next_batch_size = 0
+        r"""int: """
         self.memory = dict()
+        """dict[str, Union[float, np.ndarray]]: stores the values before saving them to file"""
 
         self.save_forward_map_evals = save_forward_map_evals
-        r"""wether to save the forward model evaluations and gradients"""
+        r"""bool: wether to save the forward model evaluations and gradients"""
 
     def set_results_path(self, results_path: str) -> None:
         r"""sets the path of the ``.hdf5`` file to a new value
@@ -181,7 +187,7 @@ class Saver:
         pass
 
     def save_to_file(self):
-        """Saves the current memory content to a `.hdf5` file"""
+        """Saves the current memory content to a ``.hdf5`` file"""
 
         if self.t_last_init == 1:  # if first writing
             with h5py.File(

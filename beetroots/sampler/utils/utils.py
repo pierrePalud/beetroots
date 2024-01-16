@@ -19,9 +19,7 @@ def sample_generalized_gaussian(
     r"""sample from a generalized Gaussian distribution of pdf:
 
     .. math::
-        :label: eq:pdf_generalized_gaussian
 
-        ..math::
         p(\theta) = \frac{2}{\delta \Gamma(1/4)} \exp \left\{- \left( \frac{\theta}{\delta}\right)^4\right\}
 
     with here :math:`\delta = 1/A(\alpha)`.
@@ -275,13 +273,9 @@ def sample_conditional_spatial_and_indicator_prior(
 
 @nb.njit()
 def compute_sum_subsets_norms(dists: np.ndarray) -> np.ndarray:
-    r"""TODO: finish
-
-    exploits the tree structure of the subsets.
+    r"""computes the sums of the elements of each subset of neighbors (including the empty set, excluding the full set of neighbors) by exploiting the tree structure of the subsets.
 
     used in step 3 of ``compute_nlratio_prior_proposal``
-
-    note: summing for all subset of neighbors, including the empty set, excluding the full set of neighbors
 
     Parameters
     ----------
