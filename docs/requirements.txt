@@ -19,3 +19,4 @@ tqdm==4.66.1
 torch==2.1.2
 ipykernel==6.28.0
 jupyter==1.0.0
+myst-parser==2.0.0
