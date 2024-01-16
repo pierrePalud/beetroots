@@ -6,7 +6,7 @@ It studies a synthetic molecular cloud seen edge on.
 The figure below illustrates the structure of this molecular cloud.
 
 
-.. image:: img/toy_case_astro/toy_structure.png
+.. image:: ../examples/img/toy_case_astro/toy_structure.png
    :width: 75%
    :align: center
 
@@ -24,7 +24,7 @@ In this toy case, the inclination angle is set to :math:`\alpha=0` deg, while th
 Here are the true maps of the thermal pressure, radiation field intensity and visual extinction. The full map of :math:`\kappa` is set to 1.
 
 
-.. image:: img/toy_case_astro/toy_true.png
+.. image:: ../examples/img/toy_case_astro/toy_true.png
    :width: 100%
    :alt: classes to prepare
    :align: center
@@ -35,11 +35,11 @@ The forward model is restricted to :math:`L=10` CO lines.
 These lines are generated from the true maps and altered with additive noise, multipliative noise and censorship:
 
 
-.. image:: img/toy_case_astro/observation_line_0.png
+.. image:: ../examples/img/toy_case_astro/observation_line_0.png
    :width: 32%
-.. image:: img/toy_case_astro/observation_line_9.png
+.. image:: ../examples/img/toy_case_astro/observation_line_9.png
    :width: 32%
-.. image:: img/toy_case_astro/proportion_censored_lines_original.png
+.. image:: ../examples/img/toy_case_astro/proportion_censored_lines_original.png
    :width: 32%
 
 |
@@ -52,7 +52,7 @@ Here are the classes that are necessary to sample from this distribution.
 The green classes indicate the already implemented classes, and the red classes indicate the classes to implement.
 
 
-.. image:: img/simulation-structures/astro-appli.svg
+.. image:: ../examples/img/simulation-structures/astro-appli.svg
    :width: 85%
    :alt: classes to prepare
    :align: center
@@ -202,13 +202,13 @@ With nn-based approximation of forward model:
 Minimum mean square error (MMSE) estimator, i.e., mean of the iterates of the Markov chain (the average is evaluated in the scaled space):
 
 
-.. image:: img/toy_case_astro/MMSE_mixing_0.png
+.. image:: ../examples/img/toy_case_astro/MMSE_mixing_0.png
    :width: 35%
-.. image:: img/toy_case_astro/MMSE_mixing_1.png
+.. image:: ../examples/img/toy_case_astro/MMSE_mixing_1.png
    :width: 35%
-.. image:: img/toy_case_astro/MMSE_mixing_2.png
+.. image:: ../examples/img/toy_case_astro/MMSE_mixing_2.png
    :width: 35%
-.. image:: img/toy_case_astro/MMSE_mixing_3.png
+.. image:: ../examples/img/toy_case_astro/MMSE_mixing_3.png
    :width: 35%
 
 |
@@ -216,13 +216,13 @@ Minimum mean square error (MMSE) estimator, i.e., mean of the iterates of the Ma
 Size of the 95% credibility intervals (written as a multiplicative factor):
 
 
-.. image:: img/toy_case_astro/95_CI_size_mixing_0.png
+.. image:: ../examples/img/toy_case_astro/95_CI_size_mixing_0.png
    :width: 40%
-.. image:: img/toy_case_astro/95_CI_size_mixing_1.png
+.. image:: ../examples/img/toy_case_astro/95_CI_size_mixing_1.png
    :width: 40%
-.. image:: img/toy_case_astro/95_CI_size_mixing_2.png
+.. image:: ../examples/img/toy_case_astro/95_CI_size_mixing_2.png
    :width: 40%
-.. image:: img/toy_case_astro/95_CI_size_mixing_3.png
+.. image:: ../examples/img/toy_case_astro/95_CI_size_mixing_3.png
    :width: 40%
 
 |

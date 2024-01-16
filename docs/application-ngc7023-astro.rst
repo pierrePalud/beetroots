@@ -9,7 +9,7 @@ Python Simulation preparation
 Here are the classes that are necessary to sample from this distribution.
 The green classes indicate the already implemented classes, and the red classes indicate the classes to implement.
 
-.. image:: img/simulation-structures/astro-appli.svg
+.. image:: ../examples/img/simulation-structures/astro-appli.svg
    :width: 85%
    :alt: classes to prepare
    :align: center
@@ -222,28 +222,28 @@ Results
 
 Among other things, the code plots multiple pairplot histograms:
 
-.. image:: img/ngc7023/hist2D/hist2D_n0_d10_d23_overall_chain.PNG
+.. image:: ../examples/img/ngc7023/hist2D/hist2D_n0_d10_d23_overall_chain.PNG
     :width: 30%
-.. image:: img/ngc7023/hist2D/hist2D_n0_d11_d23_overall_chain.PNG
+.. image:: ../examples/img/ngc7023/hist2D/hist2D_n0_d11_d23_overall_chain.PNG
     :width: 30%
-.. image:: img/ngc7023/hist2D/hist2D_n0_d12_d23_overall_chain.PNG
-    :width: 30%
-
-|
-
-.. image:: img/ngc7023/hist2D/hist2D_n0_d10_d22_overall_chain.PNG
-    :width: 30%
-.. image:: img/ngc7023/hist2D/hist2D_n0_d11_d22_overall_chain.PNG
+.. image:: ../examples/img/ngc7023/hist2D/hist2D_n0_d12_d23_overall_chain.PNG
     :width: 30%
 
 |
 
-.. image:: img/ngc7023/hist2D/hist2D_n0_d10_d21_overall_chain.PNG
+.. image:: ../examples/img/ngc7023/hist2D/hist2D_n0_d10_d22_overall_chain.PNG
+    :width: 30%
+.. image:: ../examples/img/ngc7023/hist2D/hist2D_n0_d11_d22_overall_chain.PNG
+    :width: 30%
+
+|
+
+.. image:: ../examples/img/ngc7023/hist2D/hist2D_n0_d10_d21_overall_chain.PNG
     :width: 30%
 
 and compares the reproduced observations with the considered observation model (see also the Bayesian p-value):
 
-.. image:: img/ngc7023/yfx_fit.PNG
+.. image:: ../examples/img/ngc7023/yfx_fit.PNG
     :width: 80%
     :align: center
 

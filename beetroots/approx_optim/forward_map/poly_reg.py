@@ -13,9 +13,9 @@ class ApproxOptimPolynomialReg(ApproxOptimForwardMap):
 
     .. warning::
 
-            Unfinished class.
-            Needs to be updated for D_sampling to remove the angle parameter.
-            Needs work on the :class:`.PolynomialApprox` class
+        Unfinished class.
+        Needs to be updated for D_sampling to remove the angle parameter.
+        Needs work on the :class:`.PolynomialApprox` class
     """
 
     def compute_log10_f_Theta(

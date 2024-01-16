@@ -37,7 +37,7 @@ The combination :math:`\widetilde{\pi}` is defined as a weighted geometric mean 
 The weight :math:`\lambda(\theta_n, a_\ell) \in [0, 1]` of the multiplicative approximation depends on a parameter :math:`a_\ell` that pinpoints special positions:
 
 
-.. image:: img/likelihood_params_optim/lambda_function.PNG
+.. image:: ../examples/img/likelihood_params_optim/lambda_function.PNG
     :width: 65%
     :align: center
 
@@ -134,27 +134,27 @@ Results
 
 Evolution of the Gaussian process mean during the optimization process:
 
-.. image:: img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_mean_iter5.PNG
+.. image:: ../examples/img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_mean_iter5.PNG
     :width: 32%
-.. image:: img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_mean_iter20.PNG
+.. image:: ../examples/img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_mean_iter20.PNG
     :width: 32%
-.. image:: img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_mean_iter40.PNG
+.. image:: ../examples/img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_mean_iter40.PNG
     :width: 32%
 
 
 Evolution of the Gaussian process standard deviation (i.e., uncertianty on the cost function) during the optimization process:
 
-.. image:: img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_std_iter5.PNG
+.. image:: ../examples/img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_std_iter5.PNG
     :width: 32%
-.. image:: img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_std_iter20.PNG
+.. image:: ../examples/img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_std_iter20.PNG
     :width: 32%
-.. image:: img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_std_iter40.PNG
+.. image:: ../examples/img/likelihood_params_optim/gp_n0_co_v0_j17__v0_j16_std_iter40.PNG
     :width: 32%
 
 
 Final weight function :math:`\lambda` :
 
-.. image:: img/likelihood_params_optim/hist_final_log_f_Theta_n0_co_v0_j17__v0_j16.PNG
+.. image:: ../examples/img/likelihood_params_optim/hist_final_log_f_Theta_n0_co_v0_j17__v0_j16.PNG
     :width: 80%
     :align: center
 

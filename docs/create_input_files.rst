@@ -20,7 +20,7 @@ Simulation object
 As we will show in the following examples, a :class:`.Simulation` object relies on a few other classes.
 These classes and their interactions are illustrated in the figure below:
 
-.. image:: img/simulation-structures/abstract.svg
+.. image:: ../examples/img/simulation-structures/abstract.svg
    :width: 100%
    :alt: Main classes involved in a simulation
    :align: center

@@ -80,47 +80,15 @@ Package structure and how to adapt it to your use cases
 This package is large and contains a lot of python modules.
 To facilitate code exploration and use, here is an un-rigorous UML class diagram of the code:
 
-.. image:: img/uml_classes/uml_classes_diagram.svg
+.. image:: ../examples/img/uml_classes/uml_classes_diagram.svg
    :width: 100%
    :alt: UML class diagram
    :align: center
 
+|
 
-The ``run_simulations.sh`` file is used to run a sampling process.
-The sampling process to run and the corresponding main params are defined in ``beetroots/__main__.py``.
-
-1. it instantiates a *Simulation* object
-2. it run the *Simulation* ``setup`` method. This method sets the whole inference problem: importation of observation, definitions of forward map, of likelihood, posterior, etc. and initializes the corresponding output folder.
-3. it runs the *Simulation* ``main`` method, which runs optimization / sampling (depending on the input).
-
-The ``simulations`` folder contains the most general classes of the repo.
-The most important file is ``abstract_simulation.py``, which got a bit too big.
-A priori: only need to go there to choose which likelihood to use in posterior distribution definitions.
-
-The ``sampler`` folder contains the definition of the sampler (``mysampler.py``) and of the frequent saves of the MC evolution (``saver.py``).
-A priori: should change the ``sample`` method of the ``MySampler`` class to incorporate the sampling of the auxiliary variable.
-
-The ``modelling`` folder contains all the ingredient of the inverse problem.
-Its main file is the ``posterior.py``.
-A priori, the 2 main parts to change in this folder:
-
-- the likelihood (add a lognormal one)
-- the posterior file
-
-The ``space_transform`` folder encodes bijections for switching between parameters natural space (linear) and the parameter space used for sampling (normalized log).
-Mainly used at the saving step, to save parameters in their natural space.
-No need to change anything there.
-
-.. note::
-
-   All classes in ``modelling`` are implemented in a way tries to avoid duplicated computations.
-   Since I could not cache functions with complicated inputs (dicts, np.ndarray, etc.), I compute everything and store it in dedicated dict.
-   There are 2 such dictionaries:
-
-   - ``forward_map_evals``: computed with the ``evaluate_all_forward_map`` ForwardMap method. It computes the forward map image, gradient, hessian, gradient of the log and/or hessian of the log, depending on the necessity.
-   - ``nll_utils``: computed with the ``evaluate_all_nll_utils`` likelihood method. The contents depend on the considered likelihood class. This dict is empty for all likelhoods except for the ``approx_censored_add_mult.py``. For this class, the nll_utils dict contains all biases :math:`m_a`, :math:`m_m`, variances :math:`s_a`, :math:`s_m`, the mixing weight :math:`\lambda` and all their gradients and hessian.
-
-   Both of them are made / updated with the ``compute_all`` method of the ``Posterior`` class.
+The examples in the :ref:`Gallery of examples` clarify the package structure and in particular what the user needs to interact with.
+This diagram is maintained here for completeness.
 
 
 .. toctree::

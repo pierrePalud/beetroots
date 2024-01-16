@@ -47,7 +47,7 @@ class ApproxParamsOptim(abc.ABC):
         K : int
             the number of sampled theta values is :math:`K^D`
         log10_f_grid_size : int
-            number of points in the grid on :math:`\log f_\ell(\theta)
+            number of points in the grid on :math:`\log f_\ell(\theta)`
         N_samples_y : int
             number of samples for :math:`y_\ell`
         max_workers : int
@@ -468,7 +468,7 @@ class ApproxParamsOptim(abc.ABC):
         Returns
         -------
         log10_f0 : np.ndarray of shape (N, L)
-            values of :math:`f_\ell(\theta) at which additive and multiplicative noise variances are equal
+            values of :math:`f_\ell(\theta)` at which additive and multiplicative noise variances are equal
         bounds_a0_low : np.ndarray of shape (N, L)
             lower bounds on the center of the transition interval (defined as deltas around the ``log10_f0``)
         bounds_a0_high : np.ndarray of shape (N, L)

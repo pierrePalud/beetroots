@@ -6,7 +6,7 @@ This second example appears in Section IV.B of :cite:t:`paludEfficientSamplingNo
 The goal is to infer the position of sensors from a set of distance between sensors.
 The figure below shows the graph of observations with the sensor true positions.
 
-.. image:: img/sensor_loc/graph_sensors.PNG
+.. image:: ../examples/img/sensor_loc/graph_sensors.PNG
    :width: 80%
    :alt: Observation graph
    :align: center
@@ -23,7 +23,7 @@ Here are the classes that are necessary to sample from this distribution.
 The green classes indicate the already implemented classes, and the red classes indicate the classes to implement.
 
 
-.. image:: img/simulation-structures/sensor-loc.svg
+.. image:: ../examples/img/simulation-structures/sensor-loc.svg
    :width: 75%
    :alt: classes to prepare
    :align: center
@@ -143,7 +143,7 @@ Sampling results: 2D histograms of the marginal distributions
 
 |
 
-.. image:: img/sensor_loc/marginals.PNG
+.. image:: ../examples/img/sensor_loc/marginals.PNG
    :width: 80%
    :alt: Sampling results
    :align: center
@@ -161,7 +161,7 @@ When running inference and looking at the marginal distribution, this incompatib
 
 |
 
-.. image:: img/sensor_loc/marginals_annotated.png
+.. image:: ../examples/img/sensor_loc/marginals_annotated.png
    :width: 80%
    :alt: Sampling results
    :align: center
@@ -182,7 +182,7 @@ For these three sensors, the reproduced distances are incompatible with the actu
 
 
 .. csv-table:: p-value analysis
-   :file: img/sensor_loc/pvalues_analysis.csv
+   :file: ../examples/img/sensor_loc/pvalues_analysis.csv
    :widths: 12, 12, 12, 12, 12, 12, 12
    :header-rows: 1
 
@@ -200,6 +200,6 @@ In this column:
 
     In this table, for the "decision" columns:
 
-    * a "-1" means "reject", in which case an incompatibility is identified
-    * a "0" means "undecided", in which case the uncertainty on the p-value is too high to take a decision with high confidence
-    * a "1" means "no reject"
+    * "-1" means "reject", in which case an incompatibility is identified
+    * "0" means "undecided", in which case the uncertainty on the p-value is too high to take a decision with high confidence
+    * "1" means "no reject"

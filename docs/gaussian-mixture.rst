@@ -6,7 +6,7 @@ This first example appears in Section IV.A of :cite:t:`paludEfficientSamplingNon
 The goal is to sample the following Gaussian mixture model:
 
 
-.. image:: img/gaussian_mixture/true_gaussians.png
+.. image:: ../examples/img/gaussian_mixture/true_gaussians.png
    :width: 75%
    :alt: True Gaussian mixture
    :align: center
@@ -25,7 +25,7 @@ Here are the classes that are necessary to sample from this distribution.
 The green classes indicate the already implemented classes, and the red classes indicate the classes to implement.
 
 
-.. image:: img/simulation-structures/gaussian-mixture.svg
+.. image:: ../examples/img/simulation-structures/gaussian-mixture.svg
    :width: 75%
    :alt: classes to prepare
    :align: center
@@ -149,7 +149,7 @@ The ESS and MSE values will be in ``outputs/gaussian_mixture_[yyyy]-[mm]-[dd]_[h
 Result of the sampling algorithm: 2D histogram
 
 
-.. image:: img/gaussian_mixture/results.png
+.. image:: ../examples/img/gaussian_mixture/results.png
    :width: 80%
    :alt: Sampling results
    :align: center
