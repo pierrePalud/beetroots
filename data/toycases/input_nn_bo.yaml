@@ -16,7 +16,7 @@ sigma_a: 1.38715e-10
 sigma_m_float_linscale: 1.1
 #
 simu_init:
-  name: "bo_nn_toycase"
+  simu_name: "bo_nn_toycase"
   D: 5
   D_no_kappa: 4
   K: 30

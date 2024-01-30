@@ -96,21 +96,34 @@ YAML file
 Sampling
 --------
 
-To run the sampling (from ``beetroot``'s root folder):
+To run the sampling from ``beetroot``'s root folder and save outputs there:
 
 
 .. code:: bash
 
-    python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p9.yaml
+    python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p9.yaml examples/sensor_loc/data .
 
+where
 
-or
+* ``examples/sensor_loc/sensor_loc_simu.py`` is the python file to be run
+* ``input_params_pmtm0p9.yaml`` is the yaml file containing the parameters defining the run to be executed
+* ``examples/sensor_loc/data`` : path to the folder containing the yaml input file and the observation data
+* ``.`` : path to the output folder to be created, where the run results are to be saved
+
+To run the sampling from the ``examples/sensor_loc`` folder and save outputs there:
 
 .. code:: bash
 
-    python examples/sensor_loc/sensor_loc_simu.py input_params_pmtm0p1.yaml
+    cd examples/sensor_loc
+    python sensor_loc_simu.py input_params_pmtm0p9.yaml ./data .
 
-The difference between the two input files is the selection probability of the MTM kernel: 0.9 in the first case, and 0.1 in the latter.
+This run will use a selection probability of 90% for the MTM kernel.
+To use a 10% selection probability, run
+
+.. code:: bash
+
+    python sensor_loc_simu.py input_params_pmtm0p1.yaml ./data .
+
 
 The images will be in ``outputs/sensor_loc_[yyyy]-[mm]-[dd]_[hh]/img``.
 The ESS and MSE values will be in ``outputs/sensor_loc_[yyyy]-[mm]-[dd]_[hh]/data/output``.

@@ -16,6 +16,14 @@ Subpackages
 Submodules
 ----------
 
+beetroots.simulations.astro.abstract\_astro\_simulation module
+--------------------------------------------------------------
+
+.. automodule:: beetroots.simulations.astro.abstract_astro_simulation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 beetroots.simulations.astro.data\_validation module
 ---------------------------------------------------
 

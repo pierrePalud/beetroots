@@ -19,7 +19,6 @@ class SimulationPolynomialReg(SimulationForwardMap):
     def setup_forward_map(
         self,
         forward_model_name: str,
-        angle: float,
         dict_fixed_params: Dict[str, Optional[float]],
         dict_is_log_scale_params: Dict[str, bool],
     ) -> Tuple[MyScaler, PolynomialApprox]:
@@ -37,6 +36,8 @@ class SimulationPolynomialReg(SimulationForwardMap):
         )
 
         # transformation from linear scale (in degrees) to scaled
+        angle = dict_fixed_params["angle"]
+        assert angle is not None
         angle_scaled = (angle - 30.0) / 20.0
 
         dict_fixed_params_scaled = self.scale_dict_fixed_params(
@@ -45,6 +46,7 @@ class SimulationPolynomialReg(SimulationForwardMap):
 
         # load forward model
         forward_map = PolynomialApprox(
+            self.MODELS_PATH,
             forward_model_name,
             dict_fixed_params_scaled,
             angle_scaled,

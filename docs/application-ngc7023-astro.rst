@@ -212,10 +212,19 @@ YAML file
 Sampling
 --------
 
+To run the sampling from the root file of the repo:
+
 .. code:: bash
 
-    python examples/ngc7023/ngc7023_nn.py input_params.yaml
+    python examples/ngc7023/ngc7023_nn.py input_params.yaml ./data/ngc7023 ./data/models .
 
+As mentioned in
+
+* ``examples/ngc7023/ngc7023_nn.py`` is the python file to be run
+* ``input_params.yaml`` is the name of the yaml file that contains all the parameters defining the run to be executed
+* ``./data/ngc7023`` is the path of the folder containing the yaml file and the data files
+* ``./data/models`` is the path of the folder that contains all the models
+* ``.`` is the path of the output folder to be created, where the results are to be saved.
 
 Results
 -------

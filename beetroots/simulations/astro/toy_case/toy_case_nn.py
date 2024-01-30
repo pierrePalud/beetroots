@@ -14,9 +14,7 @@ from beetroots.simulations.astro.posterior_type.abstract_direct import (
 )
 
 
-class SimulationToyCaseNN(
-    Simulation, SimulationToyCase, SimulationNN, SimulationMySampler
-):
+class SimulationToyCaseNN(SimulationNN, SimulationToyCase, SimulationMySampler):
     __slots__ = (
         "path_output_sim",
         "path_img",
@@ -59,8 +57,8 @@ class SimulationToyCaseNN(
         #
         with_spatial_prior: bool = True,
         spatial_prior_params: Union[None, SpatialPriorParams] = None,
-        list_gaussian_approx_params: List[str] = [],
-        list_mixing_model_params: List[str] = [],
+        list_gaussian_approx_params: List[bool] = [],
+        list_mixing_model_params: List[Dict[str, str]] = [],
     ):
         self.N = int(self.cloud_name.split("N")[1]) ** 2
 
@@ -178,18 +176,25 @@ class SimulationToyCaseNN(
 
 
 if __name__ == "__main__":
-    path_data_cloud = f"{os.path.dirname(os.path.abspath(__file__))}"
-    path_data_cloud += "/../../../../data/toycases"
+    yaml_file, path_data, path_models, path_outputs = SimulationToyCaseNN.parse_args()
 
-    params = SimulationToyCaseNN.load_params(path_data_cloud)
+    params = SimulationToyCaseNN.load_params(path_data, yaml_file)
 
-    simulation = SimulationToyCaseNN(**params["simu_init"], params=params)
     SimulationToyCaseNN.check_input_params_file(
         params,
         data_validation.schema,
     )
 
+    simulation = SimulationToyCaseNN(
+        **params["simu_init"],
+        yaml_file=yaml_file,
+        path_data=path_data,
+        path_outputs=path_outputs,
+        path_models=path_models,
+        forward_model_fixed_params=params["forward_model"]["fixed_params"],
+    )
+
     simulation.main(
         params=params,
-        path_data_cloud=path_data_cloud,
+        path_data_cloud=path_data,
     )

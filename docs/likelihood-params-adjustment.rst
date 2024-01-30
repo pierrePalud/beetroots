@@ -52,9 +52,17 @@ For real observations, it is very simple to tune the parameters :math:`a_\ell`, 
 
 .. code:: bash
 
-    python beetroots/approx_optim/nn_bo_real_data.py ./data/ngc7023/input_nn_bo_fast.yaml
+    python beetroots/approx_optim/nn_bo_real_data.py input_nn_bo_fast.yaml ./data/ngc7023 ./data/models .
 
-with
+where
+
+* ``beetroots/approx_optim/nn_bo_real_data.py`` is the python file to execute
+* ``input_nn_bo_fast.yaml`` is the name of the yaml file that defines the run to be executed
+* ``./data/ngc7023`` is the path of the folder that contains the noise standard deviations
+* ``./data/models`` is the path of the folder that contains the already saved models (e.g., polynomial approximations, neural networks, etc.)
+* ``.`` is the path of the result folder (to be created), where the run results are to be saved
+
+with the ``.yaml`` file:
 
 .. code-block:: yaml
     :caption: input_nn_bo_fast.yaml
@@ -127,6 +135,69 @@ with
             - 4.0e+1 # AVtot
             - 60.0 # angle
         n_iter: 40
+
+
+and the python code:
+
+.. code-block:: python
+    :caption: nn_bo_real_data.py
+    :name: nn_bo_real_data-py
+
+
+    import os
+    import sys
+    from typing import List
+
+    import numpy as np
+    import yaml
+
+    from beetroots.approx_optim.nn_bo import ApproxParamsOptimNNBO
+    from beetroots.simulations.astro.observation.abstract_real_data import (
+        SimulationRealData,
+    )
+
+
+    class ReadDataRealData(SimulationRealData):
+        r"""implements an ``__init__`` method for :class:`.SimulationRealData`"""
+
+        def __init__(self, list_lines: List[str]) -> None:
+            """
+
+            Parameters
+            ----------
+            list_lines : List[str]
+                observables for which the likelihood approximation parameters are to be adjusted
+            """
+            self.list_lines_fit = list_lines
+
+
+    if __name__ == "__main__":
+        yaml_file, path_data, path_models, path_outputs = ApproxParamsOptimNNBO.parse_args()
+
+        # step 1: read ``.yaml`` input file
+        with open(os.path.abspath(f"{path_data}/{yaml_file}")) as f:
+            params = yaml.safe_load(f)
+
+        # step 2: read the additive noise standard deviations for the specified
+        # lines
+        data_reader = ReadDataRealData(params["list_lines"])
+        (_, _, sigma_a, _, _, _, _) = data_reader.setup_observation(
+            data_int_path=f"{path_data}/{params['filename_int']}",
+            data_err_path=f"{path_data}/{params['filename_err']}",
+            save_obs=False,
+        )
+
+        # step 3: run the Bayesian optimization
+        approx_optim = ApproxParamsOptimNNBO(
+            list_lines=params["list_lines"],
+            sigma_a=sigma_a,
+            sigma_m=np.log(params["sigma_m_float_linscale"]),
+            **params["simu_init"],
+            path_outputs=path_outputs,
+            path_models=path_models,
+        )
+        approx_optim.main(**params["main_params"])
+
 
 
 Results

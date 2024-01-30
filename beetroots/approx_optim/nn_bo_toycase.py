@@ -7,16 +7,10 @@ import yaml
 from beetroots.approx_optim.nn_bo import ApproxParamsOptimNNBO
 
 if __name__ == "__main__":
-
-    if len(sys.argv) < 2:
-        print("Please provide the name of the YAML file as an argument.")
-        sys.exit(1)
-
-    path_yaml_file = sys.argv[1]
-    path_data_cloud, yaml_file = os.path.split(path_yaml_file)
+    yaml_file, path_data, path_models, path_outputs = ApproxParamsOptimNNBO.parse_args()
 
     # step 1: read ``.yaml`` input file
-    with open(os.path.abspath(f"{path_data_cloud}/{yaml_file}")) as f:
+    with open(os.path.abspath(f"{path_data}/{yaml_file}")) as f:
         params = yaml.safe_load(f)
 
     # step 2: run the Bayesian optimization
@@ -25,5 +19,7 @@ if __name__ == "__main__":
         sigma_a=params["sigma_a"],
         sigma_m=np.log(params["sigma_m_float_linscale"]),
         **params["simu_init"],
+        path_models=path_models,
+        path_outputs=path_outputs,
     )
     approx_optim.main(**params["main_params"])

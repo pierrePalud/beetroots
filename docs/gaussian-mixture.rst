@@ -107,20 +107,34 @@ To run the sampling (from ``beetroot``'s root folder):
 
 .. code:: bash
 
-   python examples/gaussian_mixture/gaussian_mixture_simu.py input_params_pmtm0p9.yaml
+   python examples/gaussian_mixture/gaussian_mixture_simu.py input_params_pmtm0p1.yaml examples/gaussian_mixture/data .
 
-or in one line:
+
+where
+
+* ``examples/gaussian_mixture/gaussian_mixture_simu.py`` is the python file to be run
+* ``input_params_pmtm0p9.yaml`` is the yaml file containing the parameters defining the run to be executed
+* ``examples/gaussian_mixture/data`` : path to the folder containing the yaml input file and the observation data
+* ``.`` : path to the output folder to be created, where the run results are to be saved
+
+To run the sampling from the ``examples/gaussian_mixture`` folder and save outputs there:
 
 .. code:: bash
 
-   python examples/gaussian_mixture/gaussian_mixture_simu.py input_params_pmtm0p9.yaml
+    cd examples/gaussian_mixture
+    python gaussian_mixture_simu.py input_params_pmtm0p9.yaml ./data .
 
-To check other input file: run with ``input_params_pmtm0p9.yaml``
+This run will use a selection probability of 90% for the MTM kernel.
+To use a 10% selection probability, run
+
+.. code:: bash
+
+    python gaussian_mixture_simu.py input_params_pmtm0p1.yaml ./data .
 
 
 Output:
 
->>> python examples/gaussian_mixture/gaussian_mixture_simu.py input_params_pmtm0p9.yaml
+>>> python examples/gaussian_mixture/gaussian_mixture_simu.py input_params_pmtm0p1.yaml examples/gaussian_mixture/data .
 starting sampling
 starting from a random point
 100%|█████████████████████████████████████████████████████████| 10000/10000 [00:49<00:00, 200.76it/s]

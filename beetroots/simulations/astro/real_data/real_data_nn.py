@@ -15,9 +15,7 @@ from beetroots.simulations.astro.posterior_type.abstract_direct import (
 )
 
 
-class SimulationRealDataNN(
-    Simulation, SimulationRealData, SimulationNN, SimulationMySampler
-):
+class SimulationRealDataNN(SimulationNN, SimulationRealData, SimulationMySampler):
     __slots__ = (
         "path_output_sim",
         "path_img",
@@ -47,7 +45,7 @@ class SimulationRealDataNN(
         self,
         forward_model_name: str,
         force_use_cpu: bool,
-        fixed_params: Dict[str, float],
+        fixed_params: Dict[str, Optional[float]],
         is_log_scale_params: Dict[str, bool],
         #
         data_int_path: str,
@@ -60,8 +58,8 @@ class SimulationRealDataNN(
         #
         with_spatial_prior: bool = True,
         spatial_prior_params: Union[None, SpatialPriorParams] = None,
-        list_gaussian_approx_params: List[str] = [],
-        list_mixing_model_params: List[str] = [],
+        list_gaussian_approx_params: List[bool] = [],
+        list_mixing_model_params: List[Dict[str, str]] = [],
     ):
         self.list_lines_valid = []
 
@@ -184,11 +182,5 @@ class SimulationRealDataNN(
                 point_challenger=point_challenger,
                 **params["run_params"]["mcmc"],
             )
-
-        self.generate_report(
-            list_model_names,
-            params["to_run_optim_map"],
-            params["to_run_mcmc"],
-        )
 
         return

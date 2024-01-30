@@ -6,10 +6,11 @@ import numpy as np
 # from beetroots.inversion.plots.map_shaper import MapShaper
 from beetroots.inversion.plots.plots_2d_setup import Plots2DSetup
 from beetroots.inversion.plots.plots_estimator import PlotsEstimator
+from beetroots.simulations.astro.abstract_astro_simulation import AstroSimulation
 from beetroots.space_transform.abstract_transform import Scaler
 
 
-class SimulationObservation(abc.ABC):
+class SimulationObservation(AstroSimulation, abc.ABC):
     @abc.abstractmethod
     def setup_observation(self):
         pass

@@ -2,6 +2,7 @@ import abc
 import datetime
 import json
 import os
+import sys
 from typing import Dict, List, Tuple, Union
 
 import matplotlib.pyplot as plt
@@ -19,7 +20,7 @@ class ApproxParamsOptim(abc.ABC):
     def __init__(
         self,
         list_lines: List[str],
-        name: str,
+        simu_name: str,
         D: int,
         D_no_kappa: int,
         K: int,
@@ -28,6 +29,8 @@ class ApproxParamsOptim(abc.ABC):
         max_workers: int,
         sigma_a: Union[np.ndarray, float],
         sigma_m: Union[np.ndarray, float],
+        path_outputs: str,
+        path_models: str,
         small_size: int = 16,
         medium_size: int = 20,
         bigger_size: int = 24,
@@ -38,8 +41,8 @@ class ApproxParamsOptim(abc.ABC):
         ----------
         list_lines : List[str]
             names of the observables for which the likelihood parameter needs to be adjusted
-        name : str
-            name of the process, to be used in the output folder name
+        simu_name : str
+            simu_name of the process, to be used in the output folder simu_name
         D : int
             total number of physical parameters involved in the forward map
         D_no_kappa : int
@@ -56,6 +59,12 @@ class ApproxParamsOptim(abc.ABC):
             standard deviation of the additive Gaussian noise
         sigma_m : Union[np.ndarray, float]
             standard deviation parameter of the multiplicative lognormal noise
+        path_data : str
+            path to the folder containing the input yaml file
+        path_outputs : str
+            path to the output folder (to be created), where the run results are to be saved
+        path_models : str
+            path to the folder containing the forward models
         small_size : int, optional
             size for basic text, axes titles, xticks and yticks, by default 16
         medium_size : int, optional
@@ -107,8 +116,55 @@ class ApproxParamsOptim(abc.ABC):
         self.log10_f_grid_size = log10_f_grid_size  # nb points P(theta) grid
         r"""int: number of points in the grid on :math:`\log_{10} f_\ell(\theta)`"""
 
+        self.N_samples_theta = 0
+        r"""int: number of samples for :math:`\theta` used to build the histogram of :math:`\log_{10} f_\ell(\theta)`. To be defined in the daughter classes."""
+
         self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
-        self.create_empty_output_folders(name)
+        self.create_empty_output_folders(simu_name, path_outputs)
+
+        self.MODELS_PATH = path_models
+        r"""str: path to the folder containing all the already defined and saved models (i.e., polynomials or neural networks)"""
+
+    @classmethod
+    def parse_args(cls) -> Tuple[str, str, str, str]:
+        """parses the inputs of the command-line, that should contain
+
+        - the name of the input YAML file
+        - path to the data folder
+        - path to the models folder
+        - path to the outputs folder to be created (by default '.')
+
+        Returns
+        -------
+        str
+            name of the input YAML file
+        str
+            path to the data folder
+        str
+            path to the models folder
+        str
+            path to the outputs folder to be created (by default '.')
+        """
+        if len(sys.argv) < 4:
+            raise ValueError(
+                "Please provide the following  arguments in your command: \n 1) the name of the input YAML file, \n 2) the path to the data folder, \n 3) the path to the models folder, \n 4) the path to the outputs folder to be created (by default '.')"
+            )
+
+        yaml_file = sys.argv[1]
+        path_data = os.path.abspath(sys.argv[2])
+        path_models = os.path.abspath(sys.argv[3])
+
+        path_outputs = (
+            os.path.abspath(sys.argv[4]) if len(sys.argv) == 5 else os.path.abspath(".")
+        )
+        path_outputs += "/outputs"
+
+        print(f"input file name: {yaml_file}")
+        print(f"path to data folder: {path_data}")
+        print(f"path to models folder: {path_models}")
+        print(f"path to outputs folder: {path_outputs}")
+
+        return yaml_file, path_data, path_models, path_outputs
 
     def setup_plot_text_sizes(
         self,
@@ -136,24 +192,23 @@ class ApproxParamsOptim(abc.ABC):
         plt.rc("figure", titlesize=bigger_size)  # fontsize of the figure title
         return
 
-    def create_empty_output_folders(self, name: str) -> None:
+    def create_empty_output_folders(self, simu_name: str, path_outputs: str) -> None:
         r"""creates the directories that receive the results of the likelihood parameter optimization
 
         Parameters
         ----------
-        name : str
+        simu_name : str
             name of the simulation to be run
+        path_yaml_file : str
+            path of the folder containing the data and yaml files
+        path_outputs: str
+            folder where to write outputs
         """
         now = datetime.datetime.now()
         dt_str = now.strftime("%Y-%m-%d_%H")
 
-        # path to the outputs dir
-        path_ouput_general = os.path.abspath(
-            f"{os.path.abspath(__file__)}/../../../outputs"
-        )
-
         self.path_output_sim = os.path.abspath(
-            f"{path_ouput_general}/approx_optim_{name}_{dt_str}"
+            f"{path_outputs}/approx_optim_{simu_name}_{dt_str}"
         )
         r"""str: path to the output root folder, e.g., ``./outputs/simu1``"""
 
@@ -171,7 +226,7 @@ class ApproxParamsOptim(abc.ABC):
         r"""str: path to the adjusted likelihood parameters, e.g., ``./outputs/optim_params``"""
 
         for folder_path in [
-            path_ouput_general,
+            path_outputs,
             self.path_output_sim,
             self.path_img,
             self.path_img_hist,
@@ -334,7 +389,7 @@ class ApproxParamsOptim(abc.ABC):
         plt.plot(list_log10_f_grid, pdf_kde_log10_f_Theta, "k--", label="KDE")
         plt.plot(
             list_log10_f_grid,
-            lambda_ * vals.max(),
+            lambda_ * np.max(vals),
             "r-",
             label=r"multi. weight $\lambda$",
         )

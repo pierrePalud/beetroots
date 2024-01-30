@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from typing import Dict, Optional, Tuple
 
@@ -132,13 +133,20 @@ class SimulationGaussianMixture(Simulation):
     def __init__(
         self,
         modes_filename: str,
-        params: dict,
-        max_workers: int = 10,
+        simu_name: str,
+        max_workers: int,
+        yaml_file: str,
+        path_data: str,
+        path_outputs: str,
         small_size: int = 16,
         medium_size: int = 20,
         bigger_size: int = 24,
     ):
-        self.create_empty_output_folders("toy_gaussian_mixture", params, ".")
+        self.create_empty_output_folders(
+            simu_name,
+            path_yaml_file=f"{path_data}/{yaml_file}",
+            path_outputs=path_outputs,
+        )
         self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
 
         self.max_workers = max_workers
@@ -156,6 +164,38 @@ class SimulationGaussianMixture(Simulation):
         self.L = self.D * 1
 
         self.list_names = [r"$" + f"x_{d}" + "$" for d in range(1, self.D + 1)]
+
+    @classmethod
+    def parse_args(cls) -> Tuple[str, str, str]:
+        """parses the inputs
+
+        Returns
+        -------
+        str
+            name of the input YAML file
+        str
+            path to the data folder
+        str
+            path to the outputs folder to be created (by default '.')
+        """
+        if len(sys.argv) < 3:
+            raise ValueError(
+                "Please provide the following arguments: \n 1) the name of the input YAML file, \n 2) the path to the data folder, \n 3) the path to the outputs folder to be created (by default '.')"
+            )
+
+        yaml_file = sys.argv[1]
+        path_data = f"{os.path.abspath(sys.argv[2])}"
+
+        path_outputs = (
+            os.path.abspath(sys.argv[3]) if len(sys.argv) == 4 else os.path.abspath(".")
+        )
+        path_outputs += "/outputs"
+
+        print(f"input file name: {yaml_file}")
+        print(f"path to data folder: {path_data}")
+        print(f"path to outputs folder: {path_outputs}")
+
+        return yaml_file, path_data, path_outputs
 
     def plot_ellipses(
         self,
@@ -240,7 +280,6 @@ class SimulationGaussianMixture(Simulation):
             self.L,
             self.N,
             likelihood_,
-            prior=None,
             prior_spatial=None,
             prior_indicator=prior_indicator,
         )
@@ -357,11 +396,17 @@ class SimulationGaussianMixture(Simulation):
 
 
 if __name__ == "__main__":
-    path_data = f"{os.path.dirname(os.path.abspath(__file__))}/data"
+    yaml_file, path_data, path_outputs = SimulationGaussianMixture.parse_args()
 
-    params = SimulationGaussianMixture.load_params(path_data)
+    params = SimulationGaussianMixture.load_params(path_data, yaml_file)
 
-    simulation_gmm = SimulationGaussianMixture("gaussian_mixture.csv", params)
+    simulation_gmm = SimulationGaussianMixture(
+        modes_filename="gaussian_mixture.csv",
+        **params["simu_init"],
+        yaml_file=yaml_file,
+        path_data=path_data,
+        path_outputs=path_outputs,
+    )
 
     sampler_ = MySampler(
         MySamplerParams(**params["sampling_params"]["mcmc"]),

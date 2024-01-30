@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from beetroots.inversion.plots.map_shaper import MapShaper
-from beetroots.modelling.forward_maps.neural_network_approx import NeuralNetworkApprox
+from beetroots.modelling.forward_maps.abstract_base import ForwardMap
 from beetroots.simulations.astro.observation.abstract_observation import (
     SimulationObservation,
 )
@@ -12,56 +12,15 @@ from beetroots.space_transform.transform import MyScaler
 
 
 class SimulationToyCase(SimulationObservation):
-    # def __init__(
-    #     self,
-    #     simu_name: str,
-    #     cloud_name: str,
-    #     N: int,
-    #     dict_params_names: Dict[str, str],
-    #     list_lines_fit: List[str],
-    #     params: dict,
-    #     max_workers: int = 10,
-    #     small_size: int = 16,
-    #     medium_size: int = 20,
-    #     bigger_size: int = 24,
-    # ):
-    #     self.cloud_name = cloud_name
-    #     # self.N = N
-    #     # N_1_side = int(np.sqrt(self.N))
-
-    #     self.list_lines_fit = list_lines_fit
-    #     self.L = len(list_lines_fit)
-
-    #     self.create_empty_output_folders(simu_name, params)
-    #     self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
-
-    #     self.max_workers = max_workers
-
-    #     self.list_names = list(dict_params_names.keys())
-    #     self.list_names_plots = list(dict_params_names.values())
-    #     # self.list_names_plots = [
-    #     #     r"$\kappa$",
-    #     #     r"$P_{th}$",
-    #     #     r"$G_0$",
-    #     #     r"$A_V^{tot}$",
-    #     #     r"$\alpha$",
-    #     # ]
-    #     self.D = len(self.list_names)  # Number of physical parameters
-    #     self.D_no_kappa = self.D - 1  # number of params that are used in nn
-
     def setup_observation(
         self,
         scaler: MyScaler,
-        forward_map: NeuralNetworkApprox,
+        forward_map: ForwardMap,
         sigma_a: np.ndarray,
         sigma_m: np.ndarray,
         omega: np.ndarray,
     ) -> pd.DataFrame:
-        data_int_path = os.path.abspath(
-            f"{os.path.dirname(os.path.abspath(__file__))}/../../../../data/toycases"
-        )
-
-        data_int_path += f"/{self.cloud_name}.pkl"
+        data_int_path = f"{self.DATA_PATH}/{self.cloud_name}.pkl"
         syn_map = pd.read_pickle(data_int_path)
 
         for col in ["idx", "X", "Y"] + self.list_names:

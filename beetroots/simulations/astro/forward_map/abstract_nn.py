@@ -50,6 +50,7 @@ class SimulationNN(SimulationForwardMap):
 
         # load forward model
         forward_map = NeuralNetworkApprox(
+            self.MODELS_PATH,
             forward_model_name,
             dict_fixed_params_scaled,
             device="cpu" if force_use_cpu else None,

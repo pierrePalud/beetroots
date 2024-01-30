@@ -33,7 +33,7 @@ def build_list_edges(
     df_clusters = df_clusters["clusters"]
 
     list_edges = []
-    list_considered_neighbours = (
+    list_considered_neighbors = (
         [(1, 0), (0, 1), (1, 1), (-1, 1)]
         if use_next_nearest_neighbors
         else [(1, 0), (0, 1)]
@@ -41,7 +41,7 @@ def build_list_edges(
     for (x, y) in list(df.index):
         idx = df.at[(x, y), "idx"]
         cluster_current = df_clusters.at[idx]
-        for (delta_x, delta_y) in list_considered_neighbours:
+        for (delta_x, delta_y) in list_considered_neighbors:
             x2 = x + delta_x
             y2 = y + delta_y
             if (x2, y2) in df.index:

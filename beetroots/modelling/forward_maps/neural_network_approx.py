@@ -28,19 +28,14 @@ class NeuralNetworkApprox(ExpForwardMap):
     LOGE_10 = np.log(10.0)
     r"""float: natural log (in base :math:`e`) of 10, computed once and saved to limit redundant computations"""
 
-    SIMU_PATH = os.path.abspath(f"{os.path.dirname(os.path.abspath(__file__))}/../../../data/")
-    r"""str: path to the folder containing the data of saved models"""
-
     def __init__(
         self,
+        path_model: str,
         model_name: str,
         dict_fixed_values_scaled: Dict[str, Optional[float]],
         device: Optional[str] = None,
     ):
-        self.network = NeuralNetwork.load(
-            model_name,
-            f"{self.SIMU_PATH}/models/",
-        )
+        self.network = NeuralNetwork.load(model_name, path_model)
         r"""NeuralNetwork: instance of neural network from the ``nnbma`` package (see https://pypi.org/project/nnbma/)"""
 
         assert device in [None, "cpu"]

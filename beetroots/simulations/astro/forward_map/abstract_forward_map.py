@@ -5,16 +5,12 @@ from typing import Dict, Optional, Tuple
 import numpy as np
 
 from beetroots.modelling.forward_maps.abstract_base import ForwardMap
+from beetroots.simulations.astro.abstract_astro_simulation import AstroSimulation
 from beetroots.space_transform.abstract_transform import Scaler
 
 
-class SimulationForwardMap(abc.ABC):
+class SimulationForwardMap(AstroSimulation, abc.ABC):
     r"""abstract class for to set up the forward map for an inversion of astrophysical data"""
-
-    MODELS_PATH = os.path.abspath(
-        f"{os.path.dirname(os.path.abspath(__file__))}/../../../../data/models"
-    )
-    r"""str: path to the folder containing all the already defined and saved models (i.e., polynomials or neural networks)"""
 
     @abc.abstractmethod
     def setup_forward_map(self, **kwargs) -> Tuple[Scaler, ForwardMap]:
@@ -53,7 +49,7 @@ class SimulationForwardMap(abc.ABC):
         arr_fixed_values = np.ones((1, len(dict_fixed_params)))
         for i, name in enumerate(dict_fixed_params.keys()):
             if dict_fixed_params[name] is not None:
-                arr_fixed_values[0, i] = dict_fixed_params[name] * 1
+                arr_fixed_values[0, i] = dict_fixed_params[name]
 
         arr_fixed_values_scaled = scaler.from_lin_to_scaled(arr_fixed_values)
 

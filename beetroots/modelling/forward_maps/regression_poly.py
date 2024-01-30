@@ -169,16 +169,14 @@ class PolynomialApprox(ExpForwardMap):
     LOGE_10 = np.log(10.0)
     r"""float: natural log (in base :math:`e`) of 10, computed once and saved to limit redundant computations"""
 
-    SIMU_PATH = os.path.abspath(f"{os.path.dirname(os.path.abspath(__file__))}/../../../data/")
-    r"""path to the folder containing the data of saved models"""
-
     def __init__(
         self,
+        path_model: str,
         model_name: str,
         dict_fixed_values_scaled: dict[str, Optional[float]],
         angle: float,
     ):
-        filepath = f"{self.SIMU_PATH}/models/{model_name}/model.pickle"
+        filepath = f"{path_model}/{model_name}/model.pickle"
         assert filepath[-7:] == ".pickle", "incorrect format"
 
         with open(filepath, "rb") as file_:
@@ -231,7 +229,7 @@ class PolynomialApprox(ExpForwardMap):
         r"""np.ndarray of shape (D_no_kappa, L, n_coefs): coefficients associated to the monomials of the first derivative polynomial (computed in ``__init__`` method)"""
 
         with open(
-            f"{self.SIMU_PATH}/models/{model_name}/line_names.pickle",
+            f"{path_model}/{model_name}/line_names.pickle",
             "rb",
         ) as f:
             self.outputs_names = pickle.load(f)

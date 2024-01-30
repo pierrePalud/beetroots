@@ -35,15 +35,16 @@ class SimulationMySampler(SimulationPosteriorType):
         omega,
         syn_map,
         with_spatial_prior: bool,
-        spatial_prior_params: SpatialPriorParams,
+        spatial_prior_params: Optional[SpatialPriorParams],
         indicator_margin_scale: float,
         lower_bounds_lin: Union[np.ndarray, List[float]],
         upper_bounds_lin: Union[np.ndarray, List[float]],
         list_gaussian_approx_params: List[bool],
-        list_mixing_model_params: List,
+        list_mixing_model_params: List[Dict[str, str]],
     ) -> None:
 
         if with_spatial_prior:
+            assert spatial_prior_params is not None
             prior_spatial = L22LaplacianSpatialPrior(
                 spatial_prior_params,
                 self.cloud_name,

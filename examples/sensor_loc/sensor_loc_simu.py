@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from typing import Dict, Optional, Tuple
 
@@ -34,19 +35,58 @@ class SensorLocalizationSimulation(Simulation):
 
     def __init__(
         self,
-        params: Dict,
-        max_workers: int = 10,
+        simu_name: str,
+        max_workers: int,
+        yaml_file: str,
+        path_data: str,
+        path_outputs: str,
         small_size: int = 16,
         medium_size: int = 20,
         bigger_size: int = 24,
     ):
-        self.create_empty_output_folders(params["simu_init"]["simu_name"], params, ".")
+        self.create_empty_output_folders(
+            simu_name,
+            path_yaml_file=f"{path_data}/{yaml_file}",
+            path_outputs=path_outputs,
+        )
         self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
 
         self.max_workers = max_workers
 
         self.D = 2
         self.list_names = [r"$" + f"x_{d}" + "$" for d in range(1, self.D + 1)]
+
+    @classmethod
+    def parse_args(cls) -> Tuple[str, str, str]:
+        """parses the inputs
+
+        Returns
+        -------
+        str
+            name of the input YAML file
+        str
+            path to the data folder
+        str
+            path to the outputs folder to be created (by default '.')
+        """
+        if len(sys.argv) < 3:
+            raise ValueError(
+                "Please provide the following arguments: \n 1) the name of the input YAML file, \n 2) the path to the data folder, \n 3) the path to the outputs folder to be created (by default '.')"
+            )
+
+        yaml_file = sys.argv[1]
+        path_data = f"{os.path.abspath(sys.argv[2])}"
+
+        path_outputs = (
+            os.path.abspath(sys.argv[3]) if len(sys.argv) == 4 else os.path.abspath(".")
+        )
+        path_outputs += "/outputs"
+
+        print(f"input file name: {yaml_file}")
+        print(f"path to data folder: {path_data}")
+        print(f"path to outputs folder: {path_outputs}")
+
+        return yaml_file, path_data, path_outputs
 
     def plot_observation_graph(
         self,
@@ -289,7 +329,7 @@ class SensorLocalizationSimulation(Simulation):
             indicator_margin_scale,
             lower_bounds,
             upper_bounds,
-            list_idx_sampling=np.arange(self.D),
+            list_idx_sampling=list(np.arange(self.D)),
         )
 
         # posterior
@@ -298,7 +338,6 @@ class SensorLocalizationSimulation(Simulation):
             self.L,
             self.N,
             likelihood_sensor,
-            prior=None,
             prior_spatial=None,
             prior_indicator=prior_indicator,
             separable=False,
@@ -411,11 +450,16 @@ class SensorLocalizationSimulation(Simulation):
 
 
 if __name__ == "__main__":
-    path_data = f"{os.path.dirname(os.path.abspath(__file__))}/data"
+    yaml_file, path_data, path_outputs = SensorLocalizationSimulation.parse_args()
 
-    params = SensorLocalizationSimulation.load_params(path_data)
+    params = SensorLocalizationSimulation.load_params(path_data, yaml_file)
 
-    simulation_sensor = SensorLocalizationSimulation(params)
+    simulation_sensor = SensorLocalizationSimulation(
+        **params["simu_init"],
+        path_data=path_data,
+        yaml_file=yaml_file,
+        path_outputs=path_outputs,
+    )
     dict_posteriors, scaler = simulation_sensor.setup(
         filename_obs=params["filename_obs"],
         **params["likelihood"],

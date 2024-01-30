@@ -1,13 +1,55 @@
+import pickle
+from typing import Dict, Optional, Tuple
+
 import numpy as np
 
 from beetroots.approx_optim.forward_map.abstract_forward_map import (
     ApproxOptimForwardMap,
 )
-from beetroots.simulations.astro.forward_map.abstract_nn import SimulationNN
+from beetroots.modelling.forward_maps.neural_network_approx import NeuralNetworkApprox
+from beetroots.space_transform.transform import MyScaler
 
 
 class ApproxOptimNN(ApproxOptimForwardMap):
     r"""handles the generation of a dataset of :math:`\log_{10} f_{\ell}(\theta)` values for a neural network forward map"""
+
+    def setup_forward_map(
+        self,
+        forward_model_name: str,
+        force_use_cpu: bool,
+        fixed_params: Dict[str, Optional[float]],
+        is_log_scale_params: Dict[str, bool],
+    ) -> Tuple[MyScaler, NeuralNetworkApprox]:
+        print(f"fixed values: {fixed_params}")
+
+        with open(
+            f"{self.MODELS_PATH}/{forward_model_name}/scaler.pickle",
+            "rb",
+        ) as file_:
+            scaler_sklearn = pickle.load(file_)
+
+        scaler = MyScaler(
+            mean_=scaler_sklearn.mean_.flatten(),
+            std_=scaler_sklearn.scale_.flatten(),
+            list_is_log=list(is_log_scale_params.values()),
+        )
+
+        # transformation from linear scale (in degrees) to scaled
+
+        # angle_scaled = (angle - 30.0) / 20.0
+
+        # eg {"kappa":None, "Pth":None, "G0":None, "AV":None, "angle":0.}
+        fixed_params_scaled = self.scale_dict_fixed_params(scaler, fixed_params)
+
+        # load forward model
+        forward_map = NeuralNetworkApprox(
+            self.MODELS_PATH,
+            forward_model_name,
+            fixed_params_scaled,
+            device="cpu" if force_use_cpu else None,
+        )
+        forward_map.restrict_to_output_subset(self.list_lines)
+        return scaler, forward_map
 
     def compute_log10_f_Theta(
         self,
@@ -15,15 +57,8 @@ class ApproxOptimNN(ApproxOptimForwardMap):
         lower_bounds_lin: np.ndarray,
         upper_bounds_lin: np.ndarray,
     ) -> np.ndarray:
-        simulation = SimulationNN()
-        simulation.list_lines_fit = self.list_lines * 1
 
-        scaler, forward_map = simulation.setup_forward_map(
-            forward_model_name=dict_forward_model["forward_model_name"],
-            force_use_cpu=dict_forward_model["force_use_cpu"],
-            dict_fixed_params=dict_forward_model["fixed_params"],
-            dict_is_log_scale_params=dict_forward_model["is_log_scale_params"],
-        )
+        scaler, forward_map = self.setup_forward_map(**dict_forward_model)
 
         lower_bounds = scaler.from_lin_to_scaled(
             lower_bounds_lin.reshape((1, self.D)),
@@ -36,15 +71,15 @@ class ApproxOptimNN(ApproxOptimForwardMap):
         lower_bounds = lower_bounds[self.list_idx_sampling] * 1
         upper_bounds = upper_bounds[self.list_idx_sampling] * 1
 
-        dict_fixed_params_scaled = simulation.scale_dict_fixed_params(
+        fixed_params_scaled = self.scale_dict_fixed_params(
             scaler, dict_forward_model["fixed_params"]
         )
-        print(dict_fixed_params_scaled)
+        print(fixed_params_scaled)
 
         Theta = np.zeros((self.K**self.D_sampling, self.D))
         Theta[:, self.list_idx_sampling] = self.sample_theta(lower_bounds, upper_bounds)
 
-        for i, v in enumerate(dict_fixed_params_scaled.values()):
+        for i, v in enumerate(fixed_params_scaled.values()):
             if v is not None:
                 assert np.allclose(Theta[:, i], 0.0), Theta[:10]
                 Theta[:, i] = v * 1

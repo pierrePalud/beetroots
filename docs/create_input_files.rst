@@ -5,14 +5,18 @@ With ``beetroots``, to run an inference, run:
 
 .. code-block::
 
-    python <simulation-file>.py <input-file>.yaml
+    python <simulation-file>.py <input-file-name>.yaml /path/to/data/folder /path/to/model/folder /path/to/output/folder
 
 with
 
-* ``<simulation-file>.py``: a python file with a :class:`.Simulation` object, which controls the setup of the inference, runs the inference, and extracts relevant insights from the raw results.
+* ``<simulation-file>.py``: a python file with a :class:`.Simulation` object, which controls the setup of the inference, runs the inference, and extracts relevant insights from the raw results
 * ``<input-file>.yaml`` : a ``yaml`` file that contains all the parameters of the run, such as whether to run an optimization procedure or a Markov chain, use a spatial regularization or not, etc.
+* ``/path/to/data/folder`` : path to the folder that contains the observation data and the input ``.yaml`` files
+* ``/path/to/model/folder `` : path to the folder that contains the already saved models (e.g., polynomial or neural network approximations). This argument is only required when the considered :class:`.ForwardMap` relies on saved parameters.
+* ``/path/to/output/folder`` : path to the output folder (to be created) where results are to be saved
 
-We now detail the two files.
+
+We now detail the python and ``.yaml`` files.
 
 Simulation object
 -----------------

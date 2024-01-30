@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    beetroots.inversion.plots
-   beetroots.inversion.reporting
    beetroots.inversion.results
    beetroots.inversion.run
 

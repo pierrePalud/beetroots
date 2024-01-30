@@ -61,6 +61,40 @@ The green classes indicate the already implemented classes, and the red classes 
 
 For astrophysics applications, all required classes are already implemented.
 
+Python file
+-----------
+
+The
+
+.. code-block:: python
+    :caption: toy_case_nn.py
+    :name: toy_case_nn-py
+    from beetroots.simulation.astro.toy_case.toy_case_nn import SimulationToyCaseNN
+
+    if __name__ == "__main__":
+        yaml_file, path_data, path_models, path_outputs = SimulationToyCaseNN.parse_args()
+
+        params = SimulationToyCaseNN.load_params(path_data, yaml_file)
+
+        SimulationToyCaseNN.check_input_params_file(
+            params,
+            data_validation.schema,
+        )
+
+        simulation = SimulationToyCaseNN(
+            **params["simu_init"],
+            yaml_file=yaml_file,
+            path_data=path_data,
+            path_outputs=path_outputs,
+            path_models=path_models,
+            forward_model_fixed_params=params["forward_model"]["fixed_params"],
+        )
+
+        simulation.main(
+            params=params,
+            path_data_cloud=path_data,
+        )
+
 
 YAML file
 ---------
@@ -192,11 +226,11 @@ YAML file
 Sampling
 --------
 
-With nn-based approximation of forward model:
+To run the sampling with nn-based approximation of forward model from the repo root folder:
 
 .. code:: bash
 
-    python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N64_fixed_angle.yaml
+    python beetroots/simulations/astro/toy_case/toy_case_nn.py nn_N64_fixed_angle.yaml ./data/toycases ./data/models .
 
 
 Minimum mean square error (MMSE) estimator, i.e., mean of the iterates of the Markov chain (the average is evaluated in the scaled space):
