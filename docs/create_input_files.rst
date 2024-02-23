@@ -12,7 +12,7 @@ with
 * ``<simulation-file>.py``: a python file with a :class:`.Simulation` object, which controls the setup of the inference, runs the inference, and extracts relevant insights from the raw results
 * ``<input-file>.yaml`` : a ``yaml`` file that contains all the parameters of the run, such as whether to run an optimization procedure or a Markov chain, use a spatial regularization or not, etc.
 * ``/path/to/data/folder`` : path to the folder that contains the observation data and the input ``.yaml`` files
-* ``/path/to/model/folder `` : path to the folder that contains the already saved models (e.g., polynomial or neural network approximations). This argument is only required when the considered :class:`.ForwardMap` relies on saved parameters.
+* ``/path/to/model/folder`` : path to the folder that contains the already saved models (e.g., polynomial or neural network approximations). This argument is only required when the considered :class:`.ForwardMap` relies on saved parameters.
 * ``/path/to/output/folder`` : path to the output folder (to be created) where results are to be saved
 
 
