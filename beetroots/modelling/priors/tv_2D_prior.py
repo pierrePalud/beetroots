@@ -77,7 +77,6 @@ class TVeps2DSpatialPrior(SpatialPrior):
         return grad_  # (N, D)
 
     def hess_diag_neglog_pdf(self, Theta: np.ndarray) -> np.ndarray:
-        # TODO
         assert Theta.shape == (self.N, self.D)
 
         hess_diag = np.zeros_like(Theta, dtype=np.float64)
