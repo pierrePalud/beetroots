@@ -109,8 +109,8 @@ run_params:
     start_from: null
   mcmc:
     N_MCMC: 1
-    T_MC: 200 #3_000
-    T_BI: 50
+    T_MC: 5000 #3_000
+    T_BI: 500
     plot_1D_chains: true
     plot_2D_chains: true
     plot_ESS: true
