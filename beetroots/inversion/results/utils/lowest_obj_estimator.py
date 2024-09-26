@@ -135,9 +135,21 @@ class ResultsLowestObjective(ResultsUtil):
                 Theta_lowest_obj_scaled_full,
                 Theta_true_scaled_full,
             )
+            mse_component_wise = perf_saver.compute_MSE(
+                    Theta_lowest_obj_scaled_full,
+                    Theta_true_scaled_full,
+                    component_wise=True,
+                )
+            snr_component_wise = perf_saver.compute_SNR(
+                    Theta_lowest_obj_scaled_full,
+                    Theta_true_scaled_full,
+                    component_wise=True,
+                )
         else:
             mse = None
             snr = None
+            mse_component_wise = None
+            snr_component_wise = None
 
         perf_saver.save_estimator_performance(
             self.path_data_csv_out,
@@ -145,6 +157,8 @@ class ResultsLowestObjective(ResultsUtil):
             self.model_name,
             mse,
             snr,
+            mse_component_wise,
+            snr_component_wise,
             lowest_obj,
         )
 

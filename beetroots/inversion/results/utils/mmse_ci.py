@@ -90,9 +90,21 @@ class ResultsMMSEandCI(ResultsUtil):
                 Theta_mmse_scaled_full,
                 Theta_true_scaled_full,
             )
+            mse_component_wise = perf_saver.compute_MSE(
+                Theta_mmse_scaled_full,
+                Theta_true_scaled_full,
+                component_wise=True,
+            )
+            snr_component_wise = perf_saver.compute_SNR(
+                Theta_mmse_scaled_full,
+                Theta_true_scaled_full,
+                component_wise=True,
+            )
         else:
             mse = None
             snr = None
+            mse_component_wise = None
+            snr_component_wise = None
 
         # evaluate objective
         Theta_mmse_scaled = Theta_mmse_scaled_full[:, list_idx_sampling]
@@ -117,6 +129,8 @@ class ResultsMMSEandCI(ResultsUtil):
             self.model_name,
             mse,
             snr,
+            mse_component_wise,
+            snr_component_wise,
             objective_mmse,
         )
 
