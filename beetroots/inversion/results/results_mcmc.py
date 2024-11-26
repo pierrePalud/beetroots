@@ -434,22 +434,22 @@ class ResultsExtractorMCMC(ResultsExtractor):
                 point_challenger=point_challenger,
             )
 
-            if len(list_lines_valid) > 0:
-                comparison_y_f_Theta.main(
-                    list_mcmc_folders,
-                    scaler,
-                    posterior.likelihood.forward_map,
-                    y_valid,
-                    omega_valid,
-                    sigma_a_valid,
-                    sigma_m_valid,
-                    list_lines_valid,
-                    "valid",
-                    point_challenger=point_challenger,
-                )
-                posterior.likelihood.forward_map.restrict_to_output_subset(
-                    list_lines_fit,
-                )
+            # if len(list_lines_valid) > 0:
+            #     comparison_y_f_Theta.main(
+            #         list_mcmc_folders,
+            #         scaler,
+            #         posterior.likelihood.forward_map,
+            #         y_valid,
+            #         omega_valid,
+            #         sigma_a_valid,
+            #         sigma_m_valid,
+            #         list_lines_valid,
+            #         "valid",
+            #         point_challenger=point_challenger,
+            #     )
+            #     posterior.likelihood.forward_map.restrict_to_output_subset(
+            #         list_lines_fit,
+            #     )
 
         if analyze_regularization_weight:
             ResultsRegularizationWeights(

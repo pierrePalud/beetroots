@@ -213,7 +213,7 @@ class ResultsBayesPvalues(ResultsUtil):
                 plt.imshow(
                     pval_estim_seed_shaped,
                     norm=colors.LogNorm(),
-                    cmap="jet",
+                    cmap="viridis",
                     origin="lower",
                 )
                 plt.colorbar()
@@ -258,7 +258,7 @@ class ResultsBayesPvalues(ResultsUtil):
                     )
                     plt.imshow(
                         proba_reject_shaped,
-                        cmap="jet",
+                        cmap="viridis",
                         origin="lower",
                     )
                     plt.colorbar()

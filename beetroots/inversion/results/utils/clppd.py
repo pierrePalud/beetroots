@@ -136,7 +136,7 @@ class ResultsCLPPD(ResultsUtil):
                 plt.imshow(
                     clppd_seed_shaped,
                     norm=colors.LogNorm(),
-                    cmap="jet",
+                    cmap="viridis",
                     origin="lower",
                 )
                 plt.colorbar()
@@ -169,7 +169,7 @@ class ResultsCLPPD(ResultsUtil):
             #         plt.imshow(
             #             p_values_seed_shaped,
             #             norm=colors.LogNorm(),
-            #             cmap="jet",
+            #             cmap="viridis",
             #             origin="lower",
             #         )
             #         plt.colorbar()

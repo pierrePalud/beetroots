@@ -85,7 +85,7 @@ class ResultsESS(ResultsUtil):
             plt.imshow(
                 ess_arr_shaped,
                 norm=colors.LogNorm(vmin=1.0),
-                cmap="jet",
+                cmap="viridis",
                 origin="lower",
             )
             plt.colorbar()

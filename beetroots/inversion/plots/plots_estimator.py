@@ -91,7 +91,7 @@ class PlotsEstimator(AbstractPlots2D):
                     x_estimator_d_plot,
                     norm=colors.LogNorm(vmin, vmax),
                     origin="lower",
-                    cmap="jet",
+                    cmap="viridis",
                 )
                 plt.colorbar()
                 self._draw_rect_on_pixels_of_interest()
@@ -113,7 +113,7 @@ class PlotsEstimator(AbstractPlots2D):
             plt.imshow(
                 x_estimator_d_plot,
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -147,7 +147,7 @@ class PlotsEstimator(AbstractPlots2D):
                 u_estimator_ell_plot,
                 norm=colors.LogNorm(),
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -162,7 +162,7 @@ class PlotsEstimator(AbstractPlots2D):
             # * same in linear scale
             plt.figure(figsize=(8, 6))
             plt.title(f"{estimator_name} for {line}")
-            plt.imshow(u_estimator_ell_plot, origin="lower", cmap="jet")
+            plt.imshow(u_estimator_ell_plot, origin="lower", cmap="viridis")
             plt.colorbar()
 
             filename = f"{folder_path}/"
@@ -210,7 +210,7 @@ class PlotsEstimator(AbstractPlots2D):
                     x_ci_size_d_plot,
                     norm=colors.LogNorm(vmin, vmax),
                     origin="lower",
-                    cmap="jet",
+                    cmap="viridis",
                 )
                 plt.colorbar()
                 self._draw_rect_on_pixels_of_interest()
@@ -226,7 +226,7 @@ class PlotsEstimator(AbstractPlots2D):
                 plt.imshow(
                     x_ci_size_d_plot,
                     origin="lower",
-                    cmap="jet",
+                    cmap="viridis",
                 )
                 plt.colorbar()
                 self._draw_rect_on_pixels_of_interest()
@@ -262,7 +262,7 @@ class PlotsEstimator(AbstractPlots2D):
                 u_ci_size_d_plot,
                 norm=colors.LogNorm(),
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -278,7 +278,7 @@ class PlotsEstimator(AbstractPlots2D):
             plt.imshow(
                 u_ci_size_d_plot,
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()

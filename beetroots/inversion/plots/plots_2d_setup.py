@@ -56,7 +56,7 @@ class Plots2DSetup(AbstractPlots2D):
         plt.imshow(
             Theta_idx_shaped,
             origin="lower",
-            cmap="jet",
+            cmap="viridis",
         )
 
         # Loop over data dimensions and create text annotations.
@@ -135,7 +135,7 @@ class Plots2DSetup(AbstractPlots2D):
 
         plt.figure(figsize=(8, 6))
         plt.title("Proportion of censored lines")
-        plt.imshow(prop_censor_shaped, origin="lower", cmap="jet")
+        plt.imshow(prop_censor_shaped, origin="lower", cmap="viridis")
         plt.colorbar()
         self._draw_rect_on_pixels_of_interest()
 
@@ -167,7 +167,7 @@ class Plots2DSetup(AbstractPlots2D):
                 y_ell_shaped,
                 origin="lower",
                 norm=colors.LogNorm(),
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -184,7 +184,7 @@ class Plots2DSetup(AbstractPlots2D):
             plt.imshow(
                 y_ell_shaped,
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -224,7 +224,7 @@ class Plots2DSetup(AbstractPlots2D):
 
             plt.figure(figsize=(8, 6))
             plt.title(f"mask of censored pixels for line {readable_name}")
-            plt.imshow(censored_ell_shaped, origin="lower", cmap="jet")
+            plt.imshow(censored_ell_shaped, origin="lower", cmap="viridis")
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
 
@@ -265,7 +265,7 @@ class Plots2DSetup(AbstractPlots2D):
                 sigma_a_ell_shaped,
                 origin="lower",
                 norm=colors.LogNorm(),
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -309,7 +309,7 @@ class Plots2DSetup(AbstractPlots2D):
                 snr_a_ell_shaped,
                 origin="lower",
                 norm=colors.LogNorm(vmin=1.0),
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()

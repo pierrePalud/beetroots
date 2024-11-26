@@ -88,6 +88,25 @@ class RunOptimMAP(Run):
             Theta_0, _ = result_extractor.read_estimator(model_name)
             Theta_0 = scaler.from_lin_to_scaled(Theta_0)
 
+        # TODO: correct feature
+        # elif start_from == "MAP":
+        #     result_extractor = ResultsExtractorOptimMAP(
+        #         f"{path_csv_mle}/../optim_map",
+        #         f"{path_csv_mle}/../optim_map",
+        #         f"{path_csv_mle}/../../../img",
+        #         1,
+        #         100,
+        #         10,
+        #         1,
+        #         1
+        #     )
+        #     Theta_0, _ = result_extractor.read_estimator(
+        #         os.path.abspath(f"{path_csv_mle}/../outputs/article_obs_N90_map_withjump_reg1e-1_2024-10-30_08/data/output/optim_map/"),
+        #         model_name
+        #     )
+        #     Theta_0 = scaler.from_lin_to_scaled(Theta_0)[:, :-1]
+        #     print(Theta_0.shape)
+
         else:
             Theta_0 = None
 
@@ -225,12 +244,12 @@ class RunOptimMAP(Run):
             wether the inversion can be run in parallel (may cause difficulties for forward maps based on neural networks run on GPU), by default True
         """
         Theta_0 = self.prepare_run(
-            dict_posteriors,
-            path_raw,
-            N_runs,
-            scaler,
-            path_csv_mle,
-            start_from,
+            dict_posteriors=dict_posteriors,
+            path_raw=path_raw,
+            N_runs=N_runs,
+            scaler=scaler,
+            start_from=start_from,
+            path_csv_mle=path_csv_mle,
         )
         self.run(
             dict_posteriors,
