@@ -113,29 +113,40 @@ class Posterior:
     def neglog_pdf_priors(
         self,
         Theta: np.ndarray,
-        full: bool = False,
+        pixelwise: bool = False,
     ) -> Union[float, np.ndarray]:
-        if full:
-            nl_priors = np.zeros((self.N, self.L))
+        """evaluates the negative log-pdf of the priors
+
+        Parameters
+        ----------
+        Theta : np.ndarray
+            vector to evaluate
+        pixelwise : bool, optional
+            whether to return the prior neg log pdf per pixel, by default False
+
+        Returns
+        -------
+        Union[float, np.ndarray]
+            returns a float if pixelwise is False, otherwise an array of shape (N,) 
+        """
+        if pixelwise:
+            nl_priors = np.zeros((self.N,))
         else:
             nl_priors = 0.0
 
         if self.prior_spatial is not None:
-            nl_prior_spatial = self.prior_spatial.neglog_pdf(Theta, pixelwise=full)
-            if full:
-                # nl_prior_spatial has shape (N, D), which needs to be
-                # converted to (N, D)
-                nl_prior_spatial = np.sum(nl_prior_spatial, axis=1)  # (N,)
-                nl_priors += nl_prior_spatial[:, None]  # (N, D)
+            nl_prior_spatial = self.prior_spatial.neglog_pdf(Theta, pixelwise=pixelwise)
+            if pixelwise:
+                nl_priors += np.sum(nl_prior_spatial, axis=1)  # (N, D) -> (N,)
             else:
                 nl_priors += np.sum(nl_prior_spatial)
 
         if self.prior_indicator is not None:
-            nl_prior_ind = self.prior_indicator.neglog_pdf(Theta, pixelwise=full)
-            if full:
-                nl_priors += nl_prior_ind[:, None]
+            nl_prior_ind = self.prior_indicator.neglog_pdf(Theta, pixelwise=pixelwise) # (N,) if pixelwise, (D,) otherwise
+            if pixelwise:
+                nl_priors += nl_prior_ind # (N,)
             else:
-                nl_priors += np.sum(nl_prior_ind)
+                nl_priors += np.sum(nl_prior_ind) # (D,) -> float
 
         return nl_priors
 
@@ -144,24 +155,43 @@ class Posterior:
         Theta: np.ndarray,
         forward_map_evals: dict,
         nll_utils: dict,
-        full: bool = False,
-    ) -> float:
-        if full:
-            out = np.zeros((self.N, self.L))
-        else:
-            out = 0.0
+        pixelwise: bool = False,
+    ) -> Union[float, np.ndarray]:
+        """evaluates the negative log pdf of the posterior at Theta
 
-        out += self.likelihood.neglog_pdf(
+        Parameters
+        ----------
+        Theta : np.ndarray
+            point at which the posterior negative log pdf is to be evaluated
+        forward_map_evals : dict
+            _description_
+        nll_utils : dict
+            _description_
+        pixelwise : bool, optional
+            whether to return the prior neg log pdf per pixel, by default False
+
+        Returns
+        -------
+        Union[float, np.ndarray]
+            returns a float if pixelwise is False, otherwise an array of shape (N,) 
+        """
+        nl_llh = self.likelihood.neglog_pdf(
             forward_map_evals,
             nll_utils,
-            full=full,
+            pixelwise=pixelwise,
         )
+        nl_prior = self.neglog_pdf_priors(Theta, pixelwise=pixelwise)
 
-        out += self.neglog_pdf_priors(Theta, full=full)
+        if pixelwise:
+            assert nl_llh.shape == (self.N,)
+            assert nl_prior.shape == (self.N,)
+        else:
+            assert isinstance(nl_llh, float)
+            assert isinstance(nl_prior, float)
 
         # assert np.sum(np.isnan(nll)) == 0, np.sum(np.isnan(nll))
         # assert np.sum(np.isnan(nl_priors)) == 0, np.sum(np.isnan(nl_priors))
-        return out
+        return nl_llh + nl_prior
 
     def grad_neglog_pdf(
         self,
@@ -252,7 +282,7 @@ class Posterior:
 
         assert isinstance(
             nll_full, np.ndarray
-        ), "nll_full shoud be an array, check likelihood.neglog_pdf method"
+        ), "nll_full should be an array, check likelihood.neglog_pdf method"
         assert nll_full.shape == (
             self.N,
             self.L,
@@ -328,21 +358,20 @@ class Posterior:
             nl_prior_indicator = np.zeros((self.D,))
         nll_utils["nl_prior_indicator"] = nl_prior_indicator
 
-        nlpdf_full = self.neglog_pdf(
+        nlpdf_pixelwise = self.neglog_pdf(
             Theta,
             forward_map_evals,
             nll_utils,
-            full=True,
-        )  # (N, L)
-        nlpdf_pix = np.sum(nlpdf_full, axis=1)
+            pixelwise=True,
+        )  # (N,)
 
         iterate = {
             "Theta": Theta,
             "forward_map_evals": forward_map_evals,
             "nll_utils": nll_utils,
-            "objective_pix": nlpdf_pix,
+            "objective_pix": nlpdf_pixelwise,
         }
-        iterate["objective"] = np.sum(nlpdf_pix)
+        iterate["objective"] = np.sum(nlpdf_pixelwise)
         if compute_derivatives:
             iterate["grad"] = self.grad_neglog_pdf(
                 Theta,

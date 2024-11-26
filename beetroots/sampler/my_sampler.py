@@ -798,7 +798,7 @@ class MySampler(Sampler):
 
                 # * compute log_q of candidate given current
                 candidate_full = new_Theta * 1
-                candidate_full[idx_pix, :] = mu_current * 1
+                candidate_full[idx_pix, :] = candidate * 1
 
                 candidate_all = posterior.compute_all(
                     candidate_full,
