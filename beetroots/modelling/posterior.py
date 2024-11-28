@@ -127,7 +127,7 @@ class Posterior:
         Returns
         -------
         Union[float, np.ndarray]
-            returns a float if pixelwise is False, otherwise an array of shape (N,) 
+            returns a float if pixelwise is False, otherwise an array of shape (N,)
         """
         if pixelwise:
             nl_priors = np.zeros((self.N,))
@@ -142,11 +142,13 @@ class Posterior:
                 nl_priors += np.sum(nl_prior_spatial)
 
         if self.prior_indicator is not None:
-            nl_prior_ind = self.prior_indicator.neglog_pdf(Theta, pixelwise=pixelwise) # (N,) if pixelwise, (D,) otherwise
+            nl_prior_ind = self.prior_indicator.neglog_pdf(
+                Theta, pixelwise=pixelwise
+            )  # (N,) if pixelwise, (D,) otherwise
             if pixelwise:
-                nl_priors += nl_prior_ind # (N,)
+                nl_priors += nl_prior_ind  # (N,)
             else:
-                nl_priors += np.sum(nl_prior_ind) # (D,) -> float
+                nl_priors += np.sum(nl_prior_ind)  # (D,) -> float
 
         return nl_priors
 
@@ -173,7 +175,7 @@ class Posterior:
         Returns
         -------
         Union[float, np.ndarray]
-            returns a float if pixelwise is False, otherwise an array of shape (N,) 
+            returns a float if pixelwise is False, otherwise an array of shape (N,)
         """
         nl_llh = self.likelihood.neglog_pdf(
             forward_map_evals,

@@ -6,8 +6,8 @@ N_grid = 500_000
 D = 3
 D_no_kappa = 2
 Theta_grid_lin = np.zeros((N_grid, D))
-Theta_grid_lin[:, D - D_no_kappa :] = 10 ** np.random.normal(
-    0, 1, size=(N_grid, D_no_kappa)
+Theta_grid_lin[:, D - D_no_kappa :] = np.exp(
+    np.log(10) * np.random.normal(0, 1, size=(N_grid, D_no_kappa))
 )
 Theta_grid_lin[:, : D - D_no_kappa] = 1
 
@@ -31,11 +31,12 @@ Theta_test_scaled[:, D - D_no_kappa :] = (
     Theta_test_scaled[:, D - D_no_kappa :] - mean_[None, :]
 ) / std_[None, :]
 
+scaler = MyScaler(
+    Theta_grid_lin, D_no_kappa, mean_=mean_, std_=std_, list_is_log=list_is_log
+)
+
 
 def test_from_scaled_to_lin():
-    scaler = MyScaler(
-        Theta_grid_lin, D_no_kappa, mean_=mean_, std_=std_, list_is_log=list_is_log
-    )
     Theta_lin = scaler.from_scaled_to_lin(Theta_test_scaled)
     assert Theta_lin.shape == Theta_test_scaled.shape
     assert np.allclose(
@@ -50,9 +51,6 @@ def test_from_scaled_to_lin():
 
 
 def test_from_lin_to_scaled():
-    scaler = MyScaler(
-        Theta_grid_lin, D_no_kappa, mean_=mean_, std_=std_, list_is_log=list_is_log
-    )
     Theta_scaled = scaler.from_lin_to_scaled(Theta_test_lin)
     assert Theta_scaled.shape == Theta_test_scaled.shape
     assert np.allclose(

@@ -9,8 +9,7 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class Saver:
-    r"""enable to regularly save the progression of the Markov chain to a ``.hdf5`` file
-    """
+    r"""enable to regularly save the progression of the Markov chain to a ``.hdf5`` file"""
 
     __slots__ = (
         "N",
