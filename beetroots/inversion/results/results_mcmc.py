@@ -202,7 +202,9 @@ class ResultsExtractorMCMC(ResultsExtractor):
         list_fixed_values_scaled = list(
             posterior.likelihood.forward_map.arr_fixed_values
         )
-        list_fixed_values_scaled = [v if v != 0 else None for v in list_fixed_values]
+        list_fixed_values_scaled = [
+            v if v != 0 else None for v in list_fixed_values_scaled
+        ]
 
         # clppd
         ResultsCLPPD(
@@ -316,7 +318,7 @@ class ResultsExtractorMCMC(ResultsExtractor):
             self.freq_save,
             N,
             list_idx_sampling,  # (D_sampling,)
-            list_fixed_values,  # (D,)
+            list_fixed_values_scaled,  # (D,)
             lower_bounds_lin,
             upper_bounds_lin,
             list_names,

@@ -16,7 +16,6 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 
 class ResultsMC(ResultsUtil):
-
     __slots__ = (
         "model_name",
         "chain_type",
