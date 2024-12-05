@@ -29,11 +29,11 @@ def compute_laplacian(Theta: np.ndarray, list_edges: np.ndarray) -> np.ndarray:
         mask_i_m = list_edges[:, 1] == i
         mask_i_p = list_edges[:, 0] == i
 
-        laplacian_[i] += np.sum(
+        laplacian_[i] -= np.sum(
             (Theta[list_edges[mask_i_p, 1], :] - Theta[list_edges[mask_i_p, 0], :]),
             axis=0,
         )
-        laplacian_[i] -= np.sum(
+        laplacian_[i] += np.sum(
             (Theta[list_edges[mask_i_m, 1], :] - Theta[list_edges[mask_i_m, 0], :]),
             axis=0,
         )
@@ -72,43 +72,15 @@ def compute_laplacian_local(
     for i in range(N_candidates):
         Theta[n] = list_pixel_candidates[i] * 1
 
-        laplacian_[i] += np.sum(
+        laplacian_[i] -= np.sum(
             (Theta[list_edges[mask_i_p, 1], :] - Theta[list_edges[mask_i_p, 0], :]),
             axis=0,
         )  # (D,)
-        laplacian_[i] -= np.sum(
+        laplacian_[i] += np.sum(
             (Theta[list_edges[mask_i_m, 1], :] - Theta[list_edges[mask_i_m, 0], :]),
             axis=0,
         )  # (D,)
     return laplacian_  # (N_candidates, D)
-
-
-@numba.njit()
-def compute_gradient_from_laplacian(
-    laplacian_: np.ndarray, list_edges: np.ndarray
-) -> np.ndarray:
-    """evaluates the gradient from the Laplacian matrix
-
-    Parameters
-    ----------
-    laplacian_ : _type_
-        _description_
-    list_edges : _type_
-        _description_
-
-    Returns
-    -------
-    np.ndarray
-        _description_
-    """
-    g = np.zeros_like(laplacian_)
-
-    for edge in list_edges:
-        val = 2 * (laplacian_[edge[1]] - laplacian_[edge[0]])  # (D,)
-        g[edge[0]] += val
-        g[edge[1]] -= val
-
-    return g  # (N, D)
 
 
 @numba.njit()
@@ -238,24 +210,31 @@ class L22LaplacianSpatialPrior(SpatialPrior):
                 neglog_p * other_weights[None, None, :], axis=2
             )  # (n_pix, k_mtm)
 
-    def gradient_neglog_pdf(self, Theta: np.ndarray) -> np.ndarray:
+    def gradient_neglog_pdf(
+        self, Theta: np.ndarray, chromatic_gibbs: bool = True
+    ) -> np.ndarray:
         assert Theta.shape == (self.N, self.D)
+        factor = 2 if chromatic_gibbs else 4
+
+        if self.list_edges.size > 0:
+            idx, counts = np.unique(self.list_edges.flatten(), return_counts=True)
 
         laplacian_ = compute_laplacian(Theta, self.list_edges)
 
-        g = compute_gradient_from_laplacian(laplacian_, self.list_edges)  # (N, D)
-        # g /= self.N * self.D
-        return self.weights[None, :] * g  # (N, D)
+        return (
+            self.weights[None, :] * factor * counts[:, None] * laplacian_[idx]
+        )  # (N, D)
 
-    def hess_diag_neglog_pdf(self, Theta: np.ndarray) -> np.ndarray:
+    def hess_diag_neglog_pdf(
+        self, Theta: np.ndarray, chromatic_gibbs: bool = True
+    ) -> np.ndarray:
         hess_diag = np.zeros_like(Theta, dtype=np.float64)
+        factor = 2 if chromatic_gibbs else 4
 
         if self.list_edges.size > 0:
             idx, counts = np.unique(self.list_edges.flatten(), return_counts=True)
             # print(counts.dtype, hess_diag.dtype)
-            hess_diag[idx, :] += (
-                2 * (counts * (counts + 1))[:, None] * np.ones((idx.size, self.D))
-            )
+            hess_diag[idx, :] += (counts**2)[:, None] * np.ones((idx.size, self.D))
 
         # hess_diag /= self.N * self.D
-        return self.weights[None, :] * hess_diag  # (N, D)
+        return self.weights[None, :] * factor * hess_diag  # (N, D)

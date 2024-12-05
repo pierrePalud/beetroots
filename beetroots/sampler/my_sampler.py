@@ -1,5 +1,5 @@
-r"""Contains a class of sampler used in the Meudon PDR code Bayesian inversion problems
-"""
+r"""Contains a class of sampler used in the Meudon PDR code Bayesian inversion problems"""
+
 import copy
 from typing import Optional, Tuple, Union
 
@@ -143,13 +143,10 @@ class MySampler(Sampler):
             ).reshape((n_pix, self.k_mtm, self.D))
 
         else:
-            return utils.sample_conditional_spatial_and_indicator_prior(
+            return utils.sample_conditional_spatial_prior(
                 Theta,
                 posterior.prior_spatial.list_edges,
                 posterior.prior_spatial.weights,
-                posterior.prior_indicator.lower_bounds,
-                posterior.prior_indicator.upper_bounds,
-                posterior.prior_indicator.indicator_margin_scale,
                 idx_pix=idx_pix,
                 k_mtm=self.k_mtm,
                 seed=seed,
@@ -943,7 +940,9 @@ class MySampler(Sampler):
             return accept, proba
 
     def generate_new_sample_mtm(
-        self, t: int, posterior: Posterior  # , idx_site: Union[int, None] = None
+        self,
+        t: int,
+        posterior: Posterior,  # , idx_site: Union[int, None] = None
     ):
         r"""generates a new sample using the MTM transition kernel
 
@@ -999,12 +998,13 @@ class MySampler(Sampler):
 
             neglogpdf_candidates = neglogpdf_candidates.reshape((n_pix, self.k_mtm + 1))
 
+            neglogpdf_candidates += posterior.partial_neglog_pdf_priors(
+                new_Theta.copy(), idx_pix, candidates_pix
+            )  # (n_pix, k_mtm)
+
             # * if optimization: define challenger with conditional posterior
             # * instead of likelihood, and only keep if better than current
             if not self.stochastic:
-                neglogpdf_candidates += posterior.partial_neglog_pdf_priors(
-                    new_Theta.copy(), idx_pix, candidates_pix
-                )  # (n_pix, k_mtm)
                 idx_challengers = np.argmin(
                     neglogpdf_candidates[:, :-1], axis=1
                 )  # (n_pix,)
@@ -1055,7 +1055,7 @@ class MySampler(Sampler):
             # * if sampling
             else:
                 if posterior.prior_spatial is not None:
-                    nlratio_prior_proposal = utils.compute_nlratio_prior_proposal(
+                    nlratio_prior_proposal = utils.compute_nlpdf_spatial_proposal(
                         new_Theta * 1,
                         posterior.prior_spatial.list_edges,
                         posterior.prior_spatial.weights,
