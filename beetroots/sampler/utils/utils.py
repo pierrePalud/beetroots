@@ -417,7 +417,7 @@ def numba_logsumexp_stable(x: np.ndarray, weights: np.ndarray) -> float:
     return res
 
 
-# @nb.njit()
+@nb.njit()
 def compute_nlpdf_spatial_proposal(
     Theta: np.ndarray,
     spatial_list_edges: np.ndarray,
