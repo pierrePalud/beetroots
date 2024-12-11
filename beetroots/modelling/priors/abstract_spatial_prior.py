@@ -38,10 +38,10 @@ def build_list_edges(
         if use_next_nearest_neighbors
         else [(1, 0), (0, 1)]
     )
-    for (x, y) in list(df.index):
+    for x, y in list(df.index):
         idx = df.at[(x, y), "idx"]
         cluster_current = df_clusters.at[idx]
-        for (delta_x, delta_y) in list_considered_neighbors:
+        for delta_x, delta_y in list_considered_neighbors:
             x2 = x + delta_x
             y2 = y + delta_y
             if (x2, y2) in df.index:
@@ -130,12 +130,12 @@ class SpatialPrior(PriorProbaDistribution):
         """
         if self.use_next_nearest_neighbors:
             dict_sites_raw = {i: [] for i in range(4)}
-            for (x, y) in list(df.index):
+            for x, y in list(df.index):
                 idx_site = 2 * (x % 2) + y % 2
                 dict_sites_raw[idx_site].append(df.at[(x, y), "idx"])
         else:
             dict_sites_raw = {i: [] for i in range(2)}
-            for (x, y) in list(df.index):
+            for x, y in list(df.index):
                 idx_site = (x + y) % 2
                 dict_sites_raw[idx_site].append(df.at[(x, y), "idx"])
 
@@ -152,24 +152,6 @@ class SpatialPrior(PriorProbaDistribution):
         with_weights: bool = True,
     ) -> np.ndarray:
         r"""computes the negative log pdf (defined up to some multiplicative constant)
-
-        Parameters
-        ----------
-        Theta : np.array of shape (N, D)
-            set of D maps on which we want to evaluate the neg log prior
-
-        Returns
-        -------
-        neglog_p : np.array of shape (D,)
-            set of the D neg log priors evaluation
-        """
-        pass
-
-    @abc.abstractmethod
-    def neglog_pdf_one_pix(
-        self, Theta: np.ndarray, n: int, with_weights: bool = True
-    ) -> np.ndarray:
-        r"""computes the negative log of the pdf (defined up to some multiplicative constant) in the neighborhood of one pixel
 
         Parameters
         ----------

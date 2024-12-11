@@ -119,7 +119,11 @@ class ResultsMMSEandCI(ResultsUtil):
             compute_derivatives_2nd_order=False,
         )
         objective_mmse = posterior.neglog_pdf(
-            Theta_mmse_scaled, forward_map_evals, nll_utils
+            Theta_mmse_scaled,
+            idx_pix=np.arange(self.N),
+            forward_map_evals=forward_map_evals,
+            nll_utils=nll_utils,
+            chromatic_gibbs=False,
         )
 
         perf_saver.save_estimator_performance(

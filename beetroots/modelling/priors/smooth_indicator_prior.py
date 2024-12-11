@@ -188,7 +188,7 @@ class SmoothIndicatorPrior(PriorProbaDistribution):
         neglog_p : np.ndarray of shape (D,) or (N,)
             negative log of the smooth indicator prior pdf
         """
-        assert len(Theta.shape) == 2 and Theta.shape[1] == self.D
+
         if pixelwise:
             neglog_p = penalty_one_pix(
                 Theta,

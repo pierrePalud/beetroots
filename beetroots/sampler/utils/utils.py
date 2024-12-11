@@ -419,11 +419,10 @@ def numba_logsumexp_stable(x: np.ndarray, weights: np.ndarray) -> float:
 
 @nb.njit()
 def compute_nlpdf_spatial_proposal(
-    Theta: np.ndarray,
+    candidates: np.ndarray,
     spatial_list_edges: np.ndarray,
     spatial_weights: np.ndarray,
     idx_pix: np.ndarray,
-    candidates: np.ndarray,
 ) -> np.ndarray:
     """evaluates the negative log ratio of prior proposal in the MTM-chromatic Gibbs kernel in ``MySampler``
 
@@ -452,7 +451,7 @@ def compute_nlpdf_spatial_proposal(
     np.ndarray of shape (n_pix, k_mtm)
         negative log ratio of prior proposal
     """
-    _, k_mtm, D = candidates.shape
+    N, k_mtm, D = candidates.shape
     n_pix = idx_pix.size
 
     nl_ratio = np.zeros((n_pix, k_mtm))
@@ -461,7 +460,7 @@ def compute_nlpdf_spatial_proposal(
 
         # * step 1: get neighbors
         neighbors = get_neighboring_pixels(
-            Theta,
+            candidates[:, -1],
             spatial_list_edges,
             idx_1_pix,  # Each candidate has the same value the pixels not belonging idx_pix so we can pick any candidates for the neighbors of pixels in idx_pix.
         )  # (N_neighbors, D)
@@ -476,25 +475,22 @@ def compute_nlpdf_spatial_proposal(
         )  # (2 ** N_neighbors - 1, 1, D) Remove the empty set.
 
         # * step 3: compute distances between candidate and the means of subsets of neighbors
-        dists_with_mean = (np.expand_dims(candidates[i], 0) - mean_neighbors) ** 2
+        dists_with_mean = (
+            np.expand_dims(candidates[idx_1_pix], 0) - mean_neighbors
+        ) ** 2
 
         assert dists_with_mean.shape == (2**N_neighbors - 1, k_mtm, D)
 
         # * step 4: compute weights of each mode
-        weights = np.sqrt(spatial_weights[None, :]) * weight_neighbors[1:, 0, :]
+        weights = 2 * np.sqrt(spatial_weights * weight_neighbors[1:, :, :])
 
         # * step 5: LogSumExp
-        inter_ = (
-            -2
-            * np.expand_dims(np.expand_dims(spatial_weights, 0), 0)
-            * dists_with_mean
-            * weight_neighbors[1:] ** 2
-        )
+        inter_ = -dists_with_mean * weights**2
         # (2 ** N_neighbors - 1, k_mtm, D)
         for k in range(k_mtm):
             for d in range(D):
                 nl_ratio[i, k] += numba_logsumexp_stable(
-                    inter_[:, k, d], weights=weights[:, d]
+                    inter_[:, k, d], weights=weights[:, 0, d]
                 )
 
     return nl_ratio

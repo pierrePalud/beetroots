@@ -731,7 +731,6 @@ class MySampler(Sampler):
             # n_sites = len(posterior.dict_sites)
             # idx_site = int(self.rng.integers(0, n_sites))
             list_idx = np.array(list(posterior.dict_sites.keys()))
-
             for idx_site in list_idx:
                 idx_pix = posterior.dict_sites[idx_site]
                 n_pix = idx_pix.size
@@ -881,6 +880,7 @@ class MySampler(Sampler):
                     self.current = posterior.compute_all(
                         new_Theta,
                         compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                        chromatic_gibbs=True,
                     )
 
             # after loop
@@ -977,30 +977,35 @@ class MySampler(Sampler):
             n_pix = idx_pix.size
 
             # * generate and evaluate candidates
-            candidates_pix = np.zeros((n_pix, self.k_mtm + 1, self.D))
-            candidates_pix[:, :-1, :] = self.generate_random_start_Theta_1pix(
+            candidates = np.zeros((self.N, self.k_mtm + 1, self.D))
+            candidates[:, -1] = self.current["Theta"] * 1
+            candidates[idx_pix, :-1, :] = self.generate_random_start_Theta_1pix(
                 new_Theta, posterior, idx_pix
             )
-            candidates_pix[:, -1, :] = self.current["Theta"][idx_pix, :] * 1
-            candidates_pix = candidates_pix.reshape(
-                (n_pix * (self.k_mtm + 1), self.D)
-            )  # (n_pix * (k_mtm+1), D)
 
-            neglogpdf_candidates = posterior.likelihood.neglog_pdf_candidates(
-                candidates_pix,
-                idx=idx_pix,
-                Theta_t=new_Theta * 1,  # self.current["Theta"] * 1
+            neglogpdf_priors = posterior.mtm_neglog_pdf_priors(
+                candidates, idx_pix, with_weights=True, chromatic_gibbs=True
+            )  # (n_pix, k_mtm+1)
+
+            forward_map_evals = posterior.likelihood.evaluate_all_forward_map(
+                candidates[idx_pix].reshape((n_pix * (self.k_mtm + 1), self.D)),
+                compute_derivatives=False,
+                compute_derivatives_2nd_order=False,
+            )
+            nll_utils = posterior.likelihood.evaluate_all_nll_utils(
+                forward_map_evals,
+                idx_pix,
+                compute_derivatives=False,
+                compute_derivatives_2nd_order=False,
+            )
+            neglogpdf_likelihood = posterior.likelihood.neglog_pdf(
+                forward_map_evals, nll_utils, pixelwise=True
             )  # (n_pix * (k_mtm+1),)
-            assert neglogpdf_candidates.shape == (n_pix * (self.k_mtm + 1),)
+            assert neglogpdf_likelihood.shape == (n_pix * (self.k_mtm + 1),)
 
-            candidates_pix = candidates_pix.reshape((n_pix, self.k_mtm + 1, self.D))
-            # assert np.allclose(candidates_pix[:, -1, :], self.current["Theta"][idx_pix, :]) -> validated
-
-            neglogpdf_candidates = neglogpdf_candidates.reshape((n_pix, self.k_mtm + 1))
-
-            neglogpdf_candidates += posterior.partial_neglog_pdf_priors(
-                new_Theta.copy(), idx_pix, candidates_pix
-            )  # (n_pix, k_mtm)
+            neglogpdf_candidates = neglogpdf_priors + neglogpdf_likelihood.reshape(
+                (n_pix, self.k_mtm + 1)
+            )
 
             # * if optimization: define challenger with conditional posterior
             # * instead of likelihood, and only keep if better than current
@@ -1016,7 +1021,7 @@ class MySampler(Sampler):
                     neglogpdf_candidates_challengers[i] = neglogpdf_candidates[
                         i, idx_challengers[i]
                     ]
-                    challengers[i, :] = candidates_pix[i, idx_challengers[i], :]
+                    challengers[i, :] = candidates[idx_pix][i, idx_challengers[i], :]
                 # neglogpdf_candidates_challengers = neglogpdf_candidates[
                 #     np.arange(len(candidates_pix)), idx_challengers
                 # ]
@@ -1030,7 +1035,7 @@ class MySampler(Sampler):
                 assert challengers.shape == (n_pix, self.D), challengers.shape
 
                 # * compute values of corresponding pixels in current x
-                candidates_already_Theta = candidates_pix[:, -1, :] * 1
+                candidates_already_Theta = candidates[idx_pix, -1, :] * 1
                 neglogpdf_already_Theta = neglogpdf_candidates[:, -1] * 1
                 assert candidates_already_Theta.shape == (n_pix, self.D)
                 assert neglogpdf_already_Theta.shape == (n_pix,)
@@ -1056,11 +1061,10 @@ class MySampler(Sampler):
             else:
                 if posterior.prior_spatial is not None:
                     nlratio_prior_proposal = utils.compute_nlpdf_spatial_proposal(
-                        new_Theta * 1,
+                        candidates,
                         posterior.prior_spatial.list_edges,
                         posterior.prior_spatial.weights,
                         idx_pix,
-                        candidates_pix,
                     )
                     shape_ = nlratio_prior_proposal.shape
                     assert shape_ == (n_pix, self.k_mtm + 1)
@@ -1092,7 +1096,7 @@ class MySampler(Sampler):
                         p=weights[i],
                     )
 
-                challengers = candidates_pix[
+                challengers = candidates[idx_pix][
                     np.arange(n_pix), idx_challengers, :
                 ]  # (n_pix, D)
                 neglogpdf_challengers = neglogpdf_candidates[
@@ -1128,7 +1132,7 @@ class MySampler(Sampler):
                 new_Theta[idx_pix, :] = np.where(
                     accept_arr[:, None] * np.ones((n_pix, self.D)),
                     challengers,  # (n_pix, D)
-                    candidates_pix[:, -1, :],  # (n_pix, D)
+                    candidates[idx_pix][:, -1, :],  # (n_pix, D)
                 )
 
                 accept_total[idx_pix] = accept_arr * 1
@@ -1147,6 +1151,7 @@ class MySampler(Sampler):
             self.current = posterior.compute_all(
                 new_Theta,
                 compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                chromatic_gibbs=True,
             )
 
             new_v = self.v.reshape((self.N, self.D))

@@ -240,7 +240,11 @@ class ResultsExtractorMCMC(ResultsExtractor):
                 compute_derivatives_2nd_order=False,
             )
             objective_true = posterior.neglog_pdf(
-                Theta_true_scaled, forward_map_evals, nll_utils
+                Theta_true_scaled,
+                idx_pix=np.arange(N),
+                forward_map_evals=forward_map_evals,
+                nll_utils=nll_utils,
+                chromatic_gibbs=False,
             )
 
         else:
