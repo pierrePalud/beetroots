@@ -41,6 +41,7 @@ def compute_laplacian(
     return laplacian_  # (N, D)
 
 
+@numba.njit()
 def compute_hadamard_discrete_gradient(
     Theta: np.ndarray, list_edges: np.ndarray, idx_pix: np.ndarray
 ) -> np.ndarray:

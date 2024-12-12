@@ -15,6 +15,7 @@ from beetroots.modelling.posterior import Posterior
 from beetroots.modelling.priors.l22_discrete_grad_prior import (
     L22DiscreteGradSpatialPrior,
 )
+from beetroots.modelling.priors.l22_laplacian_prior import L22LaplacianSpatialPrior
 from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
 from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
 from beetroots.sampler.my_sampler import MySampler
@@ -46,7 +47,7 @@ class SimulationMySampler(SimulationPosteriorType):
     ) -> None:
         if with_spatial_prior:
             assert spatial_prior_params is not None
-            prior_spatial = L22DiscreteGradSpatialPrior(
+            prior_spatial = L22LaplacianSpatialPrior(
                 spatial_prior_params,
                 self.cloud_name,
                 N=self.N,

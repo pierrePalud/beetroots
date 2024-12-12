@@ -1,5 +1,6 @@
 import abc
 import os
+from collections import defaultdict
 from typing import List, Union
 
 import numpy as np
@@ -62,6 +63,7 @@ class SpatialPrior(PriorProbaDistribution):
         "N",
         "use_next_nearest_neighbors",
         "list_edges",
+        "dict_neighbors",
         "dict_sites",
         "initial_weights",
         "weights",
@@ -86,6 +88,11 @@ class SpatialPrior(PriorProbaDistribution):
 
         self.list_edges = build_list_edges(df, self.use_next_nearest_neighbors)
         r"""np.ndarray: set of edges in the graph induced by the spatial regularization"""
+        self.dict_neighbors = defaultdict(list)
+        for edge in self.list_edges:
+            self.dict_neighbors[edge[0]].append(edge[1])
+            self.dict_neighbors[edge[1]].append(edge[0])
+        self.dict_neighbors = dict(self.dict_neighbors)
 
         self.dict_sites = self.build_sites(df)
         """dict[int, np.ndarray]: sites of the graph induced the spatial regularization. A site is a set of nodes that are conditionally independent."""
