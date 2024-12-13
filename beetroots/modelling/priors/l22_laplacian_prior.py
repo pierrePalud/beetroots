@@ -1,3 +1,6 @@
+"""(deprecated) Implementation of L22 Laplacian prior. False implementation."""
+
+import warnings
 from typing import Optional
 
 import numba
@@ -140,7 +143,10 @@ class L22LaplacianSpatialPrior(SpatialPrior):
         if idx_pix.size < self.N:
             chromatic_gibbs = True
 
-        chromatic_gibbs = False  # FIXME: remove this line after debugging
+        chromatic_gibbs = False
+        warnings.warn(
+            "Warning: Chromatic Gibbs is disabled in the L22LaplacianSpatialPrior"
+        )
 
         if self.list_edges.size > 0:
             if not chromatic_gibbs:

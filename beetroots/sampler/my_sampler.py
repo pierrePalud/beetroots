@@ -978,7 +978,7 @@ class MySampler(Sampler):
 
             # * generate and evaluate candidates
             candidates = np.zeros((self.N, self.k_mtm + 1, self.D))
-            candidates[:, -1] = self.current["Theta"] * 1
+            candidates += self.current["Theta"][:, None, :] * 1
             candidates[idx_pix, :-1, :] = self.generate_random_start_Theta_1pix(
                 new_Theta, posterior, idx_pix
             )

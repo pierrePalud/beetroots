@@ -85,11 +85,11 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
 
     .. math::
 
-        \forall d \in [1, D], \quad \pi(\Theta_{\cdot d}) \propto \exp \left[- \tau_d \Vert \Delta \Theta_{\cdot d} \Vert_F^2 \right]
+        \forall d \in [1, D], \quad \pi(\Theta_{\cdot d}) \propto \exp \left[- \tau_d \Vert D \Theta_{\cdot d} \Vert_F^2 \right] = \exp \left[- \frac{\tau_d}{2} \sum_{n \in \mathcal{N}} \sum_{i\in V_n}\left( \Theta_{n, d} - \Theta_{i, d} \right)^2 \right]
 
-    where  :math:`\Vert \cdot \Vert_F` denotes the Fröbenius norm and :math:`\Delta \Theta_{\cdot d}` is the Laplacian of vector :math:ù\Theta_{\cdot d}`.
+    where  :math:`\Vert \cdot \Vert_F` denotes the Fröbenius norm and :math:`D\Theta_{\cdot d}` is the discrete gradient operator for vector :math:\Theta_{\cdot d}`.
 
-    It does handle the MTM case with an additional dimension.
+    It does handle the MTM case with an additional dimension (thourgh the `full` dimension).
     """
 
     def neglog_pdf(
@@ -125,14 +125,14 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
             neglog_p = np.sum(neglog_p, axis=0)
 
         # neglog_p /= self.N * self.D
-        return neglog_p  # (D,) if not pixelwise or (N, D) if pixelwise
+        return neglog_p / 2  # (D,) if not pixelwise or (N, D) if pixelwise
 
     def gradient_neglog_pdf(self, Theta: np.ndarray, idx_pix: np.ndarray) -> np.ndarray:
         assert Theta.shape == (self.N, self.D)
 
         laplacian_ = compute_laplacian(Theta, self.list_edges, idx_pix)
 
-        return self.weights[None, :] * 4 * laplacian_  # (N, D)
+        return self.weights[None, :] * 2 * laplacian_  # (N, D)
 
     def hess_diag_neglog_pdf(
         self, Theta: np.ndarray, idx_pix: np.ndarray
@@ -149,4 +149,4 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
             )
 
         # hess_diag /= self.N * self.D
-        return self.weights[None, :] * 4 * hess_diag  # (N, D)
+        return self.weights[None, :] * 2 * hess_diag  # (N, D)

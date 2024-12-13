@@ -333,7 +333,7 @@ def sample_conditional_spatial_prior(
 
                 # sigma_mtm_eff = 1 / (2 * np.sqrt(N_neighbors * spatial_weights))  # (D,)
                 sigma_mtm_eff = 1 / (
-                    2 * N_used_neighbors * np.sqrt(spatial_weights)
+                    2 * np.sqrt(N_used_neighbors * spatial_weights)
                 )  # (D,)
 
                 # initialize array of candidates

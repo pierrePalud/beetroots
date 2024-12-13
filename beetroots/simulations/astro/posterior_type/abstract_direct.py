@@ -47,7 +47,7 @@ class SimulationMySampler(SimulationPosteriorType):
     ) -> None:
         if with_spatial_prior:
             assert spatial_prior_params is not None
-            prior_spatial = L22LaplacianSpatialPrior(
+            prior_spatial = L22DiscreteGradSpatialPrior(
                 spatial_prior_params,
                 self.cloud_name,
                 N=self.N,
