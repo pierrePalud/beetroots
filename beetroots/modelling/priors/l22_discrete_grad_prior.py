@@ -104,7 +104,7 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
         assert np.sum([pixelwise, full]) < 2
         if idx_pix.size < self.N:
             chromatic_gibbs = True
-        factor = 2 if chromatic_gibbs else 1
+        factor = 1 if chromatic_gibbs else 1 / 2
 
         if self.list_edges.size > 0:
             hadamard_gradient_ = compute_hadamard_discrete_gradient(
@@ -117,15 +117,12 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
         if with_weights:
             neglog_p = self.weights * neglog_p
 
-        if full:
-            return neglog_p
-        elif pixelwise:
+        if pixelwise:
             neglog_p = np.sum(neglog_p, axis=1)
-        else:
+        elif not full:
             neglog_p = np.sum(neglog_p, axis=0)
 
-        # neglog_p /= self.N * self.D
-        return neglog_p / 2  # (D,) if not pixelwise or (N, D) if pixelwise
+        return neglog_p  # (D,) if not pixelwise or (N, D) if pixelwise
 
     def gradient_neglog_pdf(self, Theta: np.ndarray, idx_pix: np.ndarray) -> np.ndarray:
         assert Theta.shape == (self.N, self.D)

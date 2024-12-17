@@ -333,7 +333,7 @@ def sample_conditional_spatial_prior(
 
                 # sigma_mtm_eff = 1 / (2 * np.sqrt(N_neighbors * spatial_weights))  # (D,)
                 sigma_mtm_eff = 1 / (
-                    2 * np.sqrt(N_used_neighbors * spatial_weights)
+                    N_used_neighbors * np.sqrt(spatial_weights)
                 )  # (D,)
 
                 # initialize array of candidates
@@ -482,7 +482,7 @@ def compute_nlpdf_spatial_proposal(
         assert dists_with_mean.shape == (2**N_neighbors - 1, k_mtm, D)
 
         # * step 4: compute weights of each mode
-        weights = 2 * np.sqrt(spatial_weights * weight_neighbors[1:, :, :])
+        weights = np.sqrt(spatial_weights) * weight_neighbors[1:, :, :]
 
         # * step 5: LogSumExp
         inter_ = -dists_with_mean * weights**2
