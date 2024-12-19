@@ -312,7 +312,9 @@ class MySampler(Sampler):
         assert Theta_0.shape == (self.N, self.D)
 
         self.current = posterior.compute_all(
-            Theta_0, compute_derivatives_2nd_order=self.compute_derivatives_2nd_order
+            Theta_0,
+            compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+            chromatic_gibbs=True,
         )
 
         assert np.isnan(self.current["objective"]) == 0
@@ -414,6 +416,7 @@ class MySampler(Sampler):
                         self.current["forward_map_evals"],
                         self.current["nll_utils"],
                         compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                        chromatic_gibbs=False,
                     )
 
                 additional_sampling_log["tau"] = posterior.prior_spatial.weights * 1
@@ -799,6 +802,7 @@ class MySampler(Sampler):
                 candidate_all = posterior.compute_all(
                     candidate_full,
                     compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                    chromatic_gibbs=True,
                 )
                 grad_cand = candidate_all["grad"][idx_pix, :] * 1
                 v_cand = (
@@ -908,6 +912,7 @@ class MySampler(Sampler):
             candidate_all = posterior.compute_all(
                 mu_current.reshape((self.N, self.D)),
                 compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                chromatic_gibbs=False,
             )
             if candidate_all["objective"] < self.current["objective"]:
                 self.current = copy.copy(candidate_all)
@@ -918,6 +923,7 @@ class MySampler(Sampler):
                 candidate_all = posterior.compute_all(
                     candidate.reshape((self.N, self.D)),
                     compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                    chromatic_gibbs=False,
                 )
 
                 if candidate_all["objective"] < self.current["objective"]:
@@ -978,7 +984,7 @@ class MySampler(Sampler):
 
             # * generate and evaluate candidates
             candidates = np.zeros((self.N, self.k_mtm + 1, self.D))
-            candidates += self.current["Theta"][:, None, :] * 1
+            candidates += new_Theta[:, None, :] * 1
             candidates[idx_pix, :-1, :] = self.generate_random_start_Theta_1pix(
                 new_Theta, posterior, idx_pix
             )
@@ -1096,9 +1102,7 @@ class MySampler(Sampler):
                         p=weights[i],
                     )
 
-                challengers = candidates[idx_pix][
-                    np.arange(n_pix), idx_challengers, :
-                ]  # (n_pix, D)
+                challengers = candidates[idx_pix, idx_challengers, :]  # (n_pix, D)
                 neglogpdf_challengers = neglogpdf_candidates[
                     np.arange(n_pix), idx_challengers
                 ]

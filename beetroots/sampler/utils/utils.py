@@ -313,40 +313,38 @@ def sample_conditional_spatial_prior(
     n_pix = idx_pix.size * 1
 
     samples = np.zeros((n_pix, k_mtm, D))
-    i = 0
-    for idx_1_pix in idx_pix:
+    for i, idx_1_pix in enumerate(idx_pix):
         # * sample from around neighbors
         neighbors = get_neighboring_pixels(current_Theta, spatial_list_edges, idx_1_pix)
         N_neighbors = neighbors.shape[0]
 
-        if N_neighbors > 0:
-            Theta = np.zeros((k_mtm, D))
+        if N_neighbors == 0:
+            continue
 
-            for k in range(k_mtm):
-                # select which combination f neighbors is going to be used
+        Theta = np.zeros((k_mtm, D))
+
+        for k in range(k_mtm):
+            # select which combination f neighbors is going to be used
+            arr_use_neighbors = np.random.binomial(n=1, p=0.5, size=N_neighbors)
+            while np.max(arr_use_neighbors) == 0:
                 arr_use_neighbors = np.random.binomial(n=1, p=0.5, size=N_neighbors)
-                while np.max(arr_use_neighbors) == 0:
-                    arr_use_neighbors = np.random.binomial(n=1, p=0.5, size=N_neighbors)
 
-                used_neighbors = neighbors[arr_use_neighbors == 1]
-                N_used_neighbors = used_neighbors.shape[0]
+            used_neighbors = neighbors[arr_use_neighbors == 1]
+            N_used_neighbors = used_neighbors.shape[0]
 
-                # sigma_mtm_eff = 1 / (2 * np.sqrt(N_neighbors * spatial_weights))  # (D,)
-                sigma_mtm_eff = 1 / (
-                    N_used_neighbors * np.sqrt(spatial_weights)
-                )  # (D,)
+            # sigma_mtm_eff = 1 / (2 * np.sqrt(N_neighbors * spatial_weights))  # (D,)
+            sigma_mtm_eff = 1 / (N_used_neighbors * np.sqrt(spatial_weights))  # (D,)
 
-                # initialize array of candidates
+            # initialize array of candidates
 
-                mean = np.zeros((D,))
-                for d in range(D):
-                    mean[d] = np.mean(used_neighbors[:, d])
-                    # mean[d] = np.mean(neighbors[:, d])
+            mean = np.zeros((D,))
+            for d in range(D):
+                mean[d] = np.mean(used_neighbors[:, d])
+                # mean[d] = np.mean(neighbors[:, d])
 
-                Theta[k] = mean + sigma_mtm_eff * np.random.standard_normal(size=(D,))
+            Theta[k] = mean + sigma_mtm_eff * np.random.standard_normal(size=(D,))
 
-            samples[i, :, :] = Theta * 1  # (k_mtm, D)
-        i += 1
+        samples[i, :, :] = Theta * 1  # (k_mtm, D)
 
     return samples
 
