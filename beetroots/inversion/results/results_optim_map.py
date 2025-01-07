@@ -1,3 +1,4 @@
+import copy
 import os
 from typing import List, Optional, Tuple, Union
 
@@ -178,6 +179,11 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
 
         chain_type = "optim_map"
 
+        if estimator_plot is not None:
+            map_shaper = copy.copy(estimator_plot.map_shaper)
+        else:
+            map_shaper = None
+
         # clppd
         ResultsCLPPD(
             model_name=model_name,
@@ -187,7 +193,7 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
             N_MCMC=self.N_MCMC,
             N=N,
             L=L,
-        ).main(list_mcmc_folders, estimator_plot.map_shaper)
+        ).main(list_mcmc_folders, map_shaper)
 
         # kernel analysis
         ResultsKernels(
@@ -218,6 +224,7 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
                 nll_utils=nll_utils,
                 chromatic_gibbs=False,
             )
+            assert isinstance(objective_true, float)
         else:
             objective_true = None
 
@@ -272,8 +279,8 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
             N_MCMC=self.N_MCMC,
             N=N,
             D_sampling=D_sampling,
-            plot_ESS=True,
+            plot_ESS=False,
         ).main(
             list_idx_sampling=list_idx_sampling,
-            map_shaper=estimator_plot.map_shaper if N > 1 else None,
+            map_shaper=map_shaper if N > 1 else None,
         )

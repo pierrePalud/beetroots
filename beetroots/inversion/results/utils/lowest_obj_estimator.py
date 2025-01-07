@@ -134,6 +134,9 @@ class ResultsLowestObjective(ResultsUtil):
                 Theta_lowest_obj_scaled_full,
                 Theta_true_scaled_full,
             )
+            assert isinstance(mse, float)
+            assert isinstance(snr, float)
+
             mse_component_wise = perf_saver.compute_MSE(
                 Theta_lowest_obj_scaled_full,
                 Theta_true_scaled_full,
@@ -144,6 +147,8 @@ class ResultsLowestObjective(ResultsUtil):
                 Theta_true_scaled_full,
                 component_wise=True,
             )
+            assert isinstance(mse_component_wise, np.ndarray)
+            assert isinstance(snr_component_wise, np.ndarray)
         else:
             mse = None
             snr = None

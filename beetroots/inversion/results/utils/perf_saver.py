@@ -76,12 +76,14 @@ class EstimatorPerfSaver:
             "SNR": snr,
             "objective": objective,
         }
-        dict_results_component_wise.update(
-            {f"MSE_{i}": mse_i for i, mse_i in enumerate(mse_component_wise)}
-        )
-        dict_results_component_wise.update(
-            {f"SNR_{i}": snr_i for i, snr_i in enumerate(snr_component_wise)}
-        )
+        if mse_component_wise is not None:
+            dict_results_component_wise.update(
+                {f"MSE_{i}": mse_i for i, mse_i in enumerate(mse_component_wise)}
+            )
+        if snr_component_wise is not None:
+            dict_results_component_wise.update(
+                {f"SNR_{i}": snr_i for i, snr_i in enumerate(snr_component_wise)}
+            )
         list_results_component_wise = [dict_results_component_wise]
 
         df_results_overall = pd.DataFrame(list_results_overall)
