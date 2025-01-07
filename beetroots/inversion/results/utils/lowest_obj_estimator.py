@@ -31,7 +31,7 @@ class ResultsLowestObjective(ResultsUtil):
         T: int,
         freq_save: int,
     ):
-        assert chain_type in ["mcmc", "optim_map", "optim_mle"]
+        assert chain_type in ["mcmc", "optim_map"]
 
         self.model_name = model_name
         self.chain_type = chain_type

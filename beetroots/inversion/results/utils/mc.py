@@ -52,7 +52,7 @@ class ResultsMC(ResultsUtil):
         upper_bounds_lin: Union[np.ndarray, List[float]],
         list_names: List[str],
     ):
-        assert chain_type in ["mcmc", "optim_map", "optim_mle"]
+        assert chain_type in ["mcmc", "optim_map"]
 
         self.model_name = model_name
         self.chain_type = chain_type

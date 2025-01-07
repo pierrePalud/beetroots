@@ -67,7 +67,7 @@ class PlotsEstimator(AbstractPlots2D):
         Theta_estimated : np.ndarray of shape (N, D)
             vector of the estimated physical parameter
         estimator_name : str
-            name of the estimator, e.g., "MLE", "MAP" or "MMSE"
+            name of the estimator, e.g., "MAP" or "MMSE"
         folder_path : str
             path to the folder where the figure is to be saved
         model_name : Optional[str], optional

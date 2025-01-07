@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -24,13 +24,14 @@ from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 from beetroots.simulations.astro.posterior_type.abstract_posterior_type import (
     SimulationPosteriorType,
 )
+from beetroots.space_transform.abstract_transform import Scaler
 from beetroots.space_transform.transform import MyScaler
 
 
 class SimulationMySampler(SimulationPosteriorType):
     def setup_posteriors(
         self,
-        scaler,
+        scaler: Scaler,
         forward_map,
         y,
         sigma_a,
@@ -44,7 +45,7 @@ class SimulationMySampler(SimulationPosteriorType):
         upper_bounds_lin: Union[np.ndarray, List[float]],
         list_gaussian_approx_params: List[bool],
         list_mixing_model_params: List[Dict[str, str]],
-    ) -> None:
+    ) -> Tuple[dict, Scaler, SmoothIndicatorPrior]:
         if with_spatial_prior:
             assert spatial_prior_params is not None
             prior_spatial = L22DiscreteGradSpatialPrior(
@@ -158,9 +159,6 @@ class SimulationMySampler(SimulationPosteriorType):
             dict_posteriors[model_name] = posterior_censor
 
         return dict_posteriors, scaler, prior_indicator_1pix
-
-    def inversion_optim_mle(self):
-        pass
 
     def inversion_optim_map(
         self,

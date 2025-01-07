@@ -67,7 +67,7 @@ class ResultsBayesPvalues(ResultsUtil):
         plot_ESS : bool
             _description_
         """
-        assert chain_type in ["mcmc", "optim_map", "optim_mle"]
+        assert chain_type in ["mcmc", "optim_map"]
 
         self.model_name = model_name
         self.chain_type = chain_type

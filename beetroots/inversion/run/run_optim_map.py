@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
-from beetroots.inversion.results.results_optim_mle import ResultsExtractorOptimMLE
 from beetroots.inversion.run.abstract_run import Run
 from beetroots.modelling.posterior import Posterior
 from beetroots.sampler.abstract_sampler import Sampler
@@ -63,7 +62,7 @@ class RunOptimMAP(Run):
         scaler : Scaler
             contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens)
         start_from : Optional[str]
-            point at which the inversion will start, must be in [None, "MLE"]. For None, a random value is drawn uniformly in the scaled hypercube.
+            point at which the inversion will start, must be in [None, "MAP"]. For None, a random value is drawn uniformly in the scaled hypercube.
         path_csv_mle : Optional[str]
             path to the csv file containing the already estimated MLE
 
@@ -81,15 +80,10 @@ class RunOptimMAP(Run):
                     os.mkdir(folder_path)
 
         # read Theta_0 if needed
-        assert start_from in ["MLE", "MAP", None]
+        assert start_from in ["MAP", None]
 
-        if start_from == "MLE":
-            result_extractor = ResultsExtractorOptimMLE(path_csv_mle)
-            Theta_0, _ = result_extractor.read_estimator(model_name)
-            Theta_0 = scaler.from_lin_to_scaled(Theta_0)
-
-        # TODO: correct feature
-        # elif start_from == "MAP":
+        # # TODO: correct feature?
+        # if start_from == "MAP":
         #     result_extractor = ResultsExtractorOptimMAP(
         #         f"{path_csv_mle}/../optim_map",
         #         f"{path_csv_mle}/../optim_map",
@@ -107,8 +101,8 @@ class RunOptimMAP(Run):
         #     Theta_0 = scaler.from_lin_to_scaled(Theta_0)[:, :-1]
         #     print(Theta_0.shape)
 
-        else:
-            Theta_0 = None
+        # else:
+        Theta_0 = None
 
         return Theta_0
 

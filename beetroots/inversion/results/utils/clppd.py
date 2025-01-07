@@ -31,7 +31,7 @@ class ResultsCLPPD(ResultsUtil):
         N: int,
         L: int,
     ):
-        assert chain_type in ["mcmc", "optim_map", "optim_mle"]
+        assert chain_type in ["mcmc", "optim_map"]
 
         self.model_name = model_name
         self.path_img = path_img
