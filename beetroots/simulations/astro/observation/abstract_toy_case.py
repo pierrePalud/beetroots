@@ -1,4 +1,6 @@
 import os
+import warnings
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -19,9 +21,20 @@ class SimulationToyCase(SimulationObservation):
         sigma_a: np.ndarray,
         sigma_m: np.ndarray,
         omega: np.ndarray,
-    ) -> pd.DataFrame:
-        data_int_path = f"{self.DATA_PATH}/{self.cloud_name}.pkl"
-        syn_map = pd.read_pickle(data_int_path)
+    ) -> Tuple[pd.DataFrame, np.ndarray]:
+        data_int_path = f"{self.DATA_PATH}/{self.cloud_name}"
+
+        assert os.path.isfile(f"{data_int_path}.pkl") or os.path.isfile(
+            f"{data_int_path}.csv"
+        ), f"There is no csv or pkl file called {self.DATA_PATH}/{self.cloud_name}."
+
+        if os.path.isfile(f"{data_int_path}.pkl"):
+            syn_map = pd.read_pickle(f"{data_int_path}.pkl")
+        else:
+            syn_map = pd.read_csv(f"{data_int_path}.csv")
+            warnings.warn(
+                "For faster loading, consider using the `.pkl` format instead `.csv`."
+            )
 
         for col in ["idx", "X", "Y"] + self.list_names:
             assert col in list(syn_map.columns), f"{col} not in {list(syn_map.columns)}"
