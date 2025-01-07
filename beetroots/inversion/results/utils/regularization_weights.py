@@ -35,7 +35,7 @@ class ResultsRegularizationWeights(ResultsUtil):
         T_MC: int,
         T_BI: int,
         freq_save: int,
-        D: int,
+        D_sampling: int,
         list_names: List[str],
     ):
         self.model_name = model_name
@@ -49,10 +49,13 @@ class ResultsRegularizationWeights(ResultsUtil):
         self.freq_save = freq_save
         self.effective_T_BI = T_BI // freq_save
         self.effective_T_MC = T_MC // freq_save
-        self.D = D
+        self.D_sampling = D_sampling
+
+        self.lower_bounds_lin = 1e-2 * np.ones((1,))
+        self.upper_bounds_lin = 1e2 * np.ones((1,))
 
     def read_data(self, list_mcmc_folders: List[str]):
-        list_tau = np.zeros((self.N_MCMC, self.effective_T_MC, self.D))
+        list_tau = np.zeros((self.N_MCMC, self.effective_T_MC, self.D_sampling))
         for seed, mc_path in enumerate(list_mcmc_folders):
             with h5py.File(mc_path, "r") as f:
                 # try:
@@ -94,6 +97,7 @@ class ResultsRegularizationWeights(ResultsUtil):
     def main(
         self,
         list_mcmc_folders: List[str],
+        list_idx_sampling: List[int],
     ) -> np.ndarray:
         folder_path = self.create_folders()
         list_tau = self.read_data(list_mcmc_folders)
@@ -101,8 +105,8 @@ class ResultsRegularizationWeights(ResultsUtil):
         print("starting plots of regularization weights")
 
         for seed in range(self.N_MCMC):
-            for d in range(self.D):
-                list_tau_sd = list_tau[seed, :, d] * 1
+            for idx, d in enumerate(list_idx_sampling):
+                list_tau_sd = list_tau[seed, :, idx] * 1
                 assert list_tau_sd.shape == (self.effective_T_MC,)
 
                 list_tau_sd_no_BI = list_tau_sd[self.effective_T_BI :] * 1
@@ -114,15 +118,15 @@ class ResultsRegularizationWeights(ResultsUtil):
                 assert isinstance(IC_97p5, float), IC_97p5
 
                 title = f"MC {self.list_names[d]} spatial regularization"
-                title += " weight"
+                title += f" weight for chain {seed}"
                 histograms.plot_1D_chain(
                     list_tau_sd,
                     None,
                     d,
                     folder_path,
                     title,
-                    lower_bounds_lin=1e-8 * np.ones((1,)),
-                    upper_bounds_lin=1e8 * np.ones((1,)),
+                    lower_bounds_lin=self.lower_bounds_lin,
+                    upper_bounds_lin=self.upper_bounds_lin,
                     N_MCMC=self.N_MCMC,
                     T_MC=self.T_MC,
                     T_BI=self.T_BI,
@@ -136,8 +140,8 @@ class ResultsRegularizationWeights(ResultsUtil):
                     d,
                     folder_path,
                     title=title,
-                    lower_bounds_lin=1e-8 * np.ones((1,)),
-                    upper_bounds_lin=1e8 * np.ones((1,)),
+                    lower_bounds_lin=self.lower_bounds_lin,
+                    upper_bounds_lin=self.upper_bounds_lin,
                     seed=seed,
                     estimator=tau_MMSE,
                     IC_low=IC_2p5,
@@ -146,23 +150,25 @@ class ResultsRegularizationWeights(ResultsUtil):
 
         # altogether
         list_tau_flatter = list_tau.reshape(
-            (self.N_MCMC * self.effective_T_MC, self.D),
+            (self.N_MCMC * self.effective_T_MC, self.D_sampling),
         )
         list_tau_flatter_no_BI = list_tau[:, self.effective_T_BI :].reshape(
-            (self.N_MCMC * (self.T_MC - self.T_BI) // self.freq_save, self.D)
+            (self.N_MCMC * (self.T_MC - self.T_BI) // self.freq_save, self.D_sampling)
         )
 
-        tau_MMSE, _ = list_tau_sd_no_BI.mean(0)  # (D,)
-        IC_2p5 = np.percentile(list_tau_sd_no_BI, q=2.5, axis=0)  # (D,)
-        IC_97p5 = np.percentile(list_tau_sd_no_BI, q=97.5, axis=0)  # (D,)
-        assert tau_MMSE.shape == (self.D,)
-        assert IC_2p5.shape == (self.D,)
-        assert IC_97p5.shape == (self.D,)
+        tau_MMSE = list_tau_flatter_no_BI.mean(0)  # (D,)
+        IC_2p5 = np.percentile(list_tau_flatter_no_BI, q=2.5, axis=0)  # (D,)
+        IC_97p5 = np.percentile(list_tau_flatter_no_BI, q=97.5, axis=0)  # (D,)
+        assert tau_MMSE.shape == (
+            self.D_sampling,
+        ), f"tau_MMSE {tau_MMSE} should have shape ({self.D_sampling},)"
+        assert IC_2p5.shape == (self.D_sampling,)
+        assert IC_97p5.shape == (self.D_sampling,)
 
         plt.figure(figsize=(8, 6))
         plt.title("regularization weights sampling")
-        for d, name in enumerate(self.list_names):
-            plt.semilogy(list_tau_flatter[:, d], label=name)
+        for idx, d in enumerate(list_idx_sampling):
+            plt.semilogy(list_tau_flatter[:, idx], label=self.list_names[d])
 
         for seed in range(self.N_MCMC):
             if seed == 0:
@@ -202,11 +208,11 @@ class ResultsRegularizationWeights(ResultsUtil):
         )
         plt.close()
 
-        for d in range(self.D):
+        for idx, d in enumerate(list_idx_sampling):
             title = "posterior distribution of spatial regularization weight"
             title = f" of {self.list_names[d]}"
             histograms.plot_1D_hist(
-                list_tau_flatter_no_BI[:, d],
+                list_tau_flatter_no_BI[:, idx],
                 None,
                 d,
                 folder_path,
@@ -214,21 +220,21 @@ class ResultsRegularizationWeights(ResultsUtil):
                 self.lower_bounds_lin,
                 self.upper_bounds_lin,
                 None,
-                tau_MMSE[d],
-                IC_2p5[d],
-                IC_97p5[d],
+                tau_MMSE[idx],
+                IC_2p5[idx],
+                IC_97p5[idx],
             )
 
         list_estimation_tau = []
-        for d in range(self.D):
+        for idx, d in enumerate(list_idx_sampling):
             dict_ = {
                 "model_name": self.model_name,
-                "d": d,
-                "MMSE": tau_MMSE[d],
+                "name": self.list_names[d],
+                "MMSE": tau_MMSE[idx],
             }
             for q in [0.5, 2.5, 5, 95, 97.5, 99]:
                 dict_[f"per_{q}"] = np.percentile(
-                    list_tau_flatter_no_BI[:, d],
+                    list_tau_flatter_no_BI[:, idx],
                     q=q,
                 )
             list_estimation_tau.append(dict_)

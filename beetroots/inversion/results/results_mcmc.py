@@ -459,16 +459,16 @@ class ResultsExtractorMCMC(ResultsExtractor):
 
         if analyze_regularization_weight:
             ResultsRegularizationWeights(
-                model_name,
-                self.path_img,
-                self.path_data_csv_out_mcmc,
-                self.N_MCMC,
-                self.T_MC,
-                self.T_BI,
-                self.freq_save,
-                D,
-                list_names,
-            ).main(list_mcmc_folders)
+                model_name=model_name,
+                path_img=self.path_img,
+                path_data_csv_out_mcmc=self.path_data_csv_out_mcmc,
+                N_MCMC=self.N_MCMC,
+                T_MC=self.T_MC,
+                T_BI=self.T_BI,
+                freq_save=self.freq_save,
+                D_sampling=D_sampling,
+                list_names=list_names,
+            ).main(list_mcmc_folders, list_idx_sampling)
 
         print()
         return

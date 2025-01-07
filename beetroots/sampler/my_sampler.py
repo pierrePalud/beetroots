@@ -412,9 +412,9 @@ class MySampler(Sampler):
                     # recompute posterior neg log pdf and gradients with
                     # new spatial regularization parameter
                     self.current = posterior.compute_all(
-                        self.current["Theta"],
-                        self.current["forward_map_evals"],
-                        self.current["nll_utils"],
+                        Theta=self.current["Theta"],
+                        forward_map_evals=self.current["forward_map_evals"],
+                        nll_utils=self.current["nll_utils"],
                         compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
                         chromatic_gibbs=False,
                     )
@@ -557,7 +557,7 @@ class MySampler(Sampler):
     #     ----------
     #     t : int
     #         current iteration index
-    #     score_model : ScoreModel
+    #     score_model : Posterior
     #         negative log posterior class
 
     #     Returns
@@ -714,7 +714,7 @@ class MySampler(Sampler):
         ----------
         t : int
             current iteration index
-        posterior : ScoreModel
+        posterior : Posterior
             negative log posterior class
 
         Returns

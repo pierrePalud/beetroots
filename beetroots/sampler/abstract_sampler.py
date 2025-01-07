@@ -201,6 +201,7 @@ class Sampler(abc.ABC):
 
         neglog_prior = posterior.prior_spatial.neglog_pdf(
             current_Theta,
+            idx_pix=np.arange(current_Theta.shape[0]),  # = [0, ..., N-1] (all pixels)
             with_weights=False,
         )  # (D,)
 
