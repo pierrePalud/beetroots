@@ -993,21 +993,28 @@ class MySampler(Sampler):
                 candidates, idx_pix, with_weights=True, chromatic_gibbs=True
             )  # (n_pix, k_mtm+1)
 
-            forward_map_evals = posterior.likelihood.evaluate_all_forward_map(
+            neglogpdf_likelihood = posterior.likelihood.neglog_pdf_candidates(
                 candidates[idx_pix].reshape((n_pix * (self.k_mtm + 1), self.D)),
-                compute_derivatives=False,
-                compute_derivatives_2nd_order=False,
-            )
-            nll_utils = posterior.likelihood.evaluate_all_nll_utils(
-                forward_map_evals,
-                idx_pix,
-                compute_derivatives=False,
-                compute_derivatives_2nd_order=False,
-            )
-            neglogpdf_likelihood = posterior.likelihood.neglog_pdf(
-                forward_map_evals, nll_utils, pixelwise=True
+                idx=idx_pix,
+                Theta_t=new_Theta * 1,  # self.current["Theta"] * 1
             )  # (n_pix * (k_mtm+1),)
             assert neglogpdf_likelihood.shape == (n_pix * (self.k_mtm + 1),)
+
+            # forward_map_evals = posterior.likelihood.evaluate_all_forward_map(
+            #     candidates[idx_pix].reshape((n_pix * (self.k_mtm + 1), self.D)),
+            #     compute_derivatives=False,
+            #     compute_derivatives_2nd_order=False,
+            # )
+            # nll_utils = posterior.likelihood.evaluate_all_nll_utils(
+            #     forward_map_evals,
+            #     idx_pix,
+            #     compute_derivatives=False,
+            #     compute_derivatives_2nd_order=False,
+            # )
+            # neglogpdf_likelihood = posterior.likelihood.neglog_pdf(
+            #     forward_map_evals, nll_utils, pixelwise=True, idx=idx_pix,
+            # )  # (n_pix * (k_mtm+1),)
+            # assert neglogpdf_likelihood.shape == (n_pix * (self.k_mtm + 1),)
 
             neglogpdf_candidates = neglogpdf_priors + neglogpdf_likelihood.reshape(
                 (n_pix, self.k_mtm + 1)

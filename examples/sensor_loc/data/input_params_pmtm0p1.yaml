@@ -4,6 +4,9 @@ simu_init:
 #
 filename_obs: "observation.csv"
 #
+to_run_optim_map: false
+to_run_mcmc: true
+#
 # prior indicator
 prior_indicator:
   indicator_margin_scale: 1.0e-2

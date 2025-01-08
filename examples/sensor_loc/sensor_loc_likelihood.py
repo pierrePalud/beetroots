@@ -63,6 +63,7 @@ class SensorLocalizationLikelihood(Likelihood):
             )
 
         self.mask = self.y >= 0  # (N, L) # (1 is detected, 0 is censored)
+        assert isinstance(self.mask, np.ndarray)
 
         assert isinstance(sigma, float)
         self.sigma = sigma
@@ -78,8 +79,10 @@ class SensorLocalizationLikelihood(Likelihood):
         full: bool = False,
         idx: Optional[np.ndarray] = None,
     ) -> Union[float, np.ndarray]:
+        L = self.y.shape[1]
 
         if idx is None:
+            assert forward_map_evals["f_Theta"].shape[0] == self.N
             N_pix = self.N * 1
             y = self.y * 1
             # sigma = self.sigma * 1
@@ -92,6 +95,15 @@ class SensorLocalizationLikelihood(Likelihood):
 
         p_0 = np.exp(-0.5 * (forward_map_evals["f_Theta"] / self.R) ** 2)
         # print(np.where(1 - mask, p_0, -1))
+
+        assert mask.shape == (
+            N_pix,
+            L,
+        ), f"mask.shape is {mask.shape}, should be (N_pix, L) = ({N_pix}, {L})"
+        assert forward_map_evals["f_Theta"].shape == (
+            N_pix,
+            L,
+        ), f"f_Theta.shape is {forward_map_evals['f_Theta'].shape}, should be (N_pix, L) = ({N_pix}, {L})"
 
         nlpdf = np.where(
             mask,  # (N_pix, L)  # (1 is detected, 0 is censored)
@@ -113,7 +125,6 @@ class SensorLocalizationLikelihood(Likelihood):
     def neglog_pdf_candidates(
         self, candidates: np.ndarray, idx: np.ndarray, Theta_t: np.ndarray
     ) -> np.ndarray:
-
         assert len(candidates.shape) == 2 and candidates.shape[1] == self.D
         assert isinstance(idx, np.ndarray) and idx.size == 1
 
@@ -136,6 +147,7 @@ class SensorLocalizationLikelihood(Likelihood):
             pixelwise=True,
             idx=n,
         )
+        assert isinstance(nll_candidates, np.ndarray)
         assert nll_candidates.shape == (N_candidates,)
 
         return nll_candidates

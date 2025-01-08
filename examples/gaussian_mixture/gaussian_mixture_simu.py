@@ -11,7 +11,9 @@ from gaussian_mixture_likelihood import GaussianMixtureLikelihood
 from matplotlib.patches import Ellipse
 
 from beetroots.inversion.results.results_mcmc import ResultsExtractorMCMC
+from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
 from beetroots.inversion.run.run_mcmc import RunMCMC
+from beetroots.inversion.run.run_optim_map import RunOptimMAP
 from beetroots.modelling.forward_maps.identity import BasicForwardMap
 from beetroots.modelling.posterior import Posterior
 from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
@@ -394,6 +396,73 @@ class SimulationGaussianMixture(Simulation):
         print(msg)
         return
 
+    def inversion_optim_map(
+        self,
+        dict_posteriors: Dict[str, Posterior],
+        scaler: IdScaler,
+        sampler_: MySampler,
+        N_MCMC: int,
+        T_MC: int,
+        T_BI: int,
+        freq_save: int = 1,
+        can_run_in_parallel: bool = True,
+        start_from: Optional[str] = None,
+    ) -> None:
+        tps_init = time.time()
+
+        saver_ = MySaver(
+            N=self.N,
+            D=self.D,
+            D_sampling=self.D,
+            L=self.L,
+            scaler=scaler,
+            batch_size=100,
+            list_idx_sampling=np.arange(self.D),
+        )
+
+        run_optim_map = RunOptimMAP(self.path_data_csv_out, self.max_workers)
+        run_optim_map.main(
+            dict_posteriors=dict_posteriors,
+            sampler_=sampler_,
+            saver_=saver_,
+            scaler=scaler,
+            N_runs=N_MCMC,
+            max_iter=T_MC,
+            path_raw=self.path_raw,
+            path_csv_mle=self.path_data_csv_out_optim_mle,
+            start_from=start_from,
+            freq_save=freq_save,
+            can_run_in_parallel=can_run_in_parallel,
+        )
+
+        results_optim_map = ResultsExtractorOptimMAP(
+            self.path_data_csv_out_optim_map,
+            self.path_img,
+            self.path_raw,
+            N_MCMC,
+            T_MC,
+            T_BI,
+            freq_save,
+            self.max_workers,
+        )
+        for model_name, posterior in dict_posteriors.items():
+            results_optim_map.main(
+                posterior=posterior,
+                model_name=model_name,
+                scaler=scaler,
+                list_idx_sampling=np.arange(self.D),
+                list_fixed_values=[None for _ in range(self.D)],
+                estimator_plot=None,
+                Theta_true_scaled=self.Theta_true_scaled * 1,
+            )
+
+        duration = time.time() - tps_init  # is seconds
+        duration_str = time.strftime("%H:%M:%S", time.gmtime(duration))
+        msg = "Simulation and analysis finished. Total duration : "
+        msg += f"{duration_str} s\n"
+        print(msg)
+        return
+
 
 if __name__ == "__main__":
     yaml_file, path_data, path_outputs = SimulationGaussianMixture.parse_args()
@@ -408,18 +477,38 @@ if __name__ == "__main__":
         path_outputs=path_outputs,
     )
 
-    sampler_ = MySampler(
-        MySamplerParams(**params["sampling_params"]["mcmc"]),
-        simulation_gmm.D,
-        simulation_gmm.L,
-        simulation_gmm.N,
-    )
-
     dict_posteriors, scaler = simulation_gmm.setup(**params["prior_indicator"])
 
-    simulation_gmm.inversion_mcmc(
-        dict_posteriors,
-        scaler,
-        sampler_,
-        **params["run_params"]["mcmc"],
-    )
+    assert (
+        params["to_run_optim_map"] or params["to_run_optim_map"]
+    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_optim_map' (or both) to true in `input.yaml` file."
+
+    if params["to_run_optim_map"]:
+        sampler_ = MySampler(
+            MySamplerParams(**params["sampling_params"]["map"]),
+            simulation_gmm.D,
+            simulation_gmm.L,
+            simulation_gmm.N,
+        )
+        simulation_gmm.inversion_optim_map(
+            dict_posteriors,
+            scaler,
+            sampler_,
+            **params["run_params"]["map"],
+        )
+        runs_something = True
+
+    if params["to_run_mcmc"]:
+        sampler_ = MySampler(
+            MySamplerParams(**params["sampling_params"]["mcmc"]),
+            simulation_gmm.D,
+            simulation_gmm.L,
+            simulation_gmm.N,
+        )
+
+        simulation_gmm.inversion_mcmc(
+            dict_posteriors,
+            scaler,
+            sampler_,
+            **params["run_params"]["mcmc"],
+        )

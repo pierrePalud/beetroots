@@ -11,7 +11,9 @@ from sensor_loc_forward import SensorLocForwardMap
 from sensor_loc_likelihood import SensorLocalizationLikelihood
 
 from beetroots.inversion.results.results_mcmc import ResultsExtractorMCMC
+from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
 from beetroots.inversion.run.run_mcmc import RunMCMC
+from beetroots.inversion.run.run_optim_map import RunOptimMAP
 from beetroots.modelling.posterior import Posterior
 from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
 from beetroots.sampler.my_sampler import MySampler
@@ -448,6 +450,71 @@ class SensorLocalizationSimulation(Simulation):
         print(msg)
         return
 
+    def inversion_optim_map(
+        self,
+        dict_posteriors: Dict[str, Posterior],
+        scaler: IdScaler,
+        sampler_: MySampler,
+        N_MCMC: int,
+        T_MC: int,
+        T_BI: int,
+        freq_save: int = 1,
+        start_from: Optional[str] = None,
+    ) -> None:
+        tps_init = time.time()
+
+        saver_ = MySaver(
+            N=self.N,
+            D=self.D,
+            D_sampling=self.D * 1,
+            L=self.L,
+            scaler=scaler,
+            batch_size=100,
+        )
+
+        run_optim_map = RunOptimMAP(self.path_data_csv_out, self.max_workers)
+        run_optim_map.main(
+            dict_posteriors=dict_posteriors,
+            sampler_=sampler_,
+            saver_=saver_,
+            scaler=scaler,
+            N_runs=N_MCMC,
+            max_iter=T_MC,
+            path_raw=self.path_raw,
+            path_csv_mle=self.path_data_csv_out_optim_mle,
+            start_from=start_from,
+            freq_save=freq_save,
+        )
+
+        results_optim_map = ResultsExtractorOptimMAP(
+            path_data_csv_out_optim_map=self.path_data_csv_out_optim_map,
+            path_img=self.path_img,
+            path_raw=self.path_raw,
+            N_MCMC=N_MCMC,
+            T_MC=T_MC,
+            T_BI=T_BI,
+            freq_save=freq_save,
+            max_workers=self.max_workers,
+        )
+        for model_name, posterior in dict_posteriors.items():
+            results_optim_map.main(
+                posterior=posterior,
+                model_name=model_name,
+                scaler=scaler,
+                list_idx_sampling=np.arange(self.D),
+                list_fixed_values=[None] * self.D,
+                #
+                estimator_plot=None,
+                Theta_true_scaled=self.Theta_true_scaled * 1,
+            )
+
+        duration = time.time() - tps_init  # is seconds
+        duration_str = time.strftime("%H:%M:%S", time.gmtime(duration))
+        msg = "Simulation and analysis finished. Total duration : "
+        msg += f"{duration_str} s\n"
+        print(msg)
+        return
+
 
 if __name__ == "__main__":
     yaml_file, path_data, path_outputs = SensorLocalizationSimulation.parse_args()
@@ -466,30 +533,49 @@ if __name__ == "__main__":
         **params["prior_indicator"],
     )
 
-    sampler_ = MySampler(
-        MySamplerParams(**params["sampling_params"]["mcmc"]),
-        simulation_sensor.D,
-        simulation_sensor.L,
-        simulation_sensor.N,
-    )
-    simulation_sensor.inversion_mcmc(
-        dict_posteriors,
-        scaler,
-        sampler_,
-        **params["run_params"]["mcmc"],
-    )
+    assert (
+        params["to_run_optim_map"] or params["to_run_optim_map"]
+    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_optim_map' (or both) to true in `input.yaml` file."
 
-    simulation_sensor.setup_plot_text_sizes(26, 26, 26)
-    df_sensors, list_detections = simulation_sensor.plot_observation_graph(
-        params["filename_obs"],
-        params["prior_indicator"]["lower_bounds_lin"],
-        params["prior_indicator"]["upper_bounds_lin"],
-    )
-    simulation_sensor.plot_overlayed_marginals(
-        df_sensors,
-        list_detections,
-        params["run_params"]["mcmc"]["N_MCMC"],
-        params["run_params"]["mcmc"]["T_BI"],
-        params["prior_indicator"]["lower_bounds_lin"],
-        params["prior_indicator"]["upper_bounds_lin"],
-    )
+    if params["to_run_optim_map"]:
+        sampler_ = MySampler(
+            MySamplerParams(**params["sampling_params"]["map"]),
+            simulation_sensor.D,
+            simulation_sensor.L,
+            simulation_sensor.N,
+        )
+        simulation_sensor.inversion_optim_map(
+            dict_posteriors,
+            scaler,
+            sampler_,
+            **params["run_params"]["map"],
+        )
+
+    if params["to_run_mcmc"]:
+        sampler_ = MySampler(
+            MySamplerParams(**params["sampling_params"]["mcmc"]),
+            simulation_sensor.D,
+            simulation_sensor.L,
+            simulation_sensor.N,
+        )
+        simulation_sensor.inversion_mcmc(
+            dict_posteriors,
+            scaler,
+            sampler_,
+            **params["run_params"]["mcmc"],
+        )
+
+        simulation_sensor.setup_plot_text_sizes(26, 26, 26)
+        df_sensors, list_detections = simulation_sensor.plot_observation_graph(
+            params["filename_obs"],
+            params["prior_indicator"]["lower_bounds_lin"],
+            params["prior_indicator"]["upper_bounds_lin"],
+        )
+        simulation_sensor.plot_overlayed_marginals(
+            df_sensors,
+            list_detections,
+            params["run_params"]["mcmc"]["N_MCMC"],
+            params["run_params"]["mcmc"]["T_BI"],
+            params["prior_indicator"]["lower_bounds_lin"],
+            params["prior_indicator"]["upper_bounds_lin"],
+        )

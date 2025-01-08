@@ -1,10 +1,10 @@
 simu_init:
-  simu_name: "sensor_loc_pmtm0p9"
+  simu_name: "sensor_loc_pmtm0p5_optim"
   max_workers: 10
 #
 filename_obs: "observation.csv"
 #
-to_run_optim_map: false
+to_run_optim_map: true
 to_run_mcmc: true
 #
 # prior indicator
@@ -23,17 +23,31 @@ likelihood:
 #
 # sampling params
 sampling_params:
+  map:
+    initial_step_size:  3.0e-3
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
+    k_mtm: 1_000
+    is_stochastic: false
+    compute_correction_term: false
   mcmc:
     initial_step_size:  3.0e-3
     extreme_grad: 1.0e-5
     history_weight: 0.99
-    selection_probas: [0.9, 0.1] # (p_mtm, p_pmala)
+    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
     k_mtm: 1_000
     is_stochastic: true
     compute_correction_term: false
 #
 # run params
 run_params:
+  map:
+    N_MCMC: 1
+    T_MC: 3_000 # 30_000
+    T_BI: 500 # 5_000
+    freq_save: 1
+    # list_CI: [68, 90, 95, 99]
   mcmc:
     N_MCMC: 1
     T_MC: 3_000 # 30_000
