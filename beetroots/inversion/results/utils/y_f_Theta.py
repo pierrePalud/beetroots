@@ -173,7 +173,7 @@ class ResultsDistributionComparisonYandFTheta(ResultsUtil):
 
             list_labels = []
 
-            plt.figure(figsize=(12, 8))
+            plt.figure(figsize=(max(12, L // 3), 8))
             if self.N > 1:
                 title = r"comparison of $f(\theta)$ and $y$ distributions for pixel"
                 title += f" {n}"
@@ -182,7 +182,7 @@ class ResultsDistributionComparisonYandFTheta(ResultsUtil):
                 plt.title(r"comparison of $f(\theta)$ and $y$ distributions")
 
             plt.xlabel("lines")
-            plt.ylabel(r"$\log y$")
+            plt.ylabel(r"observations")
 
             n_std = 1
 
@@ -224,7 +224,7 @@ class ResultsDistributionComparisonYandFTheta(ResultsUtil):
                     showmeans=True,
                     showextrema=True,
                 ),
-                label=r"$f(Theta)$",
+                label=r"$f(\theta_n)$",
                 list_labels=list_labels,
             )
 
@@ -235,7 +235,7 @@ class ResultsDistributionComparisonYandFTheta(ResultsUtil):
                 c="r",
                 s=50,
             )
-            list_labels += [(l_map, r"$f(\hat{x}_{MAP})$")]
+            list_labels += [(l_map, r"$f(\hat{\theta}_{MAP})$")]
 
             if len(point_challenger) > 0:
                 l_challenger = plt.scatter(

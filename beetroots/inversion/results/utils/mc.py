@@ -86,7 +86,7 @@ class ResultsMC(ResultsUtil):
     def read_data(self):
         pass
 
-    def create_folders(self) -> Tuple[str]:
+    def create_folders(self) -> Tuple[str, str, str, str, str]:
         folder_path_mc = f"{self.path_img}/mc"
 
         folder_path_1D = f"{folder_path_mc}/{self.model_name}_1D"
@@ -338,26 +338,34 @@ class ResultsMC(ResultsUtil):
                 for d in self.list_idx_sampling:
                     true_val = Theta_n_true[d] if Theta_n_true is not None else None
 
+                    title = f"Markov Chain of {self.list_names[d]}"
+                    if self.N > 1:
+                        title += f" of pixel {n}"
+
                     histograms.plot_1D_chain(
-                        list_Theta_n_lin_full_flatter[:, d],
-                        n,
-                        d,
-                        folder_path_1D_chain,
-                        f"MC component {self.list_names[d]} of pixel {n}",
-                        self.lower_bounds_lin,
-                        self.upper_bounds_lin,
-                        self.N_MCMC,
-                        self.T_MC,
-                        self.T_BI,
-                        true_val,
+                        list_Theta_lin_nd=list_Theta_n_lin_full_flatter[:, d],
+                        n=n if self.N > 1 else None,
+                        d=d,
+                        folder_path=folder_path_1D_chain,
+                        title=title,
+                        lower_bounds_lin=self.lower_bounds_lin,
+                        upper_bounds_lin=self.upper_bounds_lin,
+                        N_MCMC=self.N_MCMC,
+                        T_MC=self.T_MC,
+                        T_BI=self.T_BI,
+                        true_val=true_val,
                     )
 
+                    title = f"Sample histogram of {self.list_names[d]}"
+                    if self.N > 1:
+                        title += f" of pixel {n}"
+
                     histograms.plot_1D_hist(
-                        list_Theta_n_lin_full_flatter[:, d],
-                        n,
-                        d,
-                        folder_path_1D_hist,
-                        title=f"hist. of {self.list_names[d]} of pixel {n}",
+                        list_Theta_lin_seed=list_Theta_n_lin_full_flatter[:, d],
+                        n=n if self.N > 1 else None,
+                        d=d,
+                        folder_path=folder_path_1D_hist,
+                        title=title,
                         lower_bounds_lin=self.lower_bounds_lin,
                         upper_bounds_lin=self.upper_bounds_lin,
                         seed=None,
@@ -376,7 +384,7 @@ class ResultsMC(ResultsUtil):
 
                         histograms.plot_2D_hist(
                             list_Theta_n_lin_full_flatter[:, [d1, d2]],
-                            n,
+                            n if self.N > 1 else None,
                             d1,
                             d2,
                             self.model_name,
@@ -386,13 +394,16 @@ class ResultsMC(ResultsUtil):
                             self.upper_bounds_lin,
                             Theta_MMSE=Theta_n_MMSE_lin[[d1, d2]],
                             true_val=true_val,
-                            point_challenger=point_challenger,
+                            point_challenger={
+                                "name": point_challenger["name"],
+                                "value": point_challenger["value"][n, :],
+                            },
                         )
 
                         try:
                             histograms.plot_2D_proba_contours(
                                 list_Theta_n_lin_full_flatter[:, [d1, d2]],
-                                n,
+                                n if self.N > 1 else None,
                                 d1,
                                 d2,
                                 self.model_name,
@@ -402,7 +413,10 @@ class ResultsMC(ResultsUtil):
                                 self.upper_bounds_lin,
                                 Theta_MMSE=Theta_n_MMSE_lin[[d1, d2]],
                                 true_val=true_val,
-                                point_challenger=point_challenger,
+                                point_challenger={
+                                    "name": point_challenger["name"],
+                                    "value": point_challenger["value"][n, :],
+                                },
                             )
                         except:
                             msg = "Issue with proba contour plot for (n, d1, d2) = "

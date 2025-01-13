@@ -8,7 +8,7 @@ from scipy import interpolate
 
 def plot_1D_hist(
     list_Theta_lin_seed: np.ndarray,
-    n: Union[int, None],
+    n: Optional[int],
     d: int,
     folder_path: str,
     title: str,
@@ -36,6 +36,9 @@ def plot_1D_hist(
     assert lower_bounds_lin is not None
     if list_Theta_lin_seed.min() > 0 and lower_bounds_lin.min() > 0:
         plt.hist(np.log10(list_Theta_lin_nd), bins=100, label="samples")
+
+        title += " (in log10 scale)"
+
     else:
         plt.hist(list_Theta_lin_nd, bins=100, label="samples")
 
@@ -63,16 +66,12 @@ def plot_1D_hist(
     plt.grid()
     plt.legend()
     # plt.tight_layout()
+
+    str_n = f"_n{n}" if n is not None else ""
     if seed is not None:
-        if n is not None:
-            plt.savefig(f"{folder_path}/hist_n{n}_d{d}_seed{seed}.PNG")
-        else:
-            plt.savefig(f"{folder_path}/hist_d{d}_seed{seed}.PNG")
+        plt.savefig(f"{folder_path}/hist{str_n}_d{d}_seed{seed}.PNG")
     else:
-        if n is not None:
-            plt.savefig(f"{folder_path}/hist_n{n}_d{d}_overall.PNG")
-        else:
-            plt.savefig(f"{folder_path}/hist_d{d}_overall.PNG")
+        plt.savefig(f"{folder_path}/hist{str_n}_d{d}_overall.PNG")
 
     plt.close()
     return
@@ -126,10 +125,13 @@ def plot_1D_chain(
     plt.legend()
     # plt.tight_layout()
 
+    plt.xlabel("Iteration")
+
+    str_n = f"_n{n}" if n is not None else ""
     if is_u:
-        filename = f"{folder_path}/mc_1D_n{n}_ell{d}.PNG"
+        filename = f"{folder_path}/mc_1D{str_n}_ell{d}.PNG"
     else:
-        filename = f"{folder_path}/mc_1D_n{n}_d{d}.PNG"
+        filename = f"{folder_path}/mc_1D{str_n}_d{d}.PNG"
     plt.savefig(filename, bbox_inches="tight")
     plt.close()
 
@@ -153,7 +155,7 @@ def plot_2D_chain(
     freq = 5
     plt.figure(figsize=(8, 6))
 
-    title = f"joint MC of ({list_names[d1]}, {list_names[d2]}) for pixel n={n}"
+    title = f"Joint MC of ({list_names[d1]}, {list_names[d2]}) for pixel n={n}"
     plt.title(title)
     if list_Theta_lin_seed.min() > 0:
         plt.scatter(
@@ -184,19 +186,20 @@ def plot_2D_chain(
     plt.legend()
     plt.grid()
     if list_Theta_lin_seed.min() > 0:
-        plt.xlabel(r"$\log$ " + list_names[d1])
-        plt.ylabel(r"$\log$ " + list_names[d2])
+        plt.xlabel(r"$\log_{10}$ " + list_names[d1])
+        plt.ylabel(r"$\log_{10}$ " + list_names[d2])
     else:
         plt.xlabel(list_names[d1])
         plt.ylabel(list_names[d2])
     # plt.tight_layout()
+
     plt.savefig(f"{folder_path}/mc_2D_n{n}_d1{d1}_d2{d2}_seed{seed}_chain.PNG")
     plt.close()
 
 
 def plot_2D_hist(
     list_Theta_lin_seed: np.ndarray,
-    n: int,
+    n: Optional[int],
     d1: int,
     d2: int,
     model_name: str,
@@ -258,7 +261,9 @@ def plot_2D_hist(
 
     plt.figure(figsize=(8, 6))
 
-    title = f"joint MC of ({list_names[d1]}, {list_names[d2]}) for pixel n={n}"
+    title = f"Sample histogram of ({list_names[d1]}, {list_names[d2]})"
+    if n is not None:
+        title += f" of pixel n={n}"
     plt.title(title)
 
     plt.hist2d(
@@ -281,8 +286,8 @@ def plot_2D_hist(
     if len(point_challenger) > 0:
         x_chal = point_challenger["value"] * 1
         plt.plot(
-            np.log10([x_chal[n, d1]]) if is_theta_log else [x_chal[n, d1]],
-            np.log10([x_chal[n, d2]]) if is_y_log else [x_chal[n, d2]],
+            np.log10([x_chal[d1]]) if is_theta_log else [x_chal[d1]],
+            np.log10([x_chal[d2]]) if is_y_log else [x_chal[d2]],
             "k+",
             ms=20,
             label=point_challenger["name"],
@@ -305,14 +310,15 @@ def plot_2D_hist(
     plt.colorbar()
 
     plt.grid()
-    plt.xlabel(r"$\log$ " + list_names[d1] if is_theta_log else list_names[d1])
-    plt.ylabel(r"$\log$ " + list_names[d2] if is_y_log else list_names[d2])
+    plt.xlabel(r"$\log_{10}$ " + list_names[d1] if is_theta_log else list_names[d1])
+    plt.ylabel(r"$\log_{10}$ " + list_names[d2] if is_y_log else list_names[d2])
     # plt.tight_layout()
 
+    str_n = f"_n{n}" if n is not None else ""
     if seed == "overall":
-        filename = f"{folder_path}/hist2D_n{n}_d1{d1}_d2{d2}_overall_chain.PNG"
+        filename = f"{folder_path}/hist2D{str_n}_d1{d1}_d2{d2}_overall_chain.PNG"
     else:
-        filename = f"{folder_path}/hist2D_n{n}_d1{d1}_d2{d2}_seed{seed}"
+        filename = f"{folder_path}/hist2D{str_n}_d1{d1}_d2{d2}_seed{seed}"
         filename += "_chain.PNG"
     plt.savefig(filename)
     plt.close()
@@ -320,7 +326,7 @@ def plot_2D_hist(
 
 def plot_2D_proba_contours(
     list_Theta_lin_seed: np.ndarray,
-    n: int,
+    n: Optional[int],
     d1: int,
     d2: int,
     model_name: str,
@@ -415,7 +421,7 @@ def plot_2D_proba_contours(
         percentiles_arr = percentiles_arr[integral[-1] < percentiles_arr]
 
         msg = "Issue with proba contour plot for (n, d1, d2) = "
-        msg += f"({n}, {d1}, {d2})"
+        msg += f"({n if n is not None else 0}, {d1}, {d2})"
         print(msg)
 
         if percentiles_arr.size == 0:
@@ -427,7 +433,8 @@ def plot_2D_proba_contours(
     plt.figure(figsize=(8, 6))
 
     title = f"High Probability Region of ({list_names[d1]}, {list_names[d2]})"
-    title += f" for pixel n={n}"
+    if n is not None:
+        title += f" of pixel n={n}"
     plt.title(title)
 
     for percentile, t_contour in zip(percentiles_arr, t_contours):
@@ -461,8 +468,8 @@ def plot_2D_proba_contours(
         x_challenger = point_challenger["value"]
         if list_Theta_lin_seed.min() > 0 and lower_bounds_lin.min() > 0:
             plt.plot(
-                np.log10([x_challenger[n, d1]]),
-                np.log10([x_challenger[n, d2]]),
+                np.log10([x_challenger[d1]]),
+                np.log10([x_challenger[d2]]),
                 "k+",
                 ms=20,
                 label=point_challenger["name"],
@@ -470,8 +477,8 @@ def plot_2D_proba_contours(
             )
         else:
             plt.plot(
-                [x_challenger[n, d1]],
-                [x_challenger[n, d2]],
+                [x_challenger[d1]],
+                [x_challenger[d2]],
                 "k+",
                 ms=20,
                 label=point_challenger["name"],
@@ -504,14 +511,15 @@ def plot_2D_proba_contours(
     # plt.colorbar()
 
     plt.grid()
-    plt.xlabel(r"$\log$ " + list_names[d1] if is_theta_log else list_names[d1])
-    plt.ylabel(r"$\log$ " + list_names[d2] if is_y_log else list_names[d2])
+    plt.xlabel(r"$\log_{10}$ " + list_names[d1] if is_theta_log else list_names[d1])
+    plt.ylabel(r"$\log_{10}$ " + list_names[d2] if is_y_log else list_names[d2])
     # plt.tight_layout()
 
+    str_n = f"_n{n}" if n is not None else ""
     if seed == "overall":
-        filename = f"{folder_path}/HPR_2D_n{n}_d1{d1}_d2{d2}_overall_chain.PNG"
+        filename = f"{folder_path}/HPR_2D{str_n}_d1{d1}_d2{d2}_overall_chain.PNG"
     else:
-        filename = f"{folder_path}/HPR_2D_n{n}_d1{d1}_d2{d2}_seed{seed}"
+        filename = f"{folder_path}/HPR_2D{str_n}_d1{d1}_d2{d2}_seed{seed}"
         filename += "_chain.PNG"
     plt.savefig(filename)
     plt.close()
