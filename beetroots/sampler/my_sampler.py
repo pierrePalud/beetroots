@@ -314,7 +314,7 @@ class MySampler(Sampler):
         self.current = posterior.compute_all(
             Theta_0,
             compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
-            chromatic_gibbs=True,
+            chromatic_gibbs=False,
         )
 
         assert np.isnan(self.current["objective"]) == 0
@@ -802,7 +802,7 @@ class MySampler(Sampler):
                 candidate_all = posterior.compute_all(
                     candidate_full,
                     compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
-                    chromatic_gibbs=True,
+                    chromatic_gibbs=False,
                 )
                 grad_cand = candidate_all["grad"][idx_pix, :] * 1
                 v_cand = (
@@ -884,7 +884,7 @@ class MySampler(Sampler):
                     self.current = posterior.compute_all(
                         new_Theta,
                         compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
-                        chromatic_gibbs=True,
+                        chromatic_gibbs=False,
                     )
 
             # after loop
@@ -977,6 +977,11 @@ class MySampler(Sampler):
         # n_sites = len(posterior.dict_sites)
         # idx_site = int(self.rng.integers(0, n_sites))
         list_idx = np.array(list(posterior.dict_sites.keys()))
+
+        # # if optim : only consider one group
+        # if not self.stochastic:
+        #     idx_site_to_sample = self.rng.choice(list_idx.size)
+        #     list_idx = [list_idx[idx_site_to_sample]]
 
         for idx_site in list_idx:
             idx_pix = posterior.dict_sites[idx_site]
@@ -1162,7 +1167,7 @@ class MySampler(Sampler):
             self.current = posterior.compute_all(
                 new_Theta,
                 compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
-                chromatic_gibbs=True,
+                chromatic_gibbs=False,
             )
 
             new_v = self.v.reshape((self.N, self.D))
