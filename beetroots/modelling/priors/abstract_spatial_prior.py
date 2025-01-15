@@ -157,6 +157,7 @@ class SpatialPrior(PriorProbaDistribution):
         self,
         Theta: np.ndarray,
         with_weights: bool = True,
+        **kwargs,
     ) -> np.ndarray:
         r"""computes the negative log pdf (defined up to some multiplicative constant)
 

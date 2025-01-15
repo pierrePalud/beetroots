@@ -1,5 +1,4 @@
-"""(deprecated) Implementation of L2 norm on image gradient prior
-"""
+"""(deprecated) Implementation of L2 norm on image gradient prior"""
 
 import numpy as np
 
@@ -17,9 +16,7 @@ class L22SpatialPrior(SpatialPrior):
     """
 
     def neglog_pdf(
-        self,
-        Theta: np.ndarray,
-        with_weights: bool = True,
+        self, Theta: np.ndarray, with_weights: bool = True, **kwargs
     ) -> np.ndarray:
         assert Theta.shape == (self.N, self.D)
 

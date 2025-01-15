@@ -129,7 +129,7 @@ def test_neglog_pdf(build_test_1):
         full=False,
         chromatic_gibbs=False,
     )
-    true_val_1 = 2 * np.array([8])
+    true_val_1 = np.array([8])
     assert neglogpdf_1_chromatic.shape == (D,)
     assert np.allclose(true_val_1, neglogpdf_1_chromatic)
     assert np.allclose(true_val_1, 2 * neglogpdf_1_no_chromatic)
@@ -167,20 +167,20 @@ def test_gradient_neglogpdf(build_test_1):
 
     grad_1 = prior.gradient_neglog_pdf(Theta1, idx_pix=np.arange(N))
     assert grad_1.shape == (N, D)
-    assert np.allclose(4 * true_laplacian_1, grad_1)
+    assert np.allclose(2 * true_laplacian_1, grad_1)
 
     grad_2 = prior.gradient_neglog_pdf(Theta2, idx_pix=np.arange(N))
-    true_grad_2 = scalar * 4 * true_laplacian_1
+    true_grad_2 = scalar * 2 * true_laplacian_1
     assert np.allclose(true_grad_2, grad_2)
 
     grad_full = prior_full.gradient_neglog_pdf(Theta_full, idx_pix=np.arange(N))
-    true_grad_full = np.hstack([4 * true_laplacian_1, true_grad_2])
+    true_grad_full = np.hstack([2 * true_laplacian_1, true_grad_2])
     assert grad_full.shape == (N, D_full)
     assert np.allclose(true_grad_full, grad_full)
 
     grad_pix = prior.gradient_neglog_pdf(Theta1, idx_pix=np.array([4]))
     assert grad_pix.shape == (1, D)
-    assert np.allclose(4 * true_laplacian_1[4], grad_pix)
+    assert np.allclose(2 * true_laplacian_1[4], grad_pix)
 
 
 def test_hess_diag_neglogpdf(build_test_1):
@@ -188,7 +188,7 @@ def test_hess_diag_neglogpdf(build_test_1):
     N, D = Theta1.shape
     _, D_full = Theta_full.shape
 
-    true_hess_1 = 4 * np.array([2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 2.0, 3.0, 2.0]).reshape(
+    true_hess_1 = 2 * np.array([2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 2.0, 3.0, 2.0]).reshape(
         (N, D)
     )
 

@@ -59,28 +59,16 @@ def test_compute_nlpdf_spatial_proposal(build_test_1):
     # Theta_full = np.ones((N, k_mtm, D))
 
     true_logpdf += (
-        math.comb(4, 4)
-        * 2
-        * np.sqrt(4)
-        * np.exp(-4 * 4 * Theta_full[idx_pix[0], :, 0] ** 2)
+        math.comb(4, 4) * 4 * np.exp(-(4**2) * Theta_full[idx_pix[0], :, 0] ** 2)
     )  # mode with 4 neighbors
     true_logpdf += (
-        math.comb(4, 1)
-        * 2
-        * np.sqrt(1)
-        * np.exp(-4 * 1 * Theta_full[idx_pix[0], :, 0] ** 2)
+        math.comb(4, 1) * 1 * np.exp(-(1**2) * Theta_full[idx_pix[0], :, 0] ** 2)
     )  # modes with 1 neighbor
     true_logpdf += (
-        math.comb(4, 2)
-        * 2
-        * np.sqrt(2)
-        * np.exp(-4 * 2 * Theta_full[idx_pix[0], :, 0] ** 2)
+        math.comb(4, 2) * 2 * np.exp(-(2**2) * Theta_full[idx_pix[0], :, 0] ** 2)
     )  # modes with 2 neighbors
     true_logpdf += (
-        math.comb(4, 3)
-        * 2
-        * np.sqrt(3)
-        * np.exp(-4 * 3 * Theta_full[idx_pix[0], :, 0] ** 2)
+        math.comb(4, 3) * 3 * np.exp(-(3**2) * Theta_full[idx_pix[0], :, 0] ** 2)
     )  # modes with 3 neighbors
     true_logpdf = np.log(true_logpdf)
 

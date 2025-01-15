@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import numba
 import numpy as np
@@ -99,7 +99,7 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
         with_weights: bool = True,
         full: bool = False,
         pixelwise: bool = False,
-        chromatic_gibbs: bool = False,
+        chromatic_gibbs: Union[bool, str] = False,
     ) -> np.ndarray:
         assert np.sum([pixelwise, full]) < 2
         if idx_pix.size < self.N:
@@ -110,7 +110,7 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
             hadamard_gradient_ = compute_hadamard_discrete_gradient(
                 Theta, self.list_edges, idx_pix
             )
-            neglog_p = factor * hadamard_gradient_
+            neglog_p = hadamard_gradient_
         else:
             neglog_p = np.zeros((idx_pix.size, *Theta.shape[1:]))
 
@@ -122,7 +122,14 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
         elif not full:
             neglog_p = np.sum(neglog_p, axis=0)
 
-        return neglog_p  # (D,) if not pixelwise or (N, D) if pixelwise
+        if isinstance(chromatic_gibbs, bool):
+            return factor * neglog_p  # (D,) if not pixelwise or (N, D) if pixelwise
+        elif chromatic_gibbs == "both":
+            return factor * neglog_p, neglog_p
+        else:
+            raise ValueError(
+                'wrong value for "chromatic_gibbs", should be a boolean or the string "both"'
+            )
 
     def gradient_neglog_pdf(self, Theta: np.ndarray, idx_pix: np.ndarray) -> np.ndarray:
         assert Theta.shape == (self.N, self.D)

@@ -96,9 +96,7 @@ class Posterior:
         if self.prior_spatial is not None and use_spatial_prior:
             nl_priors_spatial = self.prior_spatial.neglog_pdf(
                 Theta, idx_pix, with_weights, chromatic_gibbs=chromatic_gibbs, full=True
-            ).sum(
-                axis=tuple(range(2, Theta.ndim))
-            )  # (n_pix, k_mtm)
+            ).sum(axis=tuple(range(2, Theta.ndim)))  # (n_pix, k_mtm)
             assert nl_priors_spatial.shape == (n_pix, k_mtm)
             nl_priors += nl_priors_spatial
 
@@ -298,9 +296,12 @@ class Posterior:
         assert isinstance(
             nll_full, np.ndarray
         ), "nll_full should be an array, check likelihood.neglog_pdf method"
-        assert nll_full.shape == (
-            self.N,
-            self.L,
+        assert (
+            nll_full.shape
+            == (
+                self.N,
+                self.L,
+            )
         ), f"nll_full with wrong shape. is {nll_full.shape}, should be {(self.N, self.L)}"
 
         dict_objective["nll"] = np.sum(nll_full)  # float
@@ -358,8 +359,6 @@ class Posterior:
 
         if idx_pix is None:
             idx_pix = np.arange(self.N)
-        else:
-            assert chromatic_gibbs is True
 
         if forward_map_evals == {}:
             forward_map_evals = self.likelihood.evaluate_all_forward_map(
@@ -374,31 +373,58 @@ class Posterior:
                 compute_derivatives_2nd_order,
             )
 
-        nll = self.likelihood.neglog_pdf(forward_map_evals, nll_utils)
-        nll_utils["nll"] = nll  # float
-
+        nll_pixelwise = self.likelihood.neglog_pdf(
+            forward_map_evals, nll_utils, pixelwise=True
+        )
         if self.prior_indicator is not None:
-            nl_prior_indicator = self.prior_indicator.neglog_pdf(Theta)
+            nl_prior_indicator_pixelwise = self.prior_indicator.neglog_pdf(
+                Theta, pixelwise=True
+            )
         else:
-            nl_prior_indicator = np.zeros((self.D,))
-        nll_utils["nl_prior_indicator"] = nl_prior_indicator
+            nl_prior_indicator_pixelwise = np.zeros((self.N,))
 
-        nlpdf_pixelwise = self.neglog_pdf(
-            Theta,
-            idx_pix,
-            forward_map_evals,
-            nll_utils,
-            pixelwise=True,
-            chromatic_gibbs=chromatic_gibbs,
-        )  # (N,)
+        nll_utils["nll"] = nll_pixelwise.sum()
+        nll_utils["nl_prior_indicator"] = nl_prior_indicator_pixelwise.sum()
+
+        if self.prior_spatial is not None:
+            nl_prior_spatial_pixelwise_chromatic, nl_prior_spatial_pixelwise_global = (
+                self.prior_spatial.neglog_pdf(
+                    Theta, idx_pix, pixelwise=True, chromatic_gibbs="both"
+                )
+            )
+        else:
+            nl_prior_spatial_pixelwise_chromatic = np.zeros((self.N,))
+            nl_prior_spatial_pixelwise_global = nl_prior_spatial_pixelwise_chromatic * 1
+
+        nlpdf_pixelwise_chromatic = (
+            nll_pixelwise
+            + nl_prior_spatial_pixelwise_chromatic
+            + nl_prior_indicator_pixelwise
+        )
+        nlpdf_pixelwise_global = (
+            nll_pixelwise
+            + nl_prior_spatial_pixelwise_global
+            + nl_prior_indicator_pixelwise
+        )
+        # nlpdf_pixelwise = self.neglog_pdf(
+        #     Theta,
+        #     idx_pix,
+        #     forward_map_evals,
+        #     nll_utils,
+        #     pixelwise=True,
+        #     chromatic_gibbs=chromatic_gibbs,
+        # )  # (N,)
 
         iterate = {
             "Theta": Theta,
             "forward_map_evals": forward_map_evals,
             "nll_utils": nll_utils,
-            "objective_pix": nlpdf_pixelwise,
+            "objective_pix_chromatic": nlpdf_pixelwise_chromatic,
+            "objective_pix_global": nlpdf_pixelwise_global,
+            "objective_chromatic": np.sum(nlpdf_pixelwise_chromatic),
+            "objective_global": np.sum(nlpdf_pixelwise_global),
         }
-        iterate["objective"] = np.sum(nlpdf_pixelwise)
+
         if compute_derivatives:
             iterate["grad"] = self.grad_neglog_pdf(
                 Theta,

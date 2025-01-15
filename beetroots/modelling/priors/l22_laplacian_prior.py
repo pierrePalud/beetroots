@@ -138,6 +138,7 @@ class L22LaplacianSpatialPrior(SpatialPrior):
         full: bool = False,
         pixelwise: bool = False,
         chromatic_gibbs: bool = False,
+        **kwargs,
     ) -> np.ndarray:
         assert np.sum([pixelwise, full]) < 2
         if idx_pix.size < self.N:
