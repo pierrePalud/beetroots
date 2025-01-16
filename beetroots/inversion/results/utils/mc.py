@@ -165,6 +165,7 @@ class ResultsMC(ResultsUtil):
             """
             n = dict_input["n"]
             Theta_n_true = dict_input["Theta_n_true"]
+            point_challenger_n = dict_input["point_challenger_n"]
 
             # read data
             list_Theta_n_lin_full = np.zeros((self.N_MCMC, len_mc, self.D))
@@ -394,10 +395,7 @@ class ResultsMC(ResultsUtil):
                             self.upper_bounds_lin,
                             Theta_MMSE=Theta_n_MMSE_lin[[d1, d2]],
                             true_val=true_val,
-                            point_challenger={
-                                "name": point_challenger["name"],
-                                "value": point_challenger["value"][n, :],
-                            },
+                            point_challenger=point_challenger_n,
                         )
 
                         try:
@@ -413,10 +411,7 @@ class ResultsMC(ResultsUtil):
                                 self.upper_bounds_lin,
                                 Theta_MMSE=Theta_n_MMSE_lin[[d1, d2]],
                                 true_val=true_val,
-                                point_challenger={
-                                    "name": point_challenger["name"],
-                                    "value": point_challenger["value"][n, :],
-                                },
+                                point_challenger=point_challenger_n,
                             )
                         except:
                             msg = "Issue with proba contour plot for (n, d1, d2) = "
@@ -437,6 +432,12 @@ class ResultsMC(ResultsUtil):
                 "Theta_n_true": Theta_true_lin[n]
                 if Theta_true_lin is not None
                 else None,
+                "point_challenger_n": {
+                    "name": point_challenger["name"],
+                    "value": point_challenger["value"][n, :],
+                }
+                if len(point_challenger) > 0
+                else point_challenger,
             }
             for n in range(self.N)
         ]
