@@ -178,8 +178,8 @@ class CensoredLogNormalLikelihood(Likelihood):
         forward_map_evals: dict,
         nll_utils: dict,
         log_y: np.ndarray,
-        log_sigma: np.ndarray,
-        omega: np.ndarray,
+        sigma: np.ndarray,
+        log_omega: np.ndarray,
     ) -> np.ndarray:
         return -statsnorm.logcdf((log_omega - forward_map_evals["f_Theta"]) / sigma)
 

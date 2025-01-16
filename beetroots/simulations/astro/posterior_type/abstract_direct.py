@@ -163,7 +163,7 @@ class SimulationMySampler(SimulationPosteriorType):
     def inversion_optim_map(
         self,
         dict_posteriors: Dict[str, Posterior],
-        scaler: MyScaler,
+        scaler: Scaler,
         my_sampler_params: MySamplerParams,
         N_MCMC: int,
         T_MC: int,
@@ -230,14 +230,14 @@ class SimulationMySampler(SimulationPosteriorType):
         msg = "Simulation and analysis finished. Total duration : "
         msg += f"{duration_str} s\n"
         print(msg)
-
-        list_model_names = list(dict_posteriors.keys())
-        return list_model_names
+        return
+        # list_model_names = list(dict_posteriors.keys())
+        # return list_model_names
 
     def inversion_mcmc(
         self,
         dict_posteriors: Dict[str, Posterior],
-        scaler: MyScaler,
+        scaler: Scaler,
         my_sampler_params: MySamplerParams,
         N_MCMC: int,
         T_MC: int,
@@ -345,6 +345,6 @@ class SimulationMySampler(SimulationPosteriorType):
         msg = "Simulation and analysis finished. Total duration : "
         msg += f"{duration_str} s\n"
         print(msg)
-
-        list_model_names = list(dict_posteriors.keys())
-        return list_model_names
+        return
+        # list_model_names = list(dict_posteriors.keys())
+        # return list_model_names

@@ -158,7 +158,7 @@ class SimulationRealDataNN(SimulationNN, SimulationRealData, SimulationMySampler
 
         # * Optim MAP
         if params["to_run_optim_map"]:
-            list_model_names = self.inversion_optim_map(
+            self.inversion_optim_map(
                 dict_posteriors=dict_posteriors,
                 scaler=scaler,
                 my_sampler_params=MySamplerParams(**params["sampling_params"]["map"]),
@@ -168,7 +168,7 @@ class SimulationRealDataNN(SimulationNN, SimulationRealData, SimulationMySampler
 
         # * MCMC
         if params["to_run_mcmc"]:
-            list_model_names = self.inversion_mcmc(
+            self.inversion_mcmc(
                 dict_posteriors=dict_posteriors,
                 scaler=scaler,
                 my_sampler_params=MySamplerParams(**params["sampling_params"]["mcmc"]),

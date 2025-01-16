@@ -7,16 +7,16 @@ from scipy.special import log_ndtr
 
 
 @overload
-def logpdf_normal(x: np.ndarray) -> np.ndarray:
+def logpdf_normal(Theta: np.ndarray) -> np.ndarray:
     ...
 
 
 @overload
-def logpdf_normal(x: Union[float, int]) -> float:
+def logpdf_normal(Theta: Union[float, int]) -> float:
     ...
 
 
-def logpdf_normal(Theta: Union[np.ndarray, float, int]) -> Union[np.ndarray, float]:
+def logpdf_normal(Theta):
     """log pdf of the standard gaussian distribution
 
     Parameters
@@ -42,9 +42,7 @@ def norm_pdf_cdf_ratio(Theta: Union[float, int]) -> float:
     ...
 
 
-def norm_pdf_cdf_ratio(
-    Theta: Union[np.ndarray, float, int]
-) -> Union[np.ndarray, float]:
+def norm_pdf_cdf_ratio(Theta):
     r"""computes the ratio of the pdf and cdf of the standard gaussian distribution at a given point
 
     Parameters
