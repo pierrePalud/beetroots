@@ -314,7 +314,7 @@ class MySampler(Sampler):
         self.current = posterior.compute_all(
             Theta_0,
             compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
-            chromatic_gibbs=False,
+            chromatic_gibbs="both",
         )
 
         assert np.isnan(self.current["objective_global"]) == 0
@@ -736,10 +736,10 @@ class MySampler(Sampler):
             list_idx = np.array(list(posterior.dict_sites.keys()))
             if len(list_idx) > 1:
                 chromatic_gibbs = True
-                objective_type = "objective_pix"
+                objective_type = "objective_pix_chromatic"
             else:
                 chromatic_gibbs = False
-                objective_type = "objective_global"
+                objective_type = "objective_pix_global"
 
             for idx_site in list_idx:
                 idx_pix = posterior.dict_sites[idx_site]
