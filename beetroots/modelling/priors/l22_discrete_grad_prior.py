@@ -125,7 +125,7 @@ class L22DiscreteGradSpatialPrior(SpatialPrior):
         if isinstance(chromatic_gibbs, bool):
             return factor * neglog_p  # (D,) if not pixelwise or (N, D) if pixelwise
         elif chromatic_gibbs == "both":
-            return factor * neglog_p, neglog_p
+            return 1 * neglog_p, 1 / 2 * neglog_p
         else:
             raise ValueError(
                 'wrong value for "chromatic_gibbs", should be a boolean or the string "both"'
