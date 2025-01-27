@@ -2,12 +2,14 @@ import abc
 import datetime
 import json
 import os
+import shutil
 import sys
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
 
 from beetroots.approx_optim.approach_type import utils
 
@@ -27,10 +29,11 @@ class ApproxParamsOptim(abc.ABC):
         log10_f_grid_size: int,
         N_samples_y: int,
         max_workers: int,
-        sigma_a: Union[np.ndarray, float],
+        sigma_a_raw: Union[np.ndarray, float],
         sigma_m: Union[np.ndarray, float],
         path_outputs: str,
         path_models: str,
+        N_clusters_a_priori: Optional[int],
         small_size: int = 16,
         medium_size: int = 20,
         bigger_size: int = 24,
@@ -55,16 +58,16 @@ class ApproxParamsOptim(abc.ABC):
             number of samples for :math:`y_\ell`
         max_workers : int
             maximum number of workers that can be used for optimization or results extraction
-        sigma_a : Union[np.ndarray, float]
+        sigma_a_raw : Union[np.ndarray, float]
             standard deviation of the additive Gaussian noise
         sigma_m : Union[np.ndarray, float]
             standard deviation parameter of the multiplicative lognormal noise
-        path_data : str
-            path to the folder containing the input yaml file
         path_outputs : str
             path to the output folder (to be created), where the run results are to be saved
         path_models : str
             path to the folder containing the forward models
+        N_clusters_a_priori: Optional[int]
+            The number of different values of sigma_a_raw to consider for each line (and thus of optimization problem to solve per line), computed with a clustering algorithm on the `N` of values sigma_a_raw. Raises an error if `N_clusters_a_priori > N`.
         small_size : int, optional
             size for basic text, axes titles, xticks and yticks, by default 16
         medium_size : int, optional
@@ -72,36 +75,28 @@ class ApproxParamsOptim(abc.ABC):
         bigger_size : int, optional
             size of the figure title, by default 24
         """
+        self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
+        self.create_empty_output_folders(simu_name, path_outputs)
+
+        self.MODELS_PATH = path_models
+        r"""str: path to the folder containing all the already defined and saved models (i.e., polynomials or neural networks)"""
+
+        self.path_intermediate_result = (
+            f"{self.path_output_sim}/best_params_intermediate.csv"
+        )
+        r"""str: path to the intermediate results (per cluster, saved in `output` folder)"""
+
+        self.path_centroids = f"{self.path_output_sim}/sigma_a_centroids.csv"
+        r"""str: path to the csv file containing the sigma_a centroid values for each cluster (saved in `output` folder)"""
+
         self.max_workers = max_workers
         r"""int: maximum number of workers that can be used for optimization or results extraction"""
 
         self.list_lines = list_lines
         r"""List[str]: names of the observables for which the likelihood parameter needs to be adjusted"""
+
         self.L = len(list_lines)
-
-        if isinstance(sigma_a, np.ndarray):
-            assert len(sigma_a.shape) == 2, f"{sigma_a.shape}"
-            assert sigma_a.shape[1] == self.L
-            N = sigma_a.shape[0]
-        else:
-            N = 1
-            sigma_a = sigma_a * np.ones((N, self.L))
-
-        if isinstance(sigma_m, np.ndarray):
-            assert sigma_m.shape == (N, self.L), f"{sigma_m.shape}"
-        else:
-            N = 1
-            sigma_m = sigma_m * np.ones((N, self.L))
-
-        self.N = N
-        r"""int: number of pixels / components for which the optimization needs to be performed"""
-
-        assert isinstance(sigma_a, np.ndarray)
-        assert isinstance(sigma_m, np.ndarray)
-        self.sigma_a = sigma_a
-        r"""np.ndarray: standard deviations of the additive Gaussian noise"""
-        self.sigma_m = sigma_m
-        r"""np.ndarray: standard deviation parameter of the multiplicative lognormal noise"""
+        r"""int: number of observables for which the likelihood parameter needs to be adjusted"""
 
         self.D = D
         r"""int: total number of physical parameters involved in the forward map"""
@@ -111,19 +106,120 @@ class ApproxParamsOptim(abc.ABC):
 
         self.K = K
         r"""int: the number of sampled theta values is ``K^D_sampling``"""
+
         self.N_samples_y = N_samples_y
         r"""int: number of samples for :math:`y_\ell`"""
+
         self.log10_f_grid_size = log10_f_grid_size  # nb points P(theta) grid
         r"""int: number of points in the grid on :math:`\log_{10} f_\ell(\theta)`"""
 
         self.N_samples_theta = 0
         r"""int: number of samples for :math:`\theta` used to build the histogram of :math:`\log_{10} f_\ell(\theta)`. To be defined in the daughter classes."""
 
-        self.setup_plot_text_sizes(small_size, medium_size, bigger_size)
-        self.create_empty_output_folders(simu_name, path_outputs)
+        # check size of sigma_a_raw
+        if isinstance(sigma_a_raw, np.ndarray):
+            assert len(sigma_a_raw.shape) == 2, f"{sigma_a_raw.shape}"
+            assert sigma_a_raw.shape[1] == self.L
+            N = sigma_a_raw.shape[0]
+        else:
+            N = 1
+            sigma_a_raw = sigma_a_raw * np.ones((N, self.L))
 
-        self.MODELS_PATH = path_models
-        r"""str: path to the folder containing all the already defined and saved models (i.e., polynomials or neural networks)"""
+        self.N = N
+        r"""int: number of pixels / components for which the optimization needs to be performed"""
+
+        self.N_clusters = self.check_num_uniques(sigma_a_raw, N_clusters_a_priori)
+        r"""Optional[int]: The number of different values of sigma_a to consider for each line (and thus of optimization problem to solve per line), computed with a clustering algorithm on the `N` of values sigma_a."""
+
+        self.N_optim_per_line = self.N if self.N_clusters is None else self.N_clusters
+        r"""int: number of optimization procedures to run per line"""
+
+        print(
+            f"run properties: N={self.N}, L={self.L}, N_clusters_a_priori={N_clusters_a_priori}, N_clusters={self.N_clusters}, N_optim={self.N_optim_per_line}\n"
+        )
+
+        # set sigma_a to sigma_a_raw if no clustering, else to centroids
+        if self.N_optim_per_line == self.N:
+            sigma_a = sigma_a_raw * 1
+        else:
+            # run the clustering algorithms on the set of standard deviations
+            # for each line
+            assert self.N_optim_per_line == self.N_clusters
+            sigma_a = self.cluster_sigma_a_raw(sigma_a_raw)
+
+        # check size of sigma_m
+        assert isinstance(
+            sigma_m, float
+        ), "The current implementation only works for constant sigma_m over the map"
+        if isinstance(sigma_m, np.ndarray):
+            assert sigma_m.shape == (self.N_optim_per_line, self.L), f"{sigma_m.shape}"
+        else:
+            sigma_m = sigma_m * np.ones((self.N_optim_per_line, self.L))
+
+        assert isinstance(sigma_a, np.ndarray)
+        assert isinstance(sigma_m, np.ndarray)
+        self.sigma_a = sigma_a
+        r"""np.ndarray: standard deviations of the additive Gaussian noise"""
+
+        self.sigma_m = sigma_m
+        r"""np.ndarray: standard deviation parameter of the multiplicative lognormal noise"""
+
+        return
+
+    def check_num_uniques(
+        self,
+        sigma_a_raw: np.ndarray,
+        N_clusters_a_priori: Optional[int],
+    ) -> Optional[int]:
+        r"""Sets the number of clusters to consider, that is, the number of optimization procedure to run per line.
+
+        Parameters
+        ----------
+        sigma_a_raw : np.ndarray of shape (N, L)
+            set of standard deviations in the
+        N_clusters_a_priori : Optional[int]
+            _description_
+
+        Returns
+        -------
+        Optional[int]
+            _description_
+        """
+        assert (N_clusters_a_priori is None) or (
+            N_clusters_a_priori <= self.N
+        ), "The number of clusters `N_clusters` should be either None or inferior to the total number of pixels."
+
+        assert sigma_a_raw.shape == (
+            self.N,
+            self.L,
+        ), f"sigma_a_raw has shape {sigma_a_raw.shape} but should have ({self.N}, {self.L})"
+
+        # compute the number of distinct values for sigma_a in a single line
+        max_distincts = 1
+        for ell in range(self.L):
+            n_uniques = np.unique(sigma_a_raw[:, ell]).size
+            if max_distincts < n_uniques:
+                max_distincts = n_uniques * 1
+
+        # case 1 : set N_clusters with the number of distinct values of sigma_a
+        if max_distincts < self.N and N_clusters_a_priori is None:
+            N_clusters = max_distincts * 1
+            return N_clusters
+
+        # case 2 : the number of distinct values of sigma_a is lower than
+        # the number of clusters provided by the user.
+        # In this case, use the value that minimizes the number of
+        # optimization procedures to run.
+        if N_clusters_a_priori is not None and max_distincts < N_clusters_a_priori:
+            N_clusters = max_distincts * 1
+            return N_clusters
+
+        # case 3 : use the number of clusters indicated by the user
+        if N_clusters_a_priori is not None:
+            return N_clusters_a_priori
+
+        # last case : run one optim per pixel, ie run self.N optimizations
+        return None
 
     @classmethod
     def parse_args(cls) -> Tuple[str, str, str, str]:
@@ -323,7 +419,7 @@ class ApproxParamsOptim(abc.ABC):
             label="samples",
         )
         plt.plot(list_log10_f_grid, pdf_kde_log10_f_Theta, "k--", label="KDE")
-        plt.xlabel(r"$\log f_\ell (\theta)$")
+        plt.xlabel(r"$\log_{10} f_\ell (\theta)$")
         plt.grid()
         plt.legend()
         plt.tight_layout()
@@ -459,7 +555,7 @@ class ApproxParamsOptim(abc.ABC):
         for ell in range(self.L):
             line = self.list_lines[ell] * 1
 
-            for n in range(self.N):
+            for n in range(self.N_optim_per_line):
                 with open(f"{self.path_logs}/logs_n{n}_{line}.json", "r") as f:
                     text = f.read()
 
@@ -483,7 +579,7 @@ class ApproxParamsOptim(abc.ABC):
         self.rewrite_logs_correct_json_format()
 
         list_best = []
-        for n in range(self.N):
+        for n in range(self.N_optim_per_line):
             for ell in range(self.L):
                 line = self.list_lines[ell] * 1
                 # import data
@@ -512,7 +608,7 @@ class ApproxParamsOptim(abc.ABC):
 
         # * save best points
         df_best = pd.DataFrame(list_best)
-        df_best.to_csv(f"{self.path_output_sim}/best_params.csv", index=False)
+        df_best.to_csv(self.path_intermediate_result, index=False)
         return df_best
 
     def setup_params_bounds(
@@ -557,3 +653,161 @@ class ApproxParamsOptim(abc.ABC):
             bounds_a1_low,
             bounds_a1_high,
         )
+
+    def cluster_sigma_a_raw(self, sigma_a_raw: np.ndarray) -> np.ndarray:
+        r"""runs `self.L` k-means clustering algorithms (one per line) on the  sets of standard deviation of the additive noise `sigma_a`. The number of clusters is defined with `self.N_clusters`. The obtained dataframe is saved as a `csv` file.
+
+        Parameters
+        ----------
+        sigma_a_raw : np.ndarray of shape (N, L)
+            _description_
+
+        Returns
+        -------
+        np.ndarray of shape (N_clusters, L)
+            _description_
+        """
+        assert self.N_clusters is not None
+
+        df_clusters = pd.DataFrame()
+        df_clusters["Y"] = np.arange(self.N_clusters)
+        df_clusters["X"] = 0
+
+        for ell, line in enumerate(self.list_lines):
+            log10_sigma_a_ell_nonnan = np.log10(sigma_a_raw[:, ell])
+            log10_sigma_a_ell_nonnan = log10_sigma_a_ell_nonnan[
+                ~np.isnan(log10_sigma_a_ell_nonnan)
+            ]
+            log10_sigma_a_ell_nonnan = log10_sigma_a_ell_nonnan[
+                log10_sigma_a_ell_nonnan < 3.0
+            ]
+
+            max_min_diff = (
+                log10_sigma_a_ell_nonnan.max() - log10_sigma_a_ell_nonnan.min()
+            )
+
+            km = KMeans(self.N_clusters).fit(log10_sigma_a_ell_nonnan.reshape((-1, 1)))
+            log10_centroids = km.cluster_centers_.flatten()
+            log10_centroids.sort()
+            df_clusters[line] = np.exp(log10_centroids * np.log(10))
+
+            self.plot_clusters_sigma_a(line, log10_sigma_a_ell_nonnan, log10_centroids)
+
+            assert (
+                max_min_diff < 15.0
+            ), f"The difference between the min and max is over 15 orders of magnitude for line {line}. This should not happen."
+
+        df_clusters = df_clusters.set_index(["X", "Y"])
+        df_clusters.to_csv(self.path_centroids)
+
+        return df_clusters.values
+
+    def plot_clusters_sigma_a(
+        self,
+        line: str,
+        log10_sigma_a_ell_nonnan: np.ndarray,
+        log10_centroids: np.ndarray,
+    ) -> None:
+        r"""plots one one-dimension histogram on the log10 of the standard deviation on the additive noise in the observation, and the computed centroids.
+
+        Parameters
+        ----------
+        line : str
+            name of the line
+        log10_sigma_a_ell_nonnan : np.ndarray
+            non-nan values of sigma_a for the considered line
+        log10_centroids : np.ndarray of shape (N_clusters,)
+            values of the sigma_a centroids for the considered line
+        """
+        assert self.N_clusters is not None
+        assert (
+            isinstance(log10_sigma_a_ell_nonnan, np.ndarray)
+            and len(log10_sigma_a_ell_nonnan.shape) == 1
+        )
+        assert (
+            isinstance(log10_centroids, np.ndarray)
+            and log10_centroids.size == self.N_clusters
+        )
+
+        plt.title(f"line {line}: sigma_a and centroids")
+        plt.hist(log10_sigma_a_ell_nonnan, bins=50)
+
+        for j in range(self.N_clusters):
+            if j == 0:
+                plt.axvline(log10_centroids[j], ls="--", c="k", label="centroids")
+            else:
+                plt.axvline(log10_centroids[j], ls="--", c="k")
+
+        plt.ylabel("counts in sigma_a")
+        plt.xlabel(
+            r"$\log_{10} \sigma_{a,n\ell}$ for all pixels $n$ and one line $\ell$"
+        )
+
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(f"{self.path_img_hist}/sigma_a_and_centroids_{line}.PNG")
+        plt.close()
+
+    def save_results_in_data_folder(self, path_data: str, filename_err: str):
+        r"""
+
+        Parameters
+        ----------
+        path_data : str
+            _description_
+        filename_err : str
+            _description_
+        """
+        filename_final_result = f"{path_data}/best_params_approx.csv"
+
+        if self.N_optim_per_line == self.N_clusters:
+            # step 1 : aller chercher le best_params.csv dans l'output folder
+            df_results = pd.read_csv(
+                self.path_intermediate_result, index_col=["n", "line"]
+            )
+
+            # step 2 : create the large best_params.csv file
+            # in case of nan, set a1_best = 3.0, a0_best=0.01
+            df_err = pd.read_pickle(f"{path_data}/{filename_err}")
+            df_err["n"] = np.arange(len(df_err))
+            df_err = df_err.reset_index().set_index("n")
+
+            df_centroids = pd.read_csv(self.path_centroids)
+
+            cols_results = ["a0_best", "a1_best", "target_best"]
+
+            df_best_params_full = pd.DataFrame(
+                columns=cols_results,
+                index=pd.MultiIndex.from_product(
+                    [np.arange(self.N), self.list_lines], names=["n", "line"]
+                ),
+            )
+
+            for line in self.list_lines:
+                centroids = np.log10(df_centroids.loc[:, line].values)
+
+                for n in range(self.N):
+                    # get sigma_{a,n\ell}
+                    log10_sigma_a = np.log10(df_err.at[n, line])
+
+                    if np.isnan(log10_sigma_a):
+                        df_best_params_full.loc[(n, line), cols_results] = [
+                            3.0,
+                            0.01,
+                            np.nan,
+                        ]
+                    else:
+                        idx_min = np.argmin(np.abs(log10_sigma_a - centroids))
+
+                        df_best_params_full.loc[(n, line), cols_results] = (
+                            df_results.loc[(idx_min, line), cols_results] * 1
+                        )
+
+            # step 3 : save it in the same folder as the input_params.yaml file
+            df_best_params_full.to_csv(filename_final_result)
+
+        else:
+            # copy and paste the re
+            assert self.N_optim_per_line == self.N
+            shutil.copyfile(self.path_intermediate_result, filename_final_result)
+        return

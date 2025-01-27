@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 from scipy.integrate import simpson
 from scipy.stats import ks_1samp
-from tqdm.auto import tqdm
+
+# from tqdm.auto import tqdm
 
 P_lambda = np.poly1d(np.array([-6.0, 15.0, -10.0, 0.0, 0.0, 1.0]))
 SQRT_2_PI = np.sqrt(2 * np.pi)
@@ -170,9 +171,7 @@ def estimate_avg_dks_full_bo(
     with ProcessPoolExecutor(
         max_workers=max_workers, mp_context=mp.get_context("fork")
     ) as p:
-        list_results = list(
-            tqdm(p.map(_estimate_one_dks, list_params), total=len(list_params))
-        )
+        list_results = list(p.map(_estimate_one_dks, list_params))
 
     df_results = pd.DataFrame.from_records(list_results)
     df_results = df_results.sort_values("i")

@@ -187,11 +187,42 @@ class MixingModelsLikelihood(Likelihood):
 
         self.log_y = np.log(y)
 
+        self.set_likelihood_approx_parameters(path_transition_params, list_lines_fit)
+
+        # set polynom for transition
+        self.P_lambda = np.poly1d(np.array([-6.0, 15.0, -10.0, 0.0, 0.0, 1.0]))
+        self.grad_P_lambda = self.P_lambda.deriv(m=1)
+        self.hess_diag_P_lambda = self.P_lambda.deriv(m=2)
+
+    def set_likelihood_approx_parameters(
+        self, path_transition_params: str, list_lines_fit: List[str]
+    ) -> None:
+        r"""Sets the likelihood approximation parameters by reading them from the csv file indicated in the `mixing_model_params_filename` entry of the input params yaml file. This `mixing_model_params_filename` file is obtained with the Bayesian Optimization procedure implemented in the `approx_optim` subpackage (see documentation for more details on how to obtain this file).
+
+        The parameters are called `log_fm1` and `log_fp1`. They correspond to the lower and upper limits of the interval in which the two approximations (additive and multiplicative) are combined (below the lower limit, only the additive model is used, and above the upper limit, only the multiplicative model is used).
+
+        These two parameters are computed for each pixel `n` and line `ell` from the two parameters that are stored in the `.csv` file, which are the center and the radius of the interval.
+
+        Parameters
+        ----------
+        path_transition_params : str
+            path to the file that contains the approximation parameters
+        list_lines_fit : List[str]
+            list of lines used during the fit
+        """
         df_transition = pd.read_csv(path_transition_params)
         num_distinct_n = np.unique(df_transition["n"]).size
 
+        # check that the lines in list_lines_fit are in the
+        # df_transition dataframe
+        list_unique_lines = np.unique(df_transition["line"].values)
+        for line in list_lines_fit:
+            assert (
+                line in list_unique_lines
+            ), f"the line {line} is not in the file containing the likelihood approximation parameters"
+
+        # in case there is only one set of approx parameters per line (ie, to be used for each pixel)
         if num_distinct_n == 1:
-            # if only one n value, use the transition params for all pixels
             df_transition = df_transition.set_index("line")
 
             transition_center = (
@@ -204,18 +235,21 @@ class MixingModelsLikelihood(Likelihood):
                 * np.ones((self.N, self.L))
                 * np.log(10)
             )
+            print(
+                "Using the same set of approximation parameters for all pixels. Careful: this can lead to estimation errors."
+            )
 
+        # in case there are as many sets of approx parameters per line as pixels
         else:
-            # assert (
-            #     num_distinct_n == self.N
-            # ), f"the transition file {path_transition_params} should have {self.N} or 1 distinct values of n, and has {num_distinct_n}"
+            assert (
+                num_distinct_n == self.N
+            ), f"the transition file {path_transition_params} should have {self.N} or 1 distinct values of n, and has {num_distinct_n}"
 
             df_transition = df_transition.set_index(["n", "line"])
             index = pd.MultiIndex.from_product(
                 [list(range(self.N)), list_lines_fit],
                 names=["n", "line"],
             )
-            # df_transition
 
             transition_center = df_transition.loc[index, "a0_best"].values.reshape(
                 (self.N, self.L)
@@ -223,29 +257,13 @@ class MixingModelsLikelihood(Likelihood):
             transition_radius = df_transition.loc[index, "a1_best"].values.reshape(
                 (self.N, self.L)
             ) * np.log(10)
-
-        # for col in ["ell", "a0_best", "a1_best", "target_best"]:
-        #     assert col in list(df_transition.columns)
-
-        # df_transition = df_transition.set_index("ell")
-        # df_transition = df_transition.sort_index()
-        # transition_center = (
-        #     df_transition.loc[:, "a0_best"].values[None, :]
-        #     * np.ones((self.N, self.L))
-        #     * np.log(10)
-        # )
-        # transition_radius = (
-        #     df_transition.loc[:, "a1_best"].values[None, :]
-        #     * np.ones((self.N, self.L))
-        #     * np.log(10)
-        # )
+            print(
+                "Using sets of approximation parameters defined for each pixel and line."
+            )
 
         self.log_fm1 = transition_center - transition_radius  # (N, L)
         self.log_fp1 = transition_center + transition_radius  # (N, L)
-
-        self.P_lambda = np.poly1d(np.array([-6.0, 15.0, -10.0, 0.0, 0.0, 1.0]))
-        self.grad_P_lambda = self.P_lambda.deriv(m=1)
-        self.hess_diag_P_lambda = self.P_lambda.deriv(m=2)
+        return
 
     def sample_observation_model(
         self,

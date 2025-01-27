@@ -152,7 +152,7 @@ class BayesianOptimizationApproach(ApproachType):
         bounds_a1_high : float
             upper bound on the transition slope
         """
-        for n in range(self.N):
+        for n in range(self.N_optim_per_line):
             for ell in tqdm(range(self.L)):
                 with open(
                     f"{self.path_logs}/logs_correct_format_n{n}_{self.list_lines[ell]}.json",
@@ -229,7 +229,7 @@ class BayesianOptimizationApproach(ApproachType):
         fmt_mu = lambda x, pos: "{:.2f}".format(x)
         fmt_sigma = lambda x, pos: "{:.3f}".format(x)
 
-        for n in range(self.N):
+        for n in range(self.N_optim_per_line):
             for ell in tqdm(range(self.L)):
                 with open(
                     f"{self.path_logs}/logs_correct_format_n{n}_{self.list_lines[ell]}.json",

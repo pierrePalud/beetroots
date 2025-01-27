@@ -35,8 +35,12 @@ if __name__ == "__main__":
     # step 2: read the additive noise standard deviations for the specified
     # lines
     data_reader = ReadDataRealData(params["list_lines"])
-    (_, _, sigma_a, _, _, _, _) = data_reader.setup_observation(
-        data_int_path=f"{path_data}/{params['filename_int']}",
+
+    # giving a path to an observations file is required for code compatibility,
+    # but one can give anything since the observations are not used.
+    # So we give the error file again.
+    (_, _, sigma_a_raw, _, _, _, _) = data_reader.setup_observation(
+        data_int_path=f"{path_data}/{params['filename_err']}",
         data_err_path=f"{path_data}/{params['filename_err']}",
         save_obs=False,
     )
@@ -44,10 +48,13 @@ if __name__ == "__main__":
     # step 3: run the Bayesian optimization
     approx_optim = ApproxParamsOptimNNBO(
         list_lines=params["list_lines"],
-        sigma_a=sigma_a,
-        sigma_m=np.log(params["sigma_m_float_linscale"]),
+        sigma_a_raw=sigma_a_raw,
+        sigma_m=np.log(params["sigma_m_float_linscale"]),  # float
         **params["simu_init"],
         path_outputs=path_outputs,
         path_models=path_models,
     )
+
     approx_optim.main(**params["main_params"])
+
+    approx_optim.save_results_in_data_folder(path_data, params["filename_err"])

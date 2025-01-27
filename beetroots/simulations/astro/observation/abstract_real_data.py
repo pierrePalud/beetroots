@@ -138,13 +138,13 @@ class SimulationRealData(SimulationObservation):
         df_censor_valid.iloc[:, :-1] = 1e-60  # no censorship
 
         y_fit = np.nan_to_num(df_int_fit.drop(columns="idx").values, nan=1e-15)
-        sigma_a_fit = np.nan_to_num(df_err_fit.drop(columns="idx").values, nan=1)
+        sigma_a_fit = np.nan_to_num(df_err_fit.drop(columns="idx").values, nan=1e3)
         omega_fit = df_censor_fit.drop(columns="idx").values
 
         y_valid = np.nan_to_num(df_int_valid.drop(columns="idx").values, nan=1e-15)
         sigma_a_valid = np.nan_to_num(
             df_err_valid.drop(columns="idx").values,
-            nan=1,
+            nan=1e3,
         )
         omega_valid = df_censor_valid.drop(columns="idx").values
 

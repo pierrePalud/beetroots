@@ -100,7 +100,9 @@ class ApproxParamsOptimNNBO(
             )
         print(r"evaluation of kde of log10 f_\ell(theta) done")
 
-        print("Starting the optimization")
+        print(
+            f"Starting the optimization. Number of optimization to run per line = {self.N_optim_per_line}"
+        )
         for ell in tqdm(range(self.L)):
             print(f"starting line {ell} ({self.list_lines[ell]})")
             self.plot_hist_log10_f_Theta(
@@ -112,7 +114,7 @@ class ApproxParamsOptimNNBO(
                 ell,
             )
 
-            for n in range(self.N):
+            for n in tqdm(range(self.N_optim_per_line)):
                 pbounds = {
                     "a0": (bounds_a0_low[n, ell], bounds_a0_high[n, ell]),
                     "a1": (bounds_a1_low, bounds_a1_high),
@@ -134,7 +136,7 @@ class ApproxParamsOptimNNBO(
         df_best = self.extract_optimal_params()
         df_best = df_best.set_index(["n", "ell"])
 
-        for n in range(self.N):
+        for n in range(self.N_optim_per_line):
             for ell in range(self.L):
                 best_point = df_best.loc[(n, ell), ["a0_best", "a1_best"]].values
                 self.plot_hist_log10_f_Theta_with_optim_results(
@@ -155,3 +157,4 @@ class ApproxParamsOptimNNBO(
             bounds_a1_high,
             n_iter,
         )
+        return
