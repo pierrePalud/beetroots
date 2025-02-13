@@ -534,10 +534,10 @@ class MixingModelsLikelihood(Likelihood):
         # gather all in one array
         N_pix = forward_map_evals["f_Theta"].shape[0]
         current_bias_std = np.zeros((4, N_pix, self.L))
-        current_bias_std[0] = m_a
-        current_bias_std[1] = s_a
-        current_bias_std[2] = m_m
-        current_bias_std[3] = s_m
+        current_bias_std[0] = m_a * 1
+        current_bias_std[1] = s_a * 1
+        current_bias_std[2] = m_m * 1
+        current_bias_std[3] = s_m * 1
 
         return current_bias_std
 

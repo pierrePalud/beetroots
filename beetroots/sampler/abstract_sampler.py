@@ -205,6 +205,6 @@ class Sampler(abc.ABC):
             with_weights=False,
         )  # (D,)
 
-        new_tau = regu_weights_optimizer.update(tau_tm1, t, neglog_prior)
-        # new_tau[3] = 20  # fix tau of A_v
-        return new_tau
+        new_tau = regu_weights_optimizer.update(tau_tm1.mean(), t, neglog_prior.sum())
+
+        return new_tau * np.ones((self.D,))

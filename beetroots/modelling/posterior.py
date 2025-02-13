@@ -96,7 +96,9 @@ class Posterior:
         if self.prior_spatial is not None and use_spatial_prior:
             nl_priors_spatial = self.prior_spatial.neglog_pdf(
                 Theta, idx_pix, with_weights, chromatic_gibbs=chromatic_gibbs, full=True
-            ).sum(axis=tuple(range(2, Theta.ndim)))  # (n_pix, k_mtm)
+            ).sum(
+                axis=tuple(range(2, Theta.ndim))
+            )  # (n_pix, k_mtm)
             assert nl_priors_spatial.shape == (n_pix, k_mtm)
             nl_priors += nl_priors_spatial
 
@@ -296,12 +298,9 @@ class Posterior:
         assert isinstance(
             nll_full, np.ndarray
         ), "nll_full should be an array, check likelihood.neglog_pdf method"
-        assert (
-            nll_full.shape
-            == (
-                self.N,
-                self.L,
-            )
+        assert nll_full.shape == (
+            self.N,
+            self.L,
         ), f"nll_full with wrong shape. is {nll_full.shape}, should be {(self.N, self.L)}"
 
         dict_objective["nll"] = np.sum(nll_full)  # float
@@ -335,7 +334,7 @@ class Posterior:
         nll_utils: dict = {},
         compute_derivatives: bool = True,
         compute_derivatives_2nd_order: bool = True,
-        chromatic_gibbs: bool = True,
+        # chromatic_gibbs: bool = True,
     ) -> dict:
         r"""compute negative log pdf and derivatives of the posterior distribution
 
@@ -387,10 +386,11 @@ class Posterior:
         nll_utils["nl_prior_indicator"] = nl_prior_indicator_pixelwise.sum()
 
         if self.prior_spatial is not None:
-            nl_prior_spatial_pixelwise_chromatic, nl_prior_spatial_pixelwise_global = (
-                self.prior_spatial.neglog_pdf(
-                    Theta, idx_pix, pixelwise=True, chromatic_gibbs="both"
-                )
+            (
+                nl_prior_spatial_pixelwise_chromatic,
+                nl_prior_spatial_pixelwise_global,
+            ) = self.prior_spatial.neglog_pdf(
+                Theta, idx_pix, pixelwise=True, chromatic_gibbs="both"
             )
         else:
             nl_prior_spatial_pixelwise_chromatic = np.zeros((self.N,))
