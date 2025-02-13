@@ -30,8 +30,7 @@ class PlotsEstimator(AbstractPlots2D):
         list_idx_sampling: List[int],
         pixels_of_interest: Dict[int, str] = {},
     ):
-        self.map_shaper = map_shaper
-        r"""MapShaper: defines the transformation from vectors to 2D maps"""
+        super().__init__(map_shaper, pixels_of_interest)
 
         self.list_names = list_names
         r"""list: physical parameter names"""
@@ -43,15 +42,6 @@ class PlotsEstimator(AbstractPlots2D):
 
         self.list_idx_sampling = list_idx_sampling
         r"""1D np.ndarray: contains the indices of the physical parameters to be sampled"""
-
-        self.pixels_of_interest_names = pixels_of_interest
-        r"""dict: (coordinate, name) pair of some user-informed pixels to be highlighted. These pixels will be outlines with a black square in figures."""
-
-        coords = map_shaper.from_vector_idx_to_map_coords(
-            list(pixels_of_interest.keys())
-        )
-        self.pixels_of_interest_coords = coords
-        r"""list: coordinates of some user-informed pixels to be highlighted. These pixels will be outlines with a black square in figures."""
 
     def plot_estimator(
         self,

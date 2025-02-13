@@ -28,25 +28,15 @@ class Plots2DSetup(AbstractPlots2D):
         N: int,
         pixels_of_interest: Dict[int, str] = {},
     ):
+        super().__init__(map_shaper, pixels_of_interest)
+
         self.path_img = path_img
         r"""str: path to the folder in which the figures are to be saved"""
-
-        self.map_shaper = map_shaper
-        r"""MapShaper: defines the transformation from vectors to 2D maps"""
 
         self.N = N
         r"""int: number of pixels in the maps, i.e., dimension of the observation vectors"""
 
-        self.pixels_of_interest_names = pixels_of_interest
-        r"""dict: (coordinate, name) pair of some user-informed pixels to be highlighted. These pixels will be outlines with a black square in figures."""
-
-        coords = map_shaper.from_vector_idx_to_map_coords(
-            list(pixels_of_interest.keys())
-        )
-        self.pixels_of_interest_coords = coords
-        r"""list: coordinates of some user-informed pixels to be highlighted. These pixels will be outlines with a black square in figures."""
-
-    def plot_indices_map(self):
+    def plot_indices_map(self) -> None:
         r"""plots and saved a map of the indices. Simplifies the choice of pixels of interest."""
         Theta_idx = np.arange(self.N)
         Theta_idx_shaped = self.map_shaper.from_vector_to_map(Theta_idx)
@@ -118,7 +108,7 @@ class Plots2DSetup(AbstractPlots2D):
         y: np.ndarray,
         omega: np.ndarray,
         folder_path: str,
-    ):
+    ) -> None:
         r"""plots the map of the proportion of censored observables per pixel. Only relevant for likelihood models involving censorship.
 
         Parameters
@@ -152,7 +142,18 @@ class Plots2DSetup(AbstractPlots2D):
         list_lines: list,
         folder_path: str,
     ) -> None:
-        """list_lines = self.list_lines_fit + self.list_lines_eval"""
+        r"""plots the observation map for each line in ``list_lines``, and saves the figure.
+
+        Parameters
+        ----------
+        y : np.ndarray of shape (N, L)
+            observation vector of :math:`N` pixels and :math:`L` lines.
+        list_lines : list
+            list of the lines to plot
+        folder_path : str
+            path to the folder where the figure is to be saved
+        """
+        # list_lines = self.list_lines_fit + self.list_lines_eval
         y_shaped = self.map_shaper.from_vector_to_map(y)
         for ell, name in enumerate(list_lines):
             y_ell_shaped = y_shaped[:, :, ell] * 1
@@ -284,7 +285,7 @@ class Plots2DSetup(AbstractPlots2D):
         list_lines: list,
         folder_path: str,
     ) -> None:
-        """plots and saves the maps of signal-to-noise ratio (SNR) for each of the :math:`L` observables. For one pixel :math:`n` and one line :math:`\ell`, the SNR is defined as :math:`y_{n\ell} / \sigma_{a,n\ell}` with :math:`y_{n\ell}` the observed value and :math:`\sigma_{a,n\ell}` the additive noise standard deviation.
+        r"""plots and saves the maps of signal-to-noise ratio (SNR) for each of the :math:`L` observables. For one pixel :math:`n` and one line :math:`\ell`, the SNR is defined as :math:`y_{n\ell} / \sigma_{a,n\ell}` with :math:`y_{n\ell}` the observed value and :math:`\sigma_{a,n\ell}` the additive noise standard deviation.
 
         Parameters
         ----------

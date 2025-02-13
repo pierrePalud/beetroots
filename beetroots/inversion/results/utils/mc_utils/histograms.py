@@ -437,13 +437,13 @@ def plot_2D_proba_contours(
         title += f" of pixel n={n}"
     plt.title(title)
 
-    for percentile, t_contour in zip(percentiles_arr, t_contours):
-        plt.contour(
-            H.T,
-            t_contours,
-            extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
-            label=f"{100 * percentile} %",
-        )
+    # for percentile, t_contour in zip(percentiles_arr, t_contours):
+    plt.contour(
+        H.T,
+        t_contours,
+        extent=[x_edges[0], x_edges[-1], y_edges[0], y_edges[-1]],
+        # label=f"{100 * percentile} %",
+    )
 
     if list_Theta_lin_seed.min() > 0 and lower_bounds_lin.min() > 0:
         plt.plot(

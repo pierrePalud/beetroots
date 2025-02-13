@@ -92,15 +92,15 @@ def compute_gradient_from_laplacian(
 
     Parameters
     ----------
-    laplacian_ : _type_
-        _description_
-    list_edges : _type_
-        _description_
+    laplacian_ : np.ndarray
+        Laplacian matrix
+    list_edges : np.ndarray
+        array containing all the graph edges, identified with pairs of indices of neighboring pixels
 
     Returns
     -------
     np.ndarray
-        _description_
+        gradient of the prior neg-log pdf
     """
     g = np.zeros((idx_pix.size, *laplacian_.shape[1:]))  # (n_pix, D)
 

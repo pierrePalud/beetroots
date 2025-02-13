@@ -3,7 +3,7 @@ import os
 import time
 import warnings
 from concurrent.futures import ProcessPoolExecutor
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import h5py
 import numpy as np
@@ -122,7 +122,7 @@ class ResultsMC(ResultsUtil):
     def full_mc_analysis(
         self,
         scaler: Scaler,
-        Theta_true_scaled_full: np.ndarray,
+        Theta_true_scaled_full: Optional[np.ndarray],
         list_mcmc_folders: List[str],
         plot_ESS: bool,
         plot_1D_chains: bool,
@@ -361,6 +361,9 @@ class ResultsMC(ResultsUtil):
                     if self.N > 1:
                         title += f" of pixel {n}"
 
+                    estimator = Theta_n_MMSE_lin[d] * 1
+                    assert isinstance(estimator, float)
+
                     histograms.plot_1D_hist(
                         list_Theta_lin_seed=list_Theta_n_lin_full_flatter[:, d],
                         n=n if self.N > 1 else None,
@@ -370,7 +373,7 @@ class ResultsMC(ResultsUtil):
                         lower_bounds_lin=self.lower_bounds_lin,
                         upper_bounds_lin=self.upper_bounds_lin,
                         seed=None,
-                        estimator=Theta_n_MMSE_lin[d],
+                        estimator=estimator,
                         true_val=true_val,
                     )
 
@@ -467,7 +470,7 @@ class ResultsMC(ResultsUtil):
     def main(
         self,
         scaler: Scaler,
-        Theta_true_scaled_full: np.ndarray,
+        Theta_true_scaled_full: Optional[np.ndarray],
         list_mcmc_folders: List[str],
         plot_ESS: bool,
         plot_1D_chains: bool,

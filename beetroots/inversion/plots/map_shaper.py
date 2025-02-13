@@ -108,7 +108,7 @@ class MapShaper:
         x_idx = np.arange(self.N)
         x_idx_shaped = self.from_vector_to_map(x_idx)
 
-        dict_coords = {k: None for k in idx}
+        dict_coords = {k: -1.0 * np.ones((2,)) for k in idx}
 
         for i in range(x_idx_shaped.shape[0]):
             for j in range(x_idx_shaped.shape[1]):
@@ -116,11 +116,11 @@ class MapShaper:
                     pix_idx_val = int(x_idx_shaped[i, j])
 
                     for k, v in dict_coords.items():
-                        if v is None and k == pix_idx_val:
+                        if np.isclose(v.max(), -1.0) and k == pix_idx_val:
                             dict_coords[k] = np.array([j, i])
                             break
 
         for k, v in dict_coords.items():
-            assert v is not None, f"no coordinates found for pixel idx={k}"
+            assert v.max() > -1.0, f"no coordinates found for pixel idx={k}"
 
         return dict_coords

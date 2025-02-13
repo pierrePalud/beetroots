@@ -350,9 +350,8 @@ def sample_conditional_spatial_prior(
 
 
 @nb.njit()
-def compute_sum_subsets_mean(dists: np.ndarray) -> np.ndarray:
-    """
-    Computes the sums of the elements of each subset of neighbors, including the empty set,
+def compute_sum_subsets_mean(dists: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    r"""Computes the sums of the elements of each subset of neighbors, including the empty set,
     ordered such that the last element is the complement of the first, and so on. It uses bitwise operation and take advantage of the tree structure of the problem.
 
     Parameters
@@ -362,9 +361,11 @@ def compute_sum_subsets_mean(dists: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    np.ndarray
+    np.ndarray of shape: (2**N_neighbors, k_mtm, D)
         Array containing the sum of distances for all subsets of neighbors, including the empty set.
-        Shape: (2**N_neighbors, k_mtm, D)
+
+    np.ndarray
+        Array containing the weight of each subset of neighbors
     """
     N_neighbors, k_mtm, D = dists.shape
     num_subsets = 2**N_neighbors

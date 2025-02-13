@@ -319,7 +319,7 @@ class MySampler(Sampler):
         self.current = posterior.compute_all(
             Theta_0,
             compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
-            chromatic_gibbs="both",
+            # chromatic_gibbs="both",
         )
 
         assert np.isnan(self.current["objective_global"]) == 0
@@ -421,7 +421,7 @@ class MySampler(Sampler):
                         forward_map_evals=self.current["forward_map_evals"],
                         nll_utils=self.current["nll_utils"],
                         compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
-                        chromatic_gibbs=False,
+                        # chromatic_gibbs=False,
                     )
 
                 additional_sampling_log["tau"] = posterior.prior_spatial.weights * 1
@@ -466,6 +466,8 @@ class MySampler(Sampler):
                 )
 
                 if t > T_BI:
+                    assert isinstance(dict_objective["objective"], float)
+
                     dict_model_check = self._update_model_check_values(
                         dict_model_check,
                         posterior.likelihood,
@@ -510,6 +512,7 @@ class MySampler(Sampler):
                 )
 
                 if t > T_BI:
+                    assert isinstance(dict_objective["objective"], float)
                     dict_model_check = self._update_model_check_values(
                         dict_model_check,
                         posterior.likelihood,

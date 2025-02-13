@@ -13,7 +13,7 @@ from beetroots.inversion.results.utils.abstract_util import ResultsUtil
 
 class ResultsCLPPD(ResultsUtil):
 
-    __slots = (
+    __slots__ = (
         "model_name",
         "path_img",
         "path_data_csv_out",

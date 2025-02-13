@@ -1,5 +1,7 @@
 """Defines the Total variation spatial regularization and its derivatives (for 1D signals only)
 """
+from typing import Optional
+
 import numpy as np
 import pandas as pd
 
@@ -12,7 +14,7 @@ class TVeps1DSpatialPrior(SpatialPrior):
         D: int,
         N: int,
         df: pd.DataFrame,
-        weights: np.ndarray = None,
+        weights: Optional[np.ndarray] = None,
         eps: float = 1e-3,
     ):
         super().__init__(D, N, df, weights)

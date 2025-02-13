@@ -3,7 +3,7 @@ from typing import List
 
 
 class ResultsUtil(abc.ABC):
-    """abstract class for the extraction of a specific result from the data saved during an inversion. All the daughter classes have three key methods:
+    r"""abstract class for the extraction of a specific result from the data saved during an inversion. All the daughter classes have three key methods:
 
     * ``read_data``, to read the data necessary for the computation of the specific result of interest
     * ``create_folders``, to create the folders where the specific result is to be saved

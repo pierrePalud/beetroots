@@ -171,12 +171,14 @@ class Posterior:
         ----------
         Theta : np.ndarray
             point at which the posterior negative log pdf is to be evaluated
-        forward_map_evals : dict
-            _description_
-        nll_utils : dict
-            _description_
+        forward_map_evals : dict[str, Union[float, np.ndarray]]
+            output of the ``likelihood.evaluate_all_forward_map()`` method
+        nll_utils : [str, Union[float, np.ndarray]]
+            output of the ``likelihood.evaluate_all_nll_utils()`` method
         pixelwise : bool, optional
             whether to return the prior neg log pdf per pixel, by default False
+        chromatic_gibbs : bool, optional
+            by default False
 
         Returns
         -------
@@ -197,6 +199,7 @@ class Posterior:
 
         if pixelwise:
             assert nl_llh.shape == (self.N,)
+            assert isinstance(nl_prior, np.ndarray)
             assert nl_prior.shape == (self.N,)
         else:
             assert isinstance(nl_llh, float)

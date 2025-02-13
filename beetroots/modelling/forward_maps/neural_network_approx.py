@@ -95,6 +95,7 @@ class NeuralNetworkApprox(ExpForwardMap):
             list of the names of the outputs to be considered in forward map evaluations and derivatives.
         """
         for line in output_subset:
+            assert self.network.current_output_subset is not None
             assert line in self.network.current_output_subset, line
 
         self.network.restrict_to_output_subset(output_subset=output_subset)
@@ -196,8 +197,7 @@ class NeuralNetworkApprox(ExpForwardMap):
             #! integrated intensities and deriviatives in log10 scale
             log_f_Theta = self.network.forward(_Theta).detach().numpy()  # (N, L)
             log_f_Theta *= self.LOGE_10
-            log_f_Theta = Theta_combined[:, 0][:, None] + log_f_Theta # add log kappa
-
+            log_f_Theta = Theta_combined[:, 0][:, None] + log_f_Theta  # add log kappa
 
             assert log_f_Theta.shape == (
                 N_pix,
@@ -215,11 +215,17 @@ class NeuralNetworkApprox(ExpForwardMap):
 
             grad_log_f_Theta = np.zeros((N_pix, self.D_sampling, self.L))
             if 0 in self.list_indices_to_sample:
-                grad_log_f_Theta[:, 0, :] += 1.0 # grad wrt log kappa
-                grad_log_f_Theta[:, 1:, :] += grad_log_f_Theta_torch[:, self.list_indices_to_sample_for_nn, :] * self.LOGE_10 # grad wrt sampled params
+                grad_log_f_Theta[:, 0, :] += 1.0  # grad wrt log kappa
+                grad_log_f_Theta[:, 1:, :] += (
+                    grad_log_f_Theta_torch[:, self.list_indices_to_sample_for_nn, :]
+                    * self.LOGE_10
+                )  # grad wrt sampled params
 
             else:
-                grad_log_f_Theta[:, :, :] += grad_log_f_Theta_torch[:, self.list_indices_to_sample_for_nn, :] * self.LOGE_10 # grad wrt sampled params
+                grad_log_f_Theta[:, :, :] += (
+                    grad_log_f_Theta_torch[:, self.list_indices_to_sample_for_nn, :]
+                    * self.LOGE_10
+                )  # grad wrt sampled params
 
             assert grad_log_f_Theta.shape == (
                 N_pix,
@@ -227,7 +233,6 @@ class NeuralNetworkApprox(ExpForwardMap):
                 self.L,
             ), f"{grad_log_f_Theta.shape} is not ({N_pix}, {self.D_sampling}, {self.L})"
             assert np.max(np.abs(grad_log_f_Theta)) > 0
-
 
             if compute_derivatives_2nd_order:
                 hess_full_log_f_Theta_torch = (
@@ -241,15 +246,21 @@ class NeuralNetworkApprox(ExpForwardMap):
                     (0, 2, 1)
                 )  # (N, D, L)
 
-                hess_diag_log_f_Theta = np.zeros((N_pix, self.D_sampling, self.L)) # hess diag wrt log kappa = 0
+                hess_diag_log_f_Theta = np.zeros(
+                    (N_pix, self.D_sampling, self.L)
+                )  # hess diag wrt log kappa = 0
                 if 0 in self.list_indices_to_sample:
                     hess_diag_log_f_Theta[:, 1:, :] = (
-                        hess_diag_log_f_Theta_torch[:, self.list_indices_to_sample_for_nn, :]
+                        hess_diag_log_f_Theta_torch[
+                            :, self.list_indices_to_sample_for_nn, :
+                        ]
                         * self.LOGE_10
                     )
                 else:
                     hess_diag_log_f_Theta[:, :, :] = (
-                        hess_diag_log_f_Theta_torch[:, self.list_indices_to_sample_for_nn, :]
+                        hess_diag_log_f_Theta_torch[
+                            :, self.list_indices_to_sample_for_nn, :
+                        ]
                         * self.LOGE_10
                     )
 
@@ -260,16 +271,13 @@ class NeuralNetworkApprox(ExpForwardMap):
                 ), f"{hess_diag_log_f_Theta.shape} is not ({N_pix}, {self.D_sampling}, {self.L})"
                 assert np.max(np.abs(hess_diag_log_f_Theta)) > 0
 
-
             if compute_log:
                 forward_map_evals["log_f_Theta"] = log_f_Theta
                 forward_map_evals["grad_log_f_Theta"] = grad_log_f_Theta
 
                 if compute_derivatives_2nd_order:
 
-                    forward_map_evals[
-                        "hess_diag_log_f_Theta"
-                    ] = hess_diag_log_f_Theta
+                    forward_map_evals["hess_diag_log_f_Theta"] = hess_diag_log_f_Theta
 
             if compute_lin:
                 f_Theta = np.exp(log_f_Theta)

@@ -76,7 +76,7 @@ class L22SpatialPrior(SpatialPrior):
         neglog_p = np.sum(neglog_p, axis=1)
         return neglog_p  # (D,)
 
-    def gradient_neglog_pdf(self, x: np.ndarray) -> np.ndarray:
+    def gradient_neglog_pdf(self, Theta: np.ndarray) -> np.ndarray:
         assert Theta.shape == (self.N, self.D)
 
         g = np.zeros_like(Theta)
@@ -89,7 +89,7 @@ class L22SpatialPrior(SpatialPrior):
         return g  # (N, D)
 
     def hess_diag_neglog_pdf(self, Theta: np.ndarray) -> np.ndarray:
-        hess_diag = np.zeros_like(x, dtype=np.float64)
+        hess_diag = np.zeros_like(Theta, dtype=np.float64)
         if self.list_edges.size > 0:
             idx, counts = np.unique(self.list_edges.flatten(), return_counts=True)
             # print(counts.dtype, hess_diag.dtype)

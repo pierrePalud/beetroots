@@ -248,9 +248,16 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
 
             for d in range(D):
                 if list_fixed_values_scaled[d] is not None:
-                    Theta_true_scaled_full[:, d] += list_fixed_values_scaled[d]
+                    val_d = copy.copy(list_fixed_values_scaled[d])
+                    assert isinstance(val_d, float)
+                    Theta_true_scaled_full[:, d] += val_d
         else:
             Theta_true_scaled_full = None
+
+        if isinstance(list_fixed_values, list):
+            list_fixed_values_arr = np.array(list_fixed_values)
+        else:
+            list_fixed_values_arr = list_fixed_values * 1
 
         ResultsLowestObjective(
             model_name,
@@ -267,7 +274,7 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
             scaler,
             Theta_true_scaled_full,  # (N, D_sampling)
             list_idx_sampling,  # (D_sampling,)
-            list_fixed_values,  # (D,)
+            list_fixed_values_arr,  # (D,)
             estimator_plot,
         )
 

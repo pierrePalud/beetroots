@@ -48,11 +48,11 @@ class BayesianOptimizationApproach(ApproachType):
         pdf_kde_log10_f_Theta : np.ndarray
             _description_
         pbounds : Dict
-            _description_
+            Dictionary with parameters names as keys and a tuple with minimum and maximum values
         sigma_a_val : float
-            _description_
+            value of standard deviation of the additive Gaussian noise
         sigma_m_val : float
-            _description_
+            value of standard deviation of the multiplicative lognormal noise
         n : int
             pixel index for which the optimization is performed
         ell : int

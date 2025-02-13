@@ -171,19 +171,24 @@ class ApproxParamsOptim(abc.ABC):
         sigma_a_raw: np.ndarray,
         N_clusters_a_priori: Optional[int],
     ) -> Optional[int]:
-        r"""Sets the number of clusters to consider, that is, the number of optimization procedure to run per line.
+        r"""Sets the number of clusters to consider `N_clusters`, that is, the number of optimization procedure to run per line. There are 4 possible cases:
+
+        * case 1: set N_clusters with the number of distinct values of sigma_a
+        * case 2: the number of distinct values of sigma_a is lower than the number of clusters provided by the user. In this case, use the value that minimizes the number of optimization procedures to run.
+        * case 3: use the number of clusters indicated by the user.
+        *case 4: last case : run one optim per pixel, ie run self.N optimizations.
 
         Parameters
         ----------
         sigma_a_raw : np.ndarray of shape (N, L)
             set of standard deviations in the
         N_clusters_a_priori : Optional[int]
-            _description_
+            number of clusters to consider indicated by the user
 
         Returns
         -------
         Optional[int]
-            _description_
+            definitive number of clusters to consider
         """
         assert (N_clusters_a_priori is None) or (
             N_clusters_a_priori <= self.N
@@ -314,8 +319,18 @@ class ApproxParamsOptim(abc.ABC):
         r"""str: path to the histogram image folder, e.g., ``./outputs/simu1/img/hist``"""
         self.path_img_hist_final = self.path_img + "/hist_final"
         r"""str: path to the final histogram image folder, e.g., ``./outputs/simu1/img/hist_final``"""
+
+        self.path_img_hist_sigma_a = self.path_img + "/hist_sigma_a"
+        r"""str: path to the final histogram image folder, e.g., ``./outputs/simu1/img/hist_sigma_a``"""
+
+        self.path_img_relation_sigma_a_approx = (
+            self.path_img + "/relation_sigma_a_approx"
+        )
+        r"""str: path to the final histogram image folder, e.g., ``./outputs/simu1/img/relation_sigma_a_approx``"""
+
         self.path_img_final = self.path_img + "/final"
         r"""str: path to the final image folder, e.g., ``./outputs/simu1/img/final``"""
+
         self.path_logs = self.path_output_sim + "/logs"
         r"""str: path to the procedure logs, e.g., ``./outputs/logs``"""
         self.path_params = self.path_output_sim + "/optim_params"
@@ -328,6 +343,8 @@ class ApproxParamsOptim(abc.ABC):
             self.path_img_hist,
             self.path_img_hist_final,
             self.path_img_final,
+            self.path_img_hist_sigma_a,
+            self.path_img_relation_sigma_a_approx,
             self.path_logs,
             self.path_params,
         ]:
@@ -600,6 +617,8 @@ class ApproxParamsOptim(abc.ABC):
                     "n": n,
                     "ell": ell,
                     "line": self.list_lines[ell],
+                    "sigma_a": self.sigma_a[n, ell],
+                    "sigma_m": self.sigma_m[n, ell],
                     "a0_best": df.at[idx_best, "a0"],
                     "a1_best": df.at[idx_best, "a1"],
                     "target_best": df.at[idx_best, "target"],
@@ -660,12 +679,12 @@ class ApproxParamsOptim(abc.ABC):
         Parameters
         ----------
         sigma_a_raw : np.ndarray of shape (N, L)
-            _description_
+            array of all the sigma_a values associated with the observations.
 
         Returns
         -------
         np.ndarray of shape (N_clusters, L)
-            _description_
+            reduced sigma_a array, with `N_clusters` lines instead of `N` (with `N_clusters` potentially much smaller than `N`)
         """
         assert self.N_clusters is not None
 
@@ -745,18 +764,18 @@ class ApproxParamsOptim(abc.ABC):
 
         plt.legend()
         plt.tight_layout()
-        plt.savefig(f"{self.path_img_hist}/sigma_a_and_centroids_{line}.PNG")
+        plt.savefig(f"{self.path_img_hist_sigma_a}/sigma_a_and_centroids_{line}.PNG")
         plt.close()
 
-    def save_results_in_data_folder(self, path_data: str, filename_err: str):
+    def save_results_in_data_folder(self, path_data: str, filename_err: str) -> None:
         r"""
 
         Parameters
         ----------
         path_data : str
-            _description_
+            path to the data folder
         filename_err : str
-            _description_
+            name of the file containing the sigma_a values
         """
         filename_final_result = f"{path_data}/best_params_approx.csv"
 
@@ -810,4 +829,28 @@ class ApproxParamsOptim(abc.ABC):
             # copy and paste the re
             assert self.N_optim_per_line == self.N
             shutil.copyfile(self.path_intermediate_result, filename_final_result)
+        return
+
+    def plot_params_with_sigma_a(self, df_best: pd.DataFrame) -> None:
+        for ell, line in enumerate(self.list_lines):
+            a0 = df_best.loc[df_best["line"] == line, "a0_best"]
+            a1 = df_best.loc[df_best["line"] == line, "a1_best"]
+
+            fig, ax = plt.subplots(
+                1, 2, sharex=True, constrained_layout=True, figsize=(6, 3)
+            )
+
+            fig.suptitle(f"line {line}")
+            ax[0].plot(np.log10(self.sigma_a[:, ell]), a0, "+")
+            ax[0].set_ylabel("a0 best")
+            ax[0].set_xlabel(r"$\log_{10} \sigma_a$")
+            ax[0].grid()
+
+            ax[1].plot(np.log10(self.sigma_a[:, ell]), a1, "+")
+            ax[1].set_ylabel("a1 best")
+            ax[1].set_xlabel(r"$\log_{10} \sigma_a$")
+            ax[1].grid()
+
+            plt.savefig(f"{self.path_img_relation_sigma_a_approx}/{line}.PNG")
+            plt.close()
         return

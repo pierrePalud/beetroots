@@ -185,6 +185,7 @@ def estimate_avg_dks_full_bo(
         y=pdf_kde_log10_f_Theta * list_dks,
         x=list_log10_f_grid,
     )
+    assert isinstance(avg_dist, float)
     # print(avg_dist)
 
     return -np.log10(avg_dist)

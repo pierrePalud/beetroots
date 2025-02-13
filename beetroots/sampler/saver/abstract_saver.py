@@ -77,9 +77,11 @@ class Saver:
         r"""int: number of observed lines"""
 
         if list_idx_sampling is None:
-            list_idx_sampling = np.arange(self.D)
+            list_idx_sampling_arr = np.arange(self.D)
+        else:
+            list_idx_sampling_arr = np.array(list_idx_sampling)
 
-        self.list_idx_sampling = list_idx_sampling
+        self.list_idx_sampling = list_idx_sampling_arr
         r"""1D np.ndarray: contains the indices of the physical parameters to be sampled"""
 
         self.results_path = results_path

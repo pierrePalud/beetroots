@@ -3,7 +3,7 @@
 To reproduce run from Gretsi 2023:
 
 ```shell
-python beetroots/simulations/astro/toy_case/toy_case_nn.py gretsi-short-sampling.yaml
+python beetroots/simulations/astro/toy_case/toy_case_nn.py gretsi-short-sampling.yaml ./data/toycases ./data/models .
 ```
 
 And to get the long Markov chains :

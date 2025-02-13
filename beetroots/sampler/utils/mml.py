@@ -1,13 +1,22 @@
 """Marginal maximum likelihood update for scalar regularization parameters.
 """
 from abc import ABC, abstractmethod
+from typing import Union
 
 import numpy as np
 from numba import jit
 
 
 @jit(nopython=True, cache=True)
-def pgd_rate(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
+def pgd_rate(
+    theta: float,
+    stepsize: float,
+    vmin: float,
+    vmax: float,
+    dim: int,
+    gX: float,
+    homogeneity: float,
+) -> float:
     r"""Update parameter :math:`\theta` from iteration :math:`k` to
     :math:`k+1` using projected gradient ascent, assuming
     :math:`p(x \mid \theta)` is of the form
@@ -55,7 +64,15 @@ def pgd_rate(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
 
 
 @jit(nopython=True, cache=True)
-def pgd_scale(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
+def pgd_scale(
+    theta: float,
+    stepsize: float,
+    vmin: float,
+    vmax: float,
+    dim: int,
+    gX: float,
+    homogeneity: float,
+) -> float:
     r"""Update parameter :math:`\theta` from iteration :math:`k` to
     :math:`k+1` using projected gradient ascent, assuming
     :math:`p(x \mid \theta)` is of the form
@@ -103,7 +120,15 @@ def pgd_scale(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
 
 
 @jit(nopython=True, cache=True)
-def pgd_rate_log(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
+def pgd_rate_log(
+    theta: float,
+    stepsize: float,
+    vmin: float,
+    vmax: float,
+    dim: int,
+    gX: float,
+    homogeneity: float,
+) -> float:
     r"""Update parameter :math:`\log \theta^{(k)}` from iteration :math:`k` to
     :math:`k+1` using projected gradient ascent (in log scale), assuming
     :math:`p(x \mid \theta)` is of the form
@@ -154,7 +179,15 @@ def pgd_rate_log(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
 
 
 @jit(nopython=True, cache=True)
-def pgd_scale_log(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
+def pgd_scale_log(
+    theta: float,
+    stepsize: float,
+    vmin: float,
+    vmax: float,
+    dim: int,
+    gX: float,
+    homogeneity: float,
+) -> float:
     r"""Update parameter :math:`\theta` from iteration :math:`k` to
     :math:`k+1` using projected gradient ascent (in log scale), assuming
     :math:`p(x \mid \theta)` is of the form
@@ -232,14 +265,14 @@ class EBayesMMLE(ABC):
 
     def __init__(
         self,
-        scale,
-        N0,
-        N1,
-        dim,
-        vmin,
-        vmax,
-        homogeneity=1.0,
-        exponent=0.8,
+        scale: float,
+        N0: Union[int, float],
+        N1: Union[int, float],
+        dim: int,
+        vmin: float,
+        vmax: float,
+        homogeneity: float = 1.0,
+        exponent: float = 0.8,
     ):
         r"""BayesMMLE constructor.
 
@@ -248,9 +281,9 @@ class EBayesMMLE(ABC):
         scale : float
             Scale parameter involved in the definition of the projected gradient
             stepsize.
-        N0 : int
+        N0 : Union[int, float]
             Number of iterations defining the initial update phase.
-        N1 : int
+        N1 : Union[int, float]
             Number of iterations for the stabilization phase.
         dim : int
             Dimension of the space over which the distribution
@@ -267,6 +300,13 @@ class EBayesMMLE(ABC):
             Exponent involved in the evolution of the stepsize of the
             projected gradient. By default 0.8
         """
+        assert isinstance(N0, int) or np.isposinf(
+            N0
+        ), f"N0 should be a finite int or +np.inf, but it is {N0}"
+        assert isinstance(N1, int) or np.isposinf(
+            N1
+        ), f"N1 should be a finite int or +np.inf, but it is {N1}"
+
         self.scale = scale
         self.N0 = N0
         self.N1 = N1
@@ -280,7 +320,7 @@ class EBayesMMLE(ABC):
         self.mean_theta_old = 0.0
         self.sum_weights = 0.0
 
-    def _compute_stepsize(self, iteration):
+    def _compute_stepsize(self, iteration: int) -> float:
         r"""Compute current value for the stepsize of the projected gradient.
 
         Parameters
@@ -296,7 +336,7 @@ class EBayesMMLE(ABC):
         stepsize = self._c / ((iteration - self.N0 + 1) ** self.exponent)
         return stepsize
 
-    def _update_mean_theta(self, theta, iteration, stepsize):
+    def _update_mean_theta(self, theta: float, iteration: int, stepsize: float) -> None:
         """Compute average value for the parameter.
 
         Parameters
@@ -319,10 +359,18 @@ class EBayesMMLE(ABC):
 
     @staticmethod
     @abstractmethod
-    def _update_step(theta, stepsize, vmin, vmax, dim, gX, homogeneity):
-        return NotImplemented
+    def _update_step(
+        theta: float,
+        stepsize: float,
+        vmin: float,
+        vmax: float,
+        dim: int,
+        gX: float,
+        homogeneity: float,
+    ) -> float:
+        pass
 
-    def update(self, theta, iteration, gX):
+    def update(self, theta: float, iteration: int, gX: float) -> float:
         r"""Update parameter :math:`\theta` from iteration :math:`k` to
         :math:`k+1`.
 
@@ -384,14 +432,14 @@ class EBayesMMLELogRate(EBayesMMLE):
 
     def __init__(
         self,
-        scale,
-        N0,
-        N1,
-        dim,
-        vmin=1e-8,
-        vmax=1e8,
-        homogeneity=1.0,
-        exponent=0.8,
+        scale: float,
+        N0: Union[int, float],
+        N1: Union[int, float],
+        dim: int,
+        vmin: float = 1e-8,
+        vmax: float = 1e8,
+        homogeneity: float = 1.0,
+        exponent: float = 0.8,
     ):
         super(EBayesMMLELogRate, self).__init__(
             scale,
@@ -435,14 +483,14 @@ class EBayesMMLELogScale(EBayesMMLE):
 
     def __init__(
         self,
-        scale,
-        N0,
-        N1,
-        dim,
-        vmin,
-        vmax,
-        homogeneity=1.0,
-        exponent=0.8,
+        scale: float,
+        N0: Union[int, float],
+        N1: Union[int, float],
+        dim: int,
+        vmin: float,
+        vmax: float,
+        homogeneity: float = 1.0,
+        exponent: float = 0.8,
     ):
         super(EBayesMMLELogScale, self).__init__(
             scale,

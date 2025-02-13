@@ -188,8 +188,9 @@ class ResultsExtractorMCMC(ResultsExtractor):
         chain_type = "mcmc"
         N = posterior.N * 1
         D_sampling = posterior.D * 1
+
         D = len(list_fixed_values)
-        L = len(list_lines_fit)
+        L = posterior.L * 1  # len(list_lines_fit)
 
         assert D >= D_sampling, f"should have D={D} >= D_sampling={D_sampling}"
         print(f"N = {N}, L (fit) = {L}, D_sampling = {D_sampling}, D = {D}")
@@ -246,6 +247,7 @@ class ResultsExtractorMCMC(ResultsExtractor):
                 nll_utils=nll_utils,
                 chromatic_gibbs=False,
             )
+            assert isinstance(objective_true, float)
 
         else:
             objective_true = np.nan
@@ -270,7 +272,9 @@ class ResultsExtractorMCMC(ResultsExtractor):
 
             for d in range(D):
                 if list_fixed_values_scaled[d] is not None:
-                    Theta_true_scaled_full[:, d] += list_fixed_values_scaled[d]
+                    val_d = copy.copy(list_fixed_values_scaled[d])
+                    assert isinstance(val_d, float)
+                    Theta_true_scaled_full[:, d] += val_d
         else:
             Theta_true_scaled_full = None
 
@@ -298,6 +302,7 @@ class ResultsExtractorMCMC(ResultsExtractor):
             lower_bounds_lin = estimator_plot.lower_bounds_lin * 1
             upper_bounds_lin = estimator_plot.upper_bounds_lin * 1
         else:
+            assert posterior.prior_indicator is not None
             lower_bounds = posterior.prior_indicator.lower_bounds_full.reshape(
                 (1, D),
             )

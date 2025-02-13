@@ -25,7 +25,7 @@ class ApproxParamsOptimNNBO(
 
         Parameters
         ----------
-        dict_forward_model : Dict[str, Union[str, bool, List[bool], List[float]]]
+        dict_forward_model : Dict[str, Union[str, bool, List[bool], List[float], Dict[str, float]]]
             contains the necessary information to load the forward model with the :class:`NeuralNetworkApprox`
         lower_bounds_lin : Union[np.ndarray, List]
             lower bounds on the physical parameters (in linear scale)
@@ -52,6 +52,7 @@ class ApproxParamsOptimNNBO(
         if isinstance(lower_bounds_lin, list):
             lower_bounds_lin = np.array(lower_bounds_lin)
 
+        assert isinstance(dict_forward_model["fixed_params"], dict)
         self.list_idx_sampling = [
             i
             for i, v in enumerate(dict_forward_model["fixed_params"].values())
@@ -135,6 +136,8 @@ class ApproxParamsOptimNNBO(
 
         df_best = self.extract_optimal_params()
         df_best = df_best.set_index(["n", "ell"])
+
+        self.plot_params_with_sigma_a(df_best)
 
         for n in range(self.N_optim_per_line):
             for ell in range(self.L):

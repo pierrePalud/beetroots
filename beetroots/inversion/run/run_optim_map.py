@@ -160,6 +160,7 @@ class RunOptimMAP(Run):
                 saver=saver_seed,
                 max_iter=max_iter,
                 Theta_0=Theta_0,
+                T_BI=max_iter // 5,
             )
             # return input dict with duration information
             dict_output = {
@@ -231,7 +232,7 @@ class RunOptimMAP(Run):
         path_csv_mle : Optional[str]
             path to the csv file containing the already estimated MLE
         start_from : Optional[str], optional
-            _description_, by default None
+            name of the starting point, such as "MAP", by default None
         freq_save : int, optional
             frequency of saved iterates during the run (1 means that every iteration is saved), by default 1
         can_run_in_parallel : bool, optional
