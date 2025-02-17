@@ -64,11 +64,12 @@ For astrophysics applications, all required classes are already implemented.
 Python file
 -----------
 
-The
+Here is the python file to execute to run the sampling on this toy case:
 
 .. code-block:: python
     :caption: toy_case_nn.py
     :name: toy_case_nn-py
+
     from beetroots.simulation.astro.toy_case.toy_case_nn import SimulationToyCaseNN
 
     if __name__ == "__main__":

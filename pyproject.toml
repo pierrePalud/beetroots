@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry] # https://python-poetry.org/docs/pyproject/
 name = "beetroots"
-version = "1.0.2"
+version = "1.1.0"
 description = "Beetroots (BayEsian infErence with spaTial Regularization of nOisy multi-line ObservaTion mapS)"
 keywords = [
     "Bayesian inference",
@@ -19,6 +19,7 @@ license = "MIT"
 authors = ["Pierre Palud"]
 readme = "README.md"
 repository = "https://github.com/pierrePalud/beetroots"
+
 
 
 classifiers = [
@@ -44,7 +45,7 @@ pre-commit = ">=2.15.0"
 click = ">=8.0.4"
 bayesian-optimization = ">=1.4.3"
 # icc-rt = ">=2020.0.133"
-torch = ">=2.2.0"
+torch = "==2.2.1" # the versions past 2.2.1 do not work with poetry
 matplotlib = ">=3.6.2"
 nnbma = ">=0.1.2"
 flake8 = ">=6.0.0"
@@ -60,7 +61,7 @@ Sphinx = { version = ">=5.3.0", optional = true }
 # Sphinx extensions https://www.sphinx-doc.org/en/master/usage/extensions/index.html
 # Manage bibliography .bib files
 # https://github.com/mcmtroffaes/sphinxcontrib-bibtex
-sphinxcontrib-bibtex = { version = ">=2.5.0", optional = true }
+sphinxcontrib-bibtex = { version = ">=2.6.0", optional = true }
 # Checks syntax of reStructuredText and code blocks nested within it https://github.com/myint/rstcheck
 rstcheck = { version = ">=6.1.1", optional = true }
 # Language server for .rst files
@@ -71,6 +72,8 @@ sphinx_design = { version = ">=0.1.0", optional = true }    # designing beautifu
 nbsphinx = { version = ">=0.9.0", optional = true }         # permits to include notebooks in the documentation (relies on pandoc, to be installed separately)
 nbsphinx_link = { version = ">=1.0.0", optional = true }    # permits to use notebooks that are not in the docs folder
 # sphinx_gallery = { version = ">=0.0.10", optional = true }
+
+
 
 
 [tool.poetry.extras]

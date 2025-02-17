@@ -176,7 +176,7 @@ class ApproxParamsOptim(abc.ABC):
         * case 1: set N_clusters with the number of distinct values of sigma_a
         * case 2: the number of distinct values of sigma_a is lower than the number of clusters provided by the user. In this case, use the value that minimizes the number of optimization procedures to run.
         * case 3: use the number of clusters indicated by the user.
-        *case 4: last case : run one optim per pixel, ie run self.N optimizations.
+        * case 4: last case : run one optim per pixel, ie run self.N optimizations.
 
         Parameters
         ----------

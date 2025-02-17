@@ -130,9 +130,9 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
         scaler: Scaler,
         #
         list_idx_sampling: List[int],
-        list_fixed_values: Union[List[float], np.ndarray],
+        list_fixed_values: Union[List[Optional[float]], np.ndarray],
         #
-        estimator_plot: PlotsEstimator,
+        estimator_plot: Optional[PlotsEstimator],
         Theta_true_scaled: Optional[np.ndarray] = None,
     ):
         r"""performs the data extraction, in this order:

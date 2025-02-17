@@ -534,8 +534,8 @@ if __name__ == "__main__":
     )
 
     assert (
-        params["to_run_optim_map"] or params["to_run_optim_map"]
-    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_optim_map' (or both) to true in `input.yaml` file."
+        params["to_run_optim_map"] or params["to_run_mcmc"]
+    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_mcmc' (or both) to true in `input.yaml` file."
 
     if params["to_run_optim_map"]:
         sampler_ = MySampler(

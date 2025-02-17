@@ -36,14 +36,6 @@ beetroots.inversion.results.results\_optim\_map module
    :undoc-members:
    :show-inheritance:
 
-beetroots.inversion.results.results\_optim\_mle module
-------------------------------------------------------
-
-.. automodule:: beetroots.inversion.results.results_optim_mle
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

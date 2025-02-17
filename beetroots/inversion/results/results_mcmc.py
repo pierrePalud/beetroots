@@ -99,7 +99,7 @@ class ResultsExtractorMCMC(ResultsExtractor):
         scaler: Scaler,
         list_names: List[str],
         list_idx_sampling: List[int],
-        list_fixed_values: Union[List[float], np.ndarray],
+        list_fixed_values: Union[List[Optional[float]], np.ndarray],
         #
         plot_1D_chains: bool,
         plot_2D_chains: bool,
