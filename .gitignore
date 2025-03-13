@@ -180,3 +180,5 @@ logs/
 
 notebooks_pierre/*
 animations/*
+
+_slurm/*
