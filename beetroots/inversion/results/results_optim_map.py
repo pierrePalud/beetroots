@@ -1,3 +1,4 @@
+import copy
 import os
 from typing import List, Optional, Tuple, Union
 
@@ -19,6 +20,7 @@ from beetroots.space_transform.abstract_transform import Scaler
 
 class ResultsExtractorOptimMAP(ResultsExtractor):
     r"""extractor of inference results for the data of the optimization runs that that was saved."""
+
     __slots__ = (
         "path_data_csv_out_optim_map",
         "path_img",
@@ -128,9 +130,9 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
         scaler: Scaler,
         #
         list_idx_sampling: List[int],
-        list_fixed_values: Union[List[float], np.ndarray],
+        list_fixed_values: Union[List[Optional[float]], np.ndarray],
         #
-        estimator_plot: PlotsEstimator,
+        estimator_plot: Optional[PlotsEstimator],
         Theta_true_scaled: Optional[np.ndarray] = None,
     ):
         r"""performs the data extraction, in this order:
@@ -177,6 +179,11 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
 
         chain_type = "optim_map"
 
+        if estimator_plot is not None:
+            map_shaper = copy.copy(estimator_plot.map_shaper)
+        else:
+            map_shaper = None
+
         # clppd
         ResultsCLPPD(
             model_name=model_name,
@@ -186,7 +193,7 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
             N_MCMC=self.N_MCMC,
             N=N,
             L=L,
-        ).main(list_mcmc_folders, estimator_plot.map_shaper)
+        ).main(list_mcmc_folders, map_shaper)
 
         # kernel analysis
         ResultsKernels(
@@ -211,8 +218,13 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
                 compute_derivatives_2nd_order=False,
             )
             objective_true = posterior.neglog_pdf(
-                Theta_true_scaled, forward_map_evals, nll_utils
+                Theta_true_scaled,
+                idx_pix=np.arange(N),
+                forward_map_evals=forward_map_evals,
+                nll_utils=nll_utils,
+                chromatic_gibbs=False,
             )
+            assert isinstance(objective_true, float)
         else:
             objective_true = None
 
@@ -236,9 +248,16 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
 
             for d in range(D):
                 if list_fixed_values_scaled[d] is not None:
-                    Theta_true_scaled_full[:, d] += list_fixed_values_scaled[d]
+                    val_d = copy.copy(list_fixed_values_scaled[d])
+                    assert isinstance(val_d, float)
+                    Theta_true_scaled_full[:, d] += val_d
         else:
             Theta_true_scaled_full = None
+
+        if isinstance(list_fixed_values, list):
+            list_fixed_values_arr = np.array(list_fixed_values)
+        else:
+            list_fixed_values_arr = list_fixed_values * 1
 
         ResultsLowestObjective(
             model_name,
@@ -255,7 +274,7 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
             scaler,
             Theta_true_scaled_full,  # (N, D_sampling)
             list_idx_sampling,  # (D_sampling,)
-            list_fixed_values,  # (D,)
+            list_fixed_values_arr,  # (D,)
             estimator_plot,
         )
 
@@ -267,8 +286,8 @@ class ResultsExtractorOptimMAP(ResultsExtractor):
             N_MCMC=self.N_MCMC,
             N=N,
             D_sampling=D_sampling,
-            plot_ESS=True,
+            plot_ESS=False,
         ).main(
             list_idx_sampling=list_idx_sampling,
-            map_shaper=estimator_plot.map_shaper if N > 1 else None,
+            map_shaper=map_shaper if N > 1 else None,
         )

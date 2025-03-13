@@ -32,7 +32,7 @@ class ResultsObjective(ResultsUtil):
         D: int,
         L: int,
     ):
-        assert chain_type in ["mcmc", "optim_map", "optim_mle"]
+        assert chain_type in ["mcmc", "optim_map"]
 
         self.model_name = model_name
         self.chain_type = chain_type

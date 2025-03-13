@@ -1,5 +1,5 @@
-r"""Contains a class of sampler used in the Meudon PDR code Bayesian inversion problems
-"""
+r"""Contains a class of sampler used in the Meudon PDR code Bayesian inversion problems"""
+
 import copy
 from typing import Optional, Tuple, Union
 
@@ -68,9 +68,9 @@ class MySampler(Sampler):
         # overall
         self.selection_probas = my_sampler_params.selection_probas
         r"""np.ndarray: vector of selection probabilities for the MTM and PMALA kernels, respectively, i.e., :math:`[p_{MTM}, 1 - p_{MTM}]`"""
-        assert (
-            np.sum(self.selection_probas) == 1
-        ), f"{self.selection_probas} should sum to 1"
+        assert np.sum(self.selection_probas) == 1, (
+            f"{self.selection_probas} should sum to 1"
+        )
 
         self.stochastic = my_sampler_params.is_stochastic
         r"""bool: if True, the algorithm performs sampling, and optimization otherwise"""
@@ -143,13 +143,13 @@ class MySampler(Sampler):
             ).reshape((n_pix, self.k_mtm, self.D))
 
         else:
-            return utils.sample_conditional_spatial_and_indicator_prior(
+            return utils.sample_conditional_spatial_prior(
                 Theta,
                 posterior.prior_spatial.list_edges,
-                posterior.prior_spatial.weights,
-                posterior.prior_indicator.lower_bounds,
-                posterior.prior_indicator.upper_bounds,
-                posterior.prior_indicator.indicator_margin_scale,
+                np.minimum(
+                    posterior.prior_spatial.initial_weights,
+                    posterior.prior_spatial.weights,
+                ),
                 idx_pix=idx_pix,
                 k_mtm=self.k_mtm,
                 seed=seed,
@@ -182,6 +182,7 @@ class MySampler(Sampler):
                 self.current["forward_map_evals"],
                 idx=None,
                 compute_derivatives=False,
+                compute_derivatives_2nd_order=False,
             )
             nll_y_rep_full = likelihood_rep.neglog_pdf(
                 self.current["forward_map_evals"],
@@ -232,6 +233,7 @@ class MySampler(Sampler):
                     forward_map_evals,
                     idx=None,
                     compute_derivatives=False,
+                    compute_derivatives_2nd_order=False,
                 )
                 nll_y_rep_full = likelihood_rep.neglog_pdf(
                     forward_map_evals,
@@ -315,10 +317,12 @@ class MySampler(Sampler):
         assert Theta_0.shape == (self.N, self.D)
 
         self.current = posterior.compute_all(
-            Theta_0, compute_derivatives_2nd_order=self.compute_derivatives_2nd_order
+            Theta_0,
+            compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+            # chromatic_gibbs="both",
         )
 
-        assert np.isnan(self.current["objective"]) == 0
+        assert np.isnan(self.current["objective_global"]) == 0
         assert np.sum(np.isnan(self.current["grad"])) == 0
         # assert (
         #     self.current["forward_map_evals"]["f_Theta"].min() >= 0
@@ -413,10 +417,11 @@ class MySampler(Sampler):
                     # recompute posterior neg log pdf and gradients with
                     # new spatial regularization parameter
                     self.current = posterior.compute_all(
-                        self.current["Theta"],
-                        self.current["forward_map_evals"],
-                        self.current["nll_utils"],
+                        Theta=self.current["Theta"],
+                        forward_map_evals=self.current["forward_map_evals"],
+                        nll_utils=self.current["nll_utils"],
                         compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                        # chromatic_gibbs=False,
                     )
 
                 additional_sampling_log["tau"] = posterior.prior_spatial.weights * 1
@@ -461,6 +466,8 @@ class MySampler(Sampler):
                 )
 
                 if t > T_BI:
+                    assert isinstance(dict_objective["objective"], float)
+
                     dict_model_check = self._update_model_check_values(
                         dict_model_check,
                         posterior.likelihood,
@@ -505,6 +512,7 @@ class MySampler(Sampler):
                 )
 
                 if t > T_BI:
+                    assert isinstance(dict_objective["objective"], float)
                     dict_model_check = self._update_model_check_values(
                         dict_model_check,
                         posterior.likelihood,
@@ -557,7 +565,7 @@ class MySampler(Sampler):
     #     ----------
     #     t : int
     #         current iteration index
-    #     score_model : ScoreModel
+    #     score_model : Posterior
     #         negative log posterior class
 
     #     Returns
@@ -714,7 +722,7 @@ class MySampler(Sampler):
         ----------
         t : int
             current iteration index
-        posterior : ScoreModel
+        posterior : Posterior
             negative log posterior class
 
         Returns
@@ -734,6 +742,12 @@ class MySampler(Sampler):
             # n_sites = len(posterior.dict_sites)
             # idx_site = int(self.rng.integers(0, n_sites))
             list_idx = np.array(list(posterior.dict_sites.keys()))
+            if len(list_idx) > 1:
+                chromatic_gibbs = True
+                objective_type = "objective_pix_chromatic"
+            else:
+                chromatic_gibbs = False
+                objective_type = "objective_pix_global"
 
             for idx_site in list_idx:
                 idx_pix = posterior.dict_sites[idx_site]
@@ -746,9 +760,9 @@ class MySampler(Sampler):
                 # generate random
                 diag_G_t = 1 / (self.lambda_ + np.sqrt(v_current))  # (n_pix, D)
 
-                assert np.all(
-                    diag_G_t > 0
-                ), f"{diag_G_t}, {self.lambda_ + np.sqrt(self.v)}, {self.v}"
+                assert np.all(diag_G_t > 0), (
+                    f"{diag_G_t}, {self.lambda_ + np.sqrt(self.v)}, {self.v}"
+                )
 
                 z_t = self.rng.standard_normal(size=(n_pix, self.D))
                 z_t *= np.sqrt(self.eps0 * diag_G_t)  # (n_pix, D)
@@ -798,11 +812,12 @@ class MySampler(Sampler):
 
                 # * compute log_q of candidate given current
                 candidate_full = new_Theta * 1
-                candidate_full[idx_pix, :] = mu_current * 1 # NOTE: change from mu_current * 1 to candiate * 1 to fix original issue
+                candidate_full[idx_pix, :] = candidate * 1
 
                 candidate_all = posterior.compute_all(
                     candidate_full,
                     compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                    # chromatic_gibbs=chromatic_gibbs,
                 )
                 grad_cand = candidate_all["grad"][idx_pix, :] * 1
                 v_cand = (
@@ -839,8 +854,8 @@ class MySampler(Sampler):
                 assert shape_q == (n_pix,), f"{shape_q}"
 
                 # * compute proba accept
-                logpdf_current = -self.current["objective_pix"][idx_pix]
-                logpdf_candidate = -candidate_all["objective_pix"][idx_pix]
+                logpdf_current = -self.current[objective_type][idx_pix]
+                logpdf_candidate = -candidate_all[objective_type][idx_pix]
 
                 shape_1 = logpdf_current.shape
                 shape_2 = logpdf_candidate.shape
@@ -884,20 +899,24 @@ class MySampler(Sampler):
                     self.current = posterior.compute_all(
                         new_Theta,
                         compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                        # chromatic_gibbs="both",
                     )
 
             # after loop
             return accept_total.mean(), log_proba_accept_total.mean()
 
         else:  # if optimization
+            objective_type = "objective_global"
+            chromatic_gibbs = False
+
             grad_t = self.current["grad"].flatten()
 
             # print(self.lambda_ + np.sqrt(self.v))
             diag_G_t = 1 / (self.lambda_ + np.sqrt(self.v))
 
-            assert np.all(
-                diag_G_t > 0
-            ), f"{diag_G_t}, {self.lambda_ + np.sqrt(self.v)}, {self.v}"
+            assert np.all(diag_G_t > 0), (
+                f"{diag_G_t}, {self.lambda_ + np.sqrt(self.v)}, {self.v}"
+            )
 
             # generate random
             z_t = self.rng.standard_normal(size=self.N * self.D)
@@ -911,8 +930,9 @@ class MySampler(Sampler):
             candidate_all = posterior.compute_all(
                 mu_current.reshape((self.N, self.D)),
                 compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                # chromatic_gibbs="both",
             )
-            if candidate_all["objective"] < self.current["objective"]:
+            if candidate_all[objective_type] < self.current[objective_type]:
                 self.current = copy.copy(candidate_all)
                 accept = True
                 proba = 1
@@ -921,9 +941,10 @@ class MySampler(Sampler):
                 candidate_all = posterior.compute_all(
                     candidate.reshape((self.N, self.D)),
                     compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                    # chromatic_gibbs="both",
                 )
 
-                if candidate_all["objective"] < self.current["objective"]:
+                if candidate_all[objective_type] < self.current[objective_type]:
                     self.current = copy.copy(candidate_all)
                     accept = True
                     proba = 1
@@ -935,15 +956,17 @@ class MySampler(Sampler):
             self.v = self.alpha * self.v + (1 - self.alpha) * grad_tp1**2
 
             assert np.sum(np.isnan(self.v)) == 0.0
-            assert (
-                np.sum(np.isinf(self.v)) == 0.0
-            ), f"{candidate_all['Theta']}, {candidate_all['grad']}"
+            assert np.sum(np.isinf(self.v)) == 0.0, (
+                f"{candidate_all['Theta']}, {candidate_all['grad']}"
+            )
             assert np.sum(np.isnan(self.current["Theta"])) == 0.0
 
             return accept, proba
 
     def generate_new_sample_mtm(
-        self, t: int, posterior: Posterior  # , idx_site: Union[int, None] = None
+        self,
+        t: int,
+        posterior: Posterior,  # , idx_site: Union[int, None] = None
     ):
         r"""generates a new sample using the MTM transition kernel
 
@@ -973,56 +996,69 @@ class MySampler(Sampler):
         # idx_site = int(self.rng.integers(0, n_sites))
         list_idx = np.array(list(posterior.dict_sites.keys()))
 
+        # # if optim : only consider one group
+        # if not self.stochastic:
+        #     idx_site_to_sample = self.rng.choice(list_idx.size)
+        #     list_idx = [list_idx[idx_site_to_sample]]
+
+        chromatic_gibbs = False if len(list_idx) == 1 else True
+
         for idx_site in list_idx:
             idx_pix = posterior.dict_sites[idx_site]
             n_pix = idx_pix.size
 
             # * generate and evaluate candidates
-            candidates_pix = np.zeros((n_pix, self.k_mtm + 1, self.D))
-            candidates_pix[:, :-1, :] = self.generate_random_start_Theta_1pix(
+            candidates = np.zeros((self.N, self.k_mtm + 1, self.D))
+            candidates += new_Theta[:, None, :] * 1
+            candidates[idx_pix, :-1, :] = self.generate_random_start_Theta_1pix(
                 new_Theta, posterior, idx_pix
             )
-            candidates_pix[:, -1, :] = self.current["Theta"][idx_pix, :] * 1
-            candidates_pix = candidates_pix.reshape(
-                (n_pix * (self.k_mtm + 1), self.D)
-            )  # (n_pix * (k_mtm+1), D)
 
-            neglogpdf_candidates = posterior.likelihood.neglog_pdf_candidates(
-                candidates_pix,
+            neglogpdf_priors = posterior.mtm_neglog_pdf_priors(
+                candidates, idx_pix, with_weights=True, chromatic_gibbs=chromatic_gibbs
+            )  # (n_pix, k_mtm+1)
+
+            neglogpdf_likelihood = posterior.likelihood.neglog_pdf_candidates(
+                candidates[idx_pix].reshape((n_pix * (self.k_mtm + 1), self.D)),
                 idx=idx_pix,
                 Theta_t=new_Theta * 1,  # self.current["Theta"] * 1
             )  # (n_pix * (k_mtm+1),)
-            assert neglogpdf_candidates.shape == (n_pix * (self.k_mtm + 1),)
+            assert neglogpdf_likelihood.shape == (n_pix * (self.k_mtm + 1),)
 
-            candidates_pix = candidates_pix.reshape((n_pix, self.k_mtm + 1, self.D))
-            # assert np.allclose(candidates_pix[:, -1, :], self.current["Theta"][idx_pix, :]) -> validated
+            # forward_map_evals = posterior.likelihood.evaluate_all_forward_map(
+            #     candidates[idx_pix].reshape((n_pix * (self.k_mtm + 1), self.D)),
+            #     compute_derivatives=False,
+            #     compute_derivatives_2nd_order=False,
+            # )
+            # nll_utils = posterior.likelihood.evaluate_all_nll_utils(
+            #     forward_map_evals,
+            #     idx_pix,
+            #     compute_derivatives=False,
+            #     compute_derivatives_2nd_order=False,
+            # )
+            # neglogpdf_likelihood = posterior.likelihood.neglog_pdf(
+            #     forward_map_evals, nll_utils, pixelwise=True, idx=idx_pix,
+            # )  # (n_pix * (k_mtm+1),)
+            # assert neglogpdf_likelihood.shape == (n_pix * (self.k_mtm + 1),)
 
-            neglogpdf_candidates = neglogpdf_candidates.reshape((n_pix, self.k_mtm + 1))
+            neglogpdf_candidates = neglogpdf_priors + neglogpdf_likelihood.reshape(
+                (n_pix, self.k_mtm + 1)
+            )
 
             # * if optimization: define challenger with conditional posterior
             # * instead of likelihood, and only keep if better than current
             if not self.stochastic:
-                neglogpdf_candidates += posterior.partial_neglog_pdf_priors(
-                    new_Theta.copy(), idx_pix, candidates_pix
-                )  # (n_pix, k_mtm)
                 idx_challengers = np.argmin(
-                    neglogpdf_candidates[:, :-1], axis=1
-                )  # (n_pix,)
-                assert idx_challengers.shape == (n_pix,)
+                    neglogpdf_candidates[:, :-1].sum(axis=0)
+                )  # integer
+                neglogpdf_candidates_challengers = neglogpdf_candidates[
+                    :, idx_challengers
+                ]
+                challengers = candidates[idx_pix, idx_challengers]
 
-                neglogpdf_candidates_challengers = np.zeros((n_pix,))
-                challengers = np.zeros((n_pix, self.D))
-                for i in range(n_pix):
-                    neglogpdf_candidates_challengers[i] = neglogpdf_candidates[
-                        i, idx_challengers[i]
-                    ]
-                    challengers[i, :] = candidates_pix[i, idx_challengers[i], :]
-                # neglogpdf_candidates_challengers = neglogpdf_candidates[
-                #     np.arange(len(candidates_pix)), idx_challengers
-                # ]
-                assert neglogpdf_candidates_challengers.shape == (
-                    n_pix,
-                ), neglogpdf_candidates_challengers.shape
+                assert neglogpdf_candidates_challengers.shape == (n_pix,), (
+                    neglogpdf_candidates_challengers.shape
+                )
 
                 # challengers = candidates_pix[
                 #     np.arange(len(candidates_pix)), idx_challengers, :
@@ -1030,7 +1066,7 @@ class MySampler(Sampler):
                 assert challengers.shape == (n_pix, self.D), challengers.shape
 
                 # * compute values of corresponding pixels in current x
-                candidates_already_Theta = candidates_pix[:, -1, :] * 1
+                candidates_already_Theta = candidates[idx_pix, -1, :] * 1
                 neglogpdf_already_Theta = neglogpdf_candidates[:, -1] * 1
                 assert candidates_already_Theta.shape == (n_pix, self.D)
                 assert neglogpdf_already_Theta.shape == (n_pix,)
@@ -1047,20 +1083,22 @@ class MySampler(Sampler):
                     challengers,  # (n_pix, D)
                     candidates_already_Theta,  # (n_pix, D)
                 )
+                accept_total[idx_pix] = accept_arr * 1
 
                 # * save which pixels were accepted
-                accept_total[idx_pix] = accept_arr * 1
 
             # *------
             # * if sampling
             else:
                 if posterior.prior_spatial is not None:
-                    nlratio_prior_proposal = utils.compute_nlratio_prior_proposal(
-                        new_Theta * 1,
+                    nlratio_prior_proposal = utils.compute_nlpdf_spatial_proposal(
+                        candidates,
                         posterior.prior_spatial.list_edges,
-                        posterior.prior_spatial.weights,
+                        np.minimum(
+                            posterior.prior_spatial.initial_weights,
+                            posterior.prior_spatial.weights,
+                        ),
                         idx_pix,
-                        candidates_pix,
                     )
                     shape_ = nlratio_prior_proposal.shape
                     assert shape_ == (n_pix, self.k_mtm + 1)
@@ -1092,9 +1130,7 @@ class MySampler(Sampler):
                         p=weights[i],
                     )
 
-                challengers = candidates_pix[
-                    np.arange(n_pix), idx_challengers, :
-                ]  # (n_pix, D)
+                challengers = candidates[idx_pix, idx_challengers, :]  # (n_pix, D)
                 neglogpdf_challengers = neglogpdf_candidates[
                     np.arange(n_pix), idx_challengers
                 ]
@@ -1128,7 +1164,7 @@ class MySampler(Sampler):
                 new_Theta[idx_pix, :] = np.where(
                     accept_arr[:, None] * np.ones((n_pix, self.D)),
                     challengers,  # (n_pix, D)
-                    candidates_pix[:, -1, :],  # (n_pix, D)
+                    candidates[idx_pix][:, -1, :],  # (n_pix, D)
                 )
 
                 accept_total[idx_pix] = accept_arr * 1
@@ -1147,6 +1183,7 @@ class MySampler(Sampler):
             self.current = posterior.compute_all(
                 new_Theta,
                 compute_derivatives_2nd_order=self.compute_derivatives_2nd_order,
+                # chromatic_gibbs="both",  # temporary quick fix to handle chromatic gibbs or full map
             )
 
             new_v = self.v.reshape((self.N, self.D))

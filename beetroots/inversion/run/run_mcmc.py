@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
-from beetroots.inversion.results.results_optim_mle import ResultsExtractorOptimMLE
 from beetroots.inversion.run.abstract_run import Run
 from beetroots.modelling.posterior import Posterior
 from beetroots.sampler.abstract_sampler import Sampler
@@ -64,7 +63,7 @@ class RunMCMC(Run):
         scaler : Scaler
             contains the transformation of the Theta values from their natural space to their scaled space (in which the sampling happens)
         start_from : Optional[str]
-            point at which the inversion will start, must be in [None, "MLE", "MAP"]. For None, a random value is drawn uniformly in the scaled hypercube.
+            point at which the inversion will start, must be in [None, "MAP"]. For None, a random value is drawn uniformly in the scaled hypercube.
         path_csv_mle : Optional[str]
             path to the csv file containing the already estimated MLE
         path_csv_map : Optional[str]
@@ -84,18 +83,10 @@ class RunMCMC(Run):
                     os.mkdir(folder_path)
 
         # step 2 : read Theta_0 if needed
-        assert start_from in ["MLE", "MAP", None]
+        assert start_from in ["MAP", None]
         model_name = list(dict_posteriors.keys())[0]
 
-        if start_from == "MLE":
-            assert path_csv_mle is not None
-            Theta_0, _ = ResultsExtractorOptimMLE.read_estimator(
-                path_csv_mle,
-                model_name,
-            )
-            Theta_0 = scaler.from_lin_to_scaled(Theta_0)
-
-        elif start_from == "MAP":
+        if start_from == "MAP":
             assert path_csv_map is not None
             Theta_0, _ = ResultsExtractorOptimMAP.read_estimator(
                 path_csv_map,
@@ -278,7 +269,7 @@ class RunMCMC(Run):
         path_csv_map : Optional[str]
             path to the csv file containing the already estimated MAP
         start_from : Optional[str]
-            point at which the inversion will start, must be in [None, "MLE", "MAP"]. For None, a random value is drawn uniformly in the scaled hypercube.
+            point at which the inversion will start, must be in [None, "MAP"]. For None, a random value is drawn uniformly in the scaled hypercube.
         regu_spatial_N0 : Union[int, float], optional
             number of iterations defining the initial update phase (for spatial regularization weight optimization). np.infty means that the optimization phase never starts, and that the weight optimization is not applied. By default np.infty
         regu_spatial_scale : Optional[float], optional

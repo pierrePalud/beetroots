@@ -60,7 +60,9 @@ _energy_to_latex = {
 
 
 def _transition(
-    name: Optional[str], high_lvl: str, low_lvl: str
+    name: Optional[str],
+    high_lvl: Union[str, int],
+    low_lvl: Union[str, int],
 ) -> Tuple[Union[str, Tuple[str, str]], bool]:
     """
     Returns a LaTeX string representing a non electronic transition.
@@ -97,15 +99,17 @@ def _transition(
     return ("${}$".format(high_lvl), "${}$".format(low_lvl)), True
 
 
-def _eltransition(high: str, low: str) -> Tuple[Union[str, Tuple[str, str]], bool]:
+def _eltransition(
+    high: Union[str, int], low: Union[str, int]
+) -> Tuple[Union[str, Tuple[str, str]], bool]:
     """
     Returns a LaTeX string representing an electronic transition.
 
     Parameters
     ----------
-    high : str
+    high :  Union[str,int]
         Higher energy electronic configuration.
-    low : str
+    low :  Union[str,int]
         Lower energy electronic configuration. Can be the same as `high`.
 
     Returns
@@ -121,7 +125,9 @@ def _eltransition(high: str, low: str) -> Tuple[Union[str, Tuple[str, str]], boo
 
 
 def _sort_transitions(
-    names: Sequence[str], high_lvls: Sequence[int], low_lvls: Sequence[int]
+    names: Sequence[str],
+    high_lvls: Union[Sequence[int], Sequence[str]],
+    low_lvls: Union[Sequence[int], Sequence[str]],
 ) -> str:
     """
     Returns a LaTeX string representing the energy transitions.

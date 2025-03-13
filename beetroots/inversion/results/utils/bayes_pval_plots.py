@@ -17,7 +17,7 @@ class ResultsBayesPvalues(ResultsUtil):
     The method is described in :cite:t:`paludProblemesInversesTest2023a`.
     """
 
-    __slots = (
+    __slots__ = (
         "model_name",
         "path_img",
         "path_data_csv_out",
@@ -46,28 +46,7 @@ class ResultsBayesPvalues(ResultsUtil):
         D_sampling: int,
         plot_ESS: bool,
     ):
-        """
-
-        Parameters
-        ----------
-        model_name : str
-            _description_
-        chain_type : str
-            _description_
-        path_img : str
-            _description_
-        path_data_csv_out : str
-            _description_
-        N_MCMC : int
-            _description_
-        N : int
-            _description_
-        D_sampling : int
-            _description_
-        plot_ESS : bool
-            _description_
-        """
-        assert chain_type in ["mcmc", "optim_map", "optim_mle"]
+        assert chain_type in ["mcmc", "optim_map"]
 
         self.model_name = model_name
         self.chain_type = chain_type
@@ -213,7 +192,7 @@ class ResultsBayesPvalues(ResultsUtil):
                 plt.imshow(
                     pval_estim_seed_shaped,
                     norm=colors.LogNorm(),
-                    cmap="jet",
+                    cmap="viridis",
                     origin="lower",
                 )
                 plt.colorbar()
@@ -258,7 +237,7 @@ class ResultsBayesPvalues(ResultsUtil):
                     )
                     plt.imshow(
                         proba_reject_shaped,
-                        cmap="jet",
+                        cmap="viridis",
                         origin="lower",
                     )
                     plt.colorbar()

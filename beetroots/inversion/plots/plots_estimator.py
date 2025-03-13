@@ -30,8 +30,7 @@ class PlotsEstimator(AbstractPlots2D):
         list_idx_sampling: List[int],
         pixels_of_interest: Dict[int, str] = {},
     ):
-        self.map_shaper = map_shaper
-        r"""MapShaper: defines the transformation from vectors to 2D maps"""
+        super().__init__(map_shaper, pixels_of_interest)
 
         self.list_names = list_names
         r"""list: physical parameter names"""
@@ -43,15 +42,6 @@ class PlotsEstimator(AbstractPlots2D):
 
         self.list_idx_sampling = list_idx_sampling
         r"""1D np.ndarray: contains the indices of the physical parameters to be sampled"""
-
-        self.pixels_of_interest_names = pixels_of_interest
-        r"""dict: (coordinate, name) pair of some user-informed pixels to be highlighted. These pixels will be outlines with a black square in figures."""
-
-        coords = map_shaper.from_vector_idx_to_map_coords(
-            list(pixels_of_interest.keys())
-        )
-        self.pixels_of_interest_coords = coords
-        r"""list: coordinates of some user-informed pixels to be highlighted. These pixels will be outlines with a black square in figures."""
 
     def plot_estimator(
         self,
@@ -67,7 +57,7 @@ class PlotsEstimator(AbstractPlots2D):
         Theta_estimated : np.ndarray of shape (N, D)
             vector of the estimated physical parameter
         estimator_name : str
-            name of the estimator, e.g., "MLE", "MAP" or "MMSE"
+            name of the estimator, e.g., "MAP" or "MMSE"
         folder_path : str
             path to the folder where the figure is to be saved
         model_name : Optional[str], optional
@@ -91,7 +81,7 @@ class PlotsEstimator(AbstractPlots2D):
                     x_estimator_d_plot,
                     norm=colors.LogNorm(vmin, vmax),
                     origin="lower",
-                    cmap="jet",
+                    cmap="viridis",
                 )
                 plt.colorbar()
                 self._draw_rect_on_pixels_of_interest()
@@ -113,7 +103,7 @@ class PlotsEstimator(AbstractPlots2D):
             plt.imshow(
                 x_estimator_d_plot,
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -147,7 +137,7 @@ class PlotsEstimator(AbstractPlots2D):
                 u_estimator_ell_plot,
                 norm=colors.LogNorm(),
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -162,7 +152,7 @@ class PlotsEstimator(AbstractPlots2D):
             # * same in linear scale
             plt.figure(figsize=(8, 6))
             plt.title(f"{estimator_name} for {line}")
-            plt.imshow(u_estimator_ell_plot, origin="lower", cmap="jet")
+            plt.imshow(u_estimator_ell_plot, origin="lower", cmap="viridis")
             plt.colorbar()
 
             filename = f"{folder_path}/"
@@ -210,7 +200,7 @@ class PlotsEstimator(AbstractPlots2D):
                     x_ci_size_d_plot,
                     norm=colors.LogNorm(vmin, vmax),
                     origin="lower",
-                    cmap="jet",
+                    cmap="viridis",
                 )
                 plt.colorbar()
                 self._draw_rect_on_pixels_of_interest()
@@ -226,7 +216,7 @@ class PlotsEstimator(AbstractPlots2D):
                 plt.imshow(
                     x_ci_size_d_plot,
                     origin="lower",
-                    cmap="jet",
+                    cmap="viridis",
                 )
                 plt.colorbar()
                 self._draw_rect_on_pixels_of_interest()
@@ -262,7 +252,7 @@ class PlotsEstimator(AbstractPlots2D):
                 u_ci_size_d_plot,
                 norm=colors.LogNorm(),
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()
@@ -278,7 +268,7 @@ class PlotsEstimator(AbstractPlots2D):
             plt.imshow(
                 u_ci_size_d_plot,
                 origin="lower",
-                cmap="jet",
+                cmap="viridis",
             )
             plt.colorbar()
             self._draw_rect_on_pixels_of_interest()

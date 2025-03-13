@@ -1,3 +1,4 @@
+import warnings
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -55,8 +56,29 @@ class SimulationRealData(SimulationObservation):
             censor threshold associated with the observations not used for inference
         """
         # * read observations
-        df_int: pd.DataFrame = pd.read_pickle(data_int_path)
-        df_err: pd.DataFrame = pd.read_pickle(data_err_path)
+        # intensities
+        assert data_int_path.endswith(".pkl") or data_int_path.endswith(
+            ".csv"
+        ), f"The intensity file must be either a csv or a pickle (extension pkl) file. Current: {data_int_path}"
+        if data_int_path.endswith(".pkl"):
+            df_int: pd.DataFrame = pd.read_pickle(data_int_path)
+        else:
+            df_int: pd.DataFrame = pd.read_csv(data_int_path)
+
+        # standard deviations of additive noise
+        assert data_err_path.endswith(".pkl") or data_err_path.endswith(
+            ".csv"
+        ), f"The standard deviation file must be either a csv or a pickle (extension `.pkl`) file. Current: {data_err_path}"
+        if data_err_path.endswith(".pkl"):
+            df_err: pd.DataFrame = pd.read_pickle(data_err_path)
+        else:
+            df_err: pd.DataFrame = pd.read_csv(data_err_path)
+
+        if data_int_path.endswith(".csv") or data_err_path.endswith(".csv"):
+            warnings.warn(
+                "For faster loading, consider using the `.pkl` format instead `.csv`."
+            )
+
         assert list(df_int.index.names) == ["X", "Y"]
         assert list(df_err.index.names) == ["X", "Y"]
         assert len(df_int) == len(df_err)
@@ -116,13 +138,13 @@ class SimulationRealData(SimulationObservation):
         df_censor_valid.iloc[:, :-1] = 1e-60  # no censorship
 
         y_fit = np.nan_to_num(df_int_fit.drop(columns="idx").values, nan=1e-15)
-        sigma_a_fit = np.nan_to_num(df_err_fit.drop(columns="idx").values, nan=1)
+        sigma_a_fit = np.nan_to_num(df_err_fit.drop(columns="idx").values, nan=1e3)
         omega_fit = df_censor_fit.drop(columns="idx").values
 
         y_valid = np.nan_to_num(df_int_valid.drop(columns="idx").values, nan=1e-15)
         sigma_a_valid = np.nan_to_num(
             df_err_valid.drop(columns="idx").values,
-            nan=1,
+            nan=1e3,
         )
         omega_valid = df_censor_valid.drop(columns="idx").values
 

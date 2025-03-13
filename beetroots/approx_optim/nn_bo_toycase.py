@@ -16,10 +16,15 @@ if __name__ == "__main__":
     # step 2: run the Bayesian optimization
     approx_optim = ApproxParamsOptimNNBO(
         params["list_lines"],
-        sigma_a=params["sigma_a"],
+        sigma_a_raw=params["sigma_a"],
         sigma_m=np.log(params["sigma_m_float_linscale"]),
         **params["simu_init"],
         path_models=path_models,
         path_outputs=path_outputs,
     )
+
     approx_optim.main(**params["main_params"])
+
+    # approx_optim.save_results_in_data_folder(
+    #     path_data, params['filename_err']
+    # )

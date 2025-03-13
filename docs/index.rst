@@ -27,11 +27,8 @@ The testing method is described in (in French)
 
 This package was applied e.g., to infer physical conditions in different regions of the interstellar medium in
 
-   P. Palud, P.-A. Thouvenin, P. Chainais, E. Bron, F. Le Petit and ORION-B consortium - **Bayesian inversion of large interstellar medium observation maps**, in prep
+   P. Palud, P.-A. Thouvenin, P. Chainais, E. Bron, F. Le Petit and ORION-B consortium - **Beetroots: Bayesian inference of interstellar medium physical parameter maps with a spatial regularization -- Application to Orion**, submitted in *Astronomy \& Astrophysics*, 2025.
 
-It was also exploited to assert and compare the relevance of tracers and combination of tracers to constrain physical conditions in
-
-   L. Einig, P. Palud, A. Roueff, P.-A. Thouvenin, P. Chainais, E. Bron, F. Le Petit, J. Pety, J. Chanussot and ORION-B consortium -  **Entropy-based selection of most informative observables for inference from interstellar medium observations**, in prep
 
 .. note::
 

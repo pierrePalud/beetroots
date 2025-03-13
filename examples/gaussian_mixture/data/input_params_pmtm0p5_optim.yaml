@@ -1,0 +1,55 @@
+simu_init:
+  simu_name: "gaussian_mix_pmtm0p5_optim"
+  max_workers: 10
+#
+to_run_optim_map: true
+to_run_mcmc: true
+#
+# prior indicator
+prior_indicator:
+  indicator_margin_scale: 1.0e-1
+  lower_bounds_lin:
+    - -15.0
+    - -15.0
+  upper_bounds_lin:
+    - +15.0
+    - +15.0
+#
+# sampling params
+sampling_params:
+  map:
+    initial_step_size:  1.0e-2
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
+    k_mtm: 250
+    is_stochastic: false
+    compute_correction_term: false
+  mcmc:
+    initial_step_size:  1.0e-2
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas: [0.5, 0.5] # (p_mtm, p_pmala)
+    k_mtm: 250
+    is_stochastic: true
+    compute_correction_term: false
+#
+# run params
+run_params:
+  map:
+    N_MCMC: 1
+    T_MC: 10_000
+    T_BI: 100
+    freq_save: 1
+    can_run_in_parallel: false
+    # list_CI: [68, 90, 95, 99]
+  mcmc:
+    N_MCMC: 1
+    T_MC: 10_000
+    T_BI: 100
+    plot_1D_chains: true
+    plot_2D_chains: true
+    plot_ESS: true
+    freq_save: 1
+    can_run_in_parallel: false
+    # list_CI: [68, 90, 95, 99]

@@ -13,7 +13,3 @@ class SimulationPosteriorType(abc.ABC):
     @abc.abstractmethod
     def inversion_optim_map(self):
         pass
-
-    @abc.abstractmethod
-    def inversion_optim_mle(self):
-        pass

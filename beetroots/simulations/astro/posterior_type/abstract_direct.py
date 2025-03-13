@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
@@ -12,6 +12,9 @@ from beetroots.modelling.likelihoods.approx_censored_add_mult import (
 )
 from beetroots.modelling.likelihoods.gaussian_censored import CensoredGaussianLikelihood
 from beetroots.modelling.posterior import Posterior
+from beetroots.modelling.priors.l22_discrete_grad_prior import (
+    L22DiscreteGradSpatialPrior,
+)
 from beetroots.modelling.priors.l22_laplacian_prior import L22LaplacianSpatialPrior
 from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
 from beetroots.modelling.priors.spatial_prior_params import SpatialPriorParams
@@ -21,13 +24,14 @@ from beetroots.sampler.utils.my_sampler_params import MySamplerParams
 from beetroots.simulations.astro.posterior_type.abstract_posterior_type import (
     SimulationPosteriorType,
 )
+from beetroots.space_transform.abstract_transform import Scaler
 from beetroots.space_transform.transform import MyScaler
 
 
 class SimulationMySampler(SimulationPosteriorType):
     def setup_posteriors(
         self,
-        scaler,
+        scaler: Scaler,
         forward_map,
         y,
         sigma_a,
@@ -41,11 +45,10 @@ class SimulationMySampler(SimulationPosteriorType):
         upper_bounds_lin: Union[np.ndarray, List[float]],
         list_gaussian_approx_params: List[bool],
         list_mixing_model_params: List[Dict[str, str]],
-    ) -> None:
-
+    ) -> Tuple[dict, Scaler, SmoothIndicatorPrior]:
         if with_spatial_prior:
             assert spatial_prior_params is not None
-            prior_spatial = L22LaplacianSpatialPrior(
+            prior_spatial = L22DiscreteGradSpatialPrior(
                 spatial_prior_params,
                 self.cloud_name,
                 N=self.N,
@@ -157,13 +160,10 @@ class SimulationMySampler(SimulationPosteriorType):
 
         return dict_posteriors, scaler, prior_indicator_1pix
 
-    def inversion_optim_mle(self):
-        pass
-
     def inversion_optim_map(
         self,
         dict_posteriors: Dict[str, Posterior],
-        scaler: MyScaler,
+        scaler: Scaler,
         my_sampler_params: MySamplerParams,
         N_MCMC: int,
         T_MC: int,
@@ -230,14 +230,14 @@ class SimulationMySampler(SimulationPosteriorType):
         msg = "Simulation and analysis finished. Total duration : "
         msg += f"{duration_str} s\n"
         print(msg)
-
-        list_model_names = list(dict_posteriors.keys())
-        return list_model_names
+        return
+        # list_model_names = list(dict_posteriors.keys())
+        # return list_model_names
 
     def inversion_mcmc(
         self,
         dict_posteriors: Dict[str, Posterior],
-        scaler: MyScaler,
+        scaler: Scaler,
         my_sampler_params: MySamplerParams,
         N_MCMC: int,
         T_MC: int,
@@ -345,6 +345,6 @@ class SimulationMySampler(SimulationPosteriorType):
         msg = "Simulation and analysis finished. Total duration : "
         msg += f"{duration_str} s\n"
         print(msg)
-
-        list_model_names = list(dict_posteriors.keys())
-        return list_model_names
+        return
+        # list_model_names = list(dict_posteriors.keys())
+        # return list_model_names

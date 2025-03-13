@@ -28,14 +28,6 @@ beetroots.inversion.run.run\_optim\_map module
    :undoc-members:
    :show-inheritance:
 
-beetroots.inversion.run.run\_optim\_mle module
-----------------------------------------------
-
-.. automodule:: beetroots.inversion.run.run_optim_mle
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

@@ -99,7 +99,7 @@ class ResultsExtractorMCMC(ResultsExtractor):
         scaler: Scaler,
         list_names: List[str],
         list_idx_sampling: List[int],
-        list_fixed_values: Union[List[float], np.ndarray],
+        list_fixed_values: Union[List[Optional[float]], np.ndarray],
         #
         plot_1D_chains: bool,
         plot_2D_chains: bool,
@@ -188,8 +188,9 @@ class ResultsExtractorMCMC(ResultsExtractor):
         chain_type = "mcmc"
         N = posterior.N * 1
         D_sampling = posterior.D * 1
+
         D = len(list_fixed_values)
-        L = len(list_lines_fit)
+        L = posterior.L * 1  # len(list_lines_fit)
 
         assert D >= D_sampling, f"should have D={D} >= D_sampling={D_sampling}"
         print(f"N = {N}, L (fit) = {L}, D_sampling = {D_sampling}, D = {D}")
@@ -202,7 +203,9 @@ class ResultsExtractorMCMC(ResultsExtractor):
         list_fixed_values_scaled = list(
             posterior.likelihood.forward_map.arr_fixed_values
         )
-        list_fixed_values_scaled = [v if v != 0 else None for v in list_fixed_values_scaled]
+        list_fixed_values_scaled = [
+            v if v != 0 else None for v in list_fixed_values_scaled
+        ]
 
         # clppd
         ResultsCLPPD(
@@ -238,8 +241,13 @@ class ResultsExtractorMCMC(ResultsExtractor):
                 compute_derivatives_2nd_order=False,
             )
             objective_true = posterior.neglog_pdf(
-                Theta_true_scaled, forward_map_evals, nll_utils
+                Theta_true_scaled,
+                idx_pix=np.arange(N),
+                forward_map_evals=forward_map_evals,
+                nll_utils=nll_utils,
+                chromatic_gibbs=False,
             )
+            assert isinstance(objective_true, float)
 
         else:
             objective_true = np.nan
@@ -264,7 +272,9 @@ class ResultsExtractorMCMC(ResultsExtractor):
 
             for d in range(D):
                 if list_fixed_values_scaled[d] is not None:
-                    Theta_true_scaled_full[:, d] += list_fixed_values_scaled[d]
+                    val_d = copy.copy(list_fixed_values_scaled[d])
+                    assert isinstance(val_d, float)
+                    Theta_true_scaled_full[:, d] += val_d
         else:
             Theta_true_scaled_full = None
 
@@ -292,6 +302,7 @@ class ResultsExtractorMCMC(ResultsExtractor):
             lower_bounds_lin = estimator_plot.lower_bounds_lin * 1
             upper_bounds_lin = estimator_plot.upper_bounds_lin * 1
         else:
+            assert posterior.prior_indicator is not None
             lower_bounds = posterior.prior_indicator.lower_bounds_full.reshape(
                 (1, D),
             )
@@ -434,34 +445,35 @@ class ResultsExtractorMCMC(ResultsExtractor):
                 point_challenger=point_challenger,
             )
 
-            if len(list_lines_valid) > 0:
-                comparison_y_f_Theta.main(
-                    list_mcmc_folders,
-                    scaler,
-                    posterior.likelihood.forward_map,
-                    y_valid,
-                    omega_valid,
-                    sigma_a_valid,
-                    sigma_m_valid,
-                    list_lines_valid,
-                    "valid",
-                    point_challenger=point_challenger,
-                )
-                posterior.likelihood.forward_map.restrict_to_output_subset(
-                    list_lines_fit,
-                )
+            # if len(list_lines_valid) > 0:
+            #     comparison_y_f_Theta.main(
+            #         list_mcmc_folders,
+            #         scaler,
+            #         posterior.likelihood.forward_map,
+            #         y_valid,
+            #         omega_valid,
+            #         sigma_a_valid,
+            #         sigma_m_valid,
+            #         list_lines_valid,
+            #         "valid",
+            #         point_challenger=point_challenger,
+            #     )
+            #     posterior.likelihood.forward_map.restrict_to_output_subset(
+            #         list_lines_fit,
+            #     )
 
         if analyze_regularization_weight:
             ResultsRegularizationWeights(
-                model_name,
-                self.path_img,
-                self.path_data_csv_out_mcmc,
-                self.N_MCMC,
-                self.T_MC,
-                self.T_BI,
-                self.freq_save,
-                D,
-                list_names,
-            ).main(list_mcmc_folders)
+                model_name=model_name,
+                path_img=self.path_img,
+                path_data_csv_out_mcmc=self.path_data_csv_out_mcmc,
+                N_MCMC=self.N_MCMC,
+                T_MC=self.T_MC,
+                T_BI=self.T_BI,
+                freq_save=self.freq_save,
+                D_sampling=D_sampling,
+                list_names=list_names,
+            ).main(list_mcmc_folders, list_idx_sampling)
 
+        print()
         return

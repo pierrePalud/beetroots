@@ -13,7 +13,7 @@ from beetroots.inversion.results.utils.abstract_util import ResultsUtil
 
 class ResultsCLPPD(ResultsUtil):
 
-    __slots = (
+    __slots__ = (
         "model_name",
         "path_img",
         "path_data_csv_out",
@@ -31,7 +31,7 @@ class ResultsCLPPD(ResultsUtil):
         N: int,
         L: int,
     ):
-        assert chain_type in ["mcmc", "optim_map", "optim_mle"]
+        assert chain_type in ["mcmc", "optim_map"]
 
         self.model_name = model_name
         self.path_img = path_img
@@ -136,7 +136,7 @@ class ResultsCLPPD(ResultsUtil):
                 plt.imshow(
                     clppd_seed_shaped,
                     norm=colors.LogNorm(),
-                    cmap="jet",
+                    cmap="viridis",
                     origin="lower",
                 )
                 plt.colorbar()
@@ -169,7 +169,7 @@ class ResultsCLPPD(ResultsUtil):
             #         plt.imshow(
             #             p_values_seed_shaped,
             #             norm=colors.LogNorm(),
-            #             cmap="jet",
+            #             cmap="viridis",
             #             origin="lower",
             #         )
             #         plt.colorbar()
