@@ -64,6 +64,7 @@ class PlotsEstimator(AbstractPlots2D):
             name of the model (not used here, kept for compatibility), by default ""
         """
         Theta_estimated_plot = self.map_shaper.from_vector_to_map(Theta_estimated)
+        estimator_name = estimator_name.replace(".", "p")
         for d, name in enumerate(self.list_names):
             vmin = self.lower_bounds_lin[d] / 1.1
             vmax = self.upper_bounds_lin[d] * 1.1
@@ -88,7 +89,7 @@ class PlotsEstimator(AbstractPlots2D):
                 # plt.tight_layout()
 
                 filename = f"{folder_path}/{estimator_name}_{d}"
-                filename = filename.replace("%", "").replace(".", "p")
+                filename = filename.replace("%", "")
                 filename = filename.replace(" ", "_")
                 filename += ".PNG"
                 plt.savefig(
@@ -110,7 +111,7 @@ class PlotsEstimator(AbstractPlots2D):
 
             filename = f"{folder_path}/"
             filename += f"{estimator_name}_linscale_{d}"
-            filename = filename.replace("%", "").replace(".", "p")
+            filename = filename.replace("%", "")
             filename = filename.replace(" ", "_")
             filename += ".PNG"
 
@@ -128,6 +129,7 @@ class PlotsEstimator(AbstractPlots2D):
         """Only used in hierarchical models. The sampling of such model is not implemented."""
         u_estimated_plot = self.map_shaper.from_vector_to_map(u_estimated)
 
+        estimator_name = estimator_name.replace(".", "p")
         for ell, line in enumerate(list_lines):
             u_estimator_ell_plot = u_estimated_plot[:, :, ell] * 1
 
@@ -144,7 +146,7 @@ class PlotsEstimator(AbstractPlots2D):
             # plt.tight_layout()
 
             filename = f"{folder_path}/{estimator_name}_{ell}_{line}"
-            filename = filename.replace("%", "").replace(".", "p")
+            filename = filename.replace("%", "")
             filename += ".PNG"
             plt.savefig(filename, bbox_inches="tight")
             plt.close()
@@ -157,7 +159,7 @@ class PlotsEstimator(AbstractPlots2D):
 
             filename = f"{folder_path}/"
             filename += f"{estimator_name}_linscale_{ell}_{line}"
-            filename = filename.replace("%", "").replace(".", "p")
+            filename = filename.replace("%", "")
             filename += ".PNG"
 
             plt.savefig(filename, bbox_inches="tight")
