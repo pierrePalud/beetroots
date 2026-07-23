@@ -1,0 +1,196 @@
+simu_init:
+  # simu_name: "toy10_fixed-angle_hier-lin_joint_censored-disjointPMALA_regu2_IMTMScalingFactor1p5_truestartboth"
+  # simu_name: "toy10_fixed-angle_hier-lin_AuxOnlyUncensored_StartAuxTrueCensoredObsUncensored_mixtaddmult"
+  simu_name : "toy30_fixed-angle_hier_2p0_a10_nocensor_seed128"
+  cloud_name: "astro_toy_N30"
+  max_workers: 1
+  #
+  params_names:
+    kappa: $\kappa$
+    P: $P_{th}$
+    radm: $G_0$
+    Avmax: $A_V^{tot}$
+    angle: $\alpha$
+  #
+  list_lines_fit:
+    - "co_v0_j4__v0_j3"
+    - "co_v0_j5__v0_j4"
+    - "co_v0_j6__v0_j5"
+    - "co_v0_j7__v0_j6"
+    - "co_v0_j8__v0_j7"
+    - "co_v0_j9__v0_j8"
+    - "co_v0_j10__v0_j9"
+    - "co_v0_j11__v0_j10"
+    - "co_v0_j12__v0_j11"
+    - "co_v0_j13__v0_j12"
+#
+to_run_optim_map: false
+to_run_mcmc: true
+#
+forward_model:
+  forward_model_name: "meudon_pdr_model_dense"
+  force_use_cpu: false
+  fixed_params: # must contain all the params in list_names of the Simulation object. Values are in linear scale.
+    kappa: null
+    P: null
+    radm: null
+    Avmax: null
+    angle: 0.0
+  is_log_scale_params: # defines the scale to work with for each param (either log or lin)
+    kappa: True
+    P: True
+    radm: True
+    Avmax: True
+    angle: False
+#
+#
+sigma_a_float: 1.38715e-10
+omega_float: 1.38715e-50
+sigma_m_float_linscale: 2.0
+#
+# Component distributions and target distributions
+component_distributions:
+  theta_indicator_prior:
+    module: beetroots.modelling.priors.smooth_indicator_prior
+    class_name: "SmoothIndicatorPrior"
+    do_scaling: True
+    params:
+      var_name: "full_conditional_theta"
+      indicator_margin_scale: 1.0e-4
+      lower_bounds_lin:
+        - 1.0e-1 # kappa
+        - 1.0e+5 # thermal pressure
+        - 1.0e+0 # G0
+        - 1.0e+0 # AVtot
+        - 0.0 # angle
+      upper_bounds_lin:
+        - 1.0e+1 # kappa
+        - 1.0e+9 # thermal pressure
+        - 1.0e+5 # G0
+        - 4.0e+1 # AVtot
+        - 60.0 # angle
+  theta_spatial_prior:
+    module: beetroots.modelling.priors.l22_discrete_grad_prior
+    class_name: "L22DiscreteGradSpatialPrior"
+    params:
+      name: "L2-discrete-grad"
+      var_name: "full_conditional_theta"
+      use_next_nearest_neighbors: false
+      initial_regu_weights: [4.7, 4.7, 4.7, 4.7, 4.7]
+  aux_given_theta:
+    module: beetroots.modelling.hierarchical.aux_var_u
+    class_name: "AuxiliaryGivenTarget"
+    params:
+      var_names_dict:
+        target: 'full_conditional_theta'
+        aux: 'full_conditional_auxiliary'
+  obs_given_aux:
+    module: beetroots.modelling.hierarchical.aux_var_u
+    class_name: "ObservationsGivenAuxiliary"
+    params:
+      var_name: "full_conditional_auxiliary"
+#
+target_distributions:
+  full_conditional_theta: ["theta_indicator_prior", "theta_spatial_prior", "aux_given_theta"]
+  full_conditional_auxiliary: ["aux_given_theta", "obs_given_aux"]
+#
+param_interest_name: "full_conditional_theta"
+# sampling params
+sampling_params:
+  mcmc:
+    model_checking_component_name: "obs_given_aux"
+    sample_variables:
+      full_conditional_theta: true
+      full_conditional_auxiliary: true
+    start_from_type:
+      full_conditional_theta: "random" # "/home/ngoeman/Documents/beetroots/outputs/toy30_fixed-angle_hier_2p0_2026-04-24_22_savec/data/output/mcmc/full_conditional_theta/estimation_Var_MMSE_CI_hierarchical_aux_theta.csv"
+      full_conditional_auxiliary: "random" # "/home/ngoeman/Documents/beetroots/outputs/toy30_fixed-angle_hier_2p0_2026-04-24_22_savec/data/output/mcmc/full_conditional_auxiliary/estimation_Var_MMSE_CI_hierarchical_aux_theta.csv"
+    kernels_dic:
+      joint:
+        global_proba: 0.5
+        1:
+          module_name: "joint_pmala_approx_gamma"
+          class_name: "KernelPMALAApproxCensored"
+          external_parameters: {eps0: 1.0e-3, lambda_: 1.0e-5, alpha: 0.99, compute_correction_term: false, add_perturbation: true, acceptance_wise_type: "pixelwise"}
+        2:
+          module_name: "joint_mtm_mixture_neighbors_approx_gamma"
+          class_name: "KernelMTMMixtureNeighborsApproxCensored"
+          external_parameters: {k_mtm: 50, acceptance_wise_type: "pixelwise", scaling_std_approx: 1., scaling_std_censored: 1., do_indicator: false}
+        3:
+          module_name: "joint_pmala_approx_hybrid"
+          class_name: "KernelPMALAHybridCensored"
+          external_parameters: {eps0: 1.0e-3, lambda_: 1.0e-5, alpha: 0.99, compute_correction_term: false, add_perturbation: true, acceptance_wise_type: "pixelwise", scaling_std_approx: 1.}
+        sub_proba: {1: 0., 2: 1., 3: 0.}
+      disjoint:
+        global_proba: 0.5
+        full_conditional_theta:
+          1:
+            module_name: "pmala"
+            class_name: "KernelPMALA"
+            external_parameters: {eps0: 1.0e-2, lambda_: 1.0e-5, alpha: 0.5, compute_correction_term: false, add_perturbation: true, acceptance_wise_type: "pixelwise"}
+          sub_proba: {1: 1.}
+        full_conditional_auxiliary:
+          1:
+            module_name: "gamma_approx_aux"
+            class_name: "KernelGammaApproximationCensored"
+            external_parameters: {acceptance_wise_type: "full"}
+          sub_proba: {1: 1.}
+  map:
+    model_checking_component_name: "obs_given_aux"
+    sample_variables:
+      full_conditional_theta: true
+      full_conditional_auxiliary: true
+    start_from_type:
+      full_conditional_theta: "random"
+      full_conditional_auxiliary: "random"
+    kernels_dic:
+      joint:
+        global_proba: 1.
+        sub_proba: {}
+      disjoint:
+        global_proba: 0.
+        full_conditional_theta:
+          sub_proba: {}
+        full_conditional_auxiliary:
+          sub_proba: {}
+#
+# run params
+run_params:
+  map:
+    rng_seed: 0
+    N_MCMC: 1
+    T_MC: 500
+    T_BI: 100
+    batch_size: 20
+    freq_save: 1
+    start_from:
+      full_conditional_theta: null
+      full_conditional_auxiliary: null
+  mcmc:
+    rng_seed: 128
+    N_MCMC: 1
+    T_MC: 10000 #3_000
+    T_BI: 1500
+    plot_1D_chains:
+      full_conditional_theta: false # To speed-up the run, set to false otherwise set to true
+      full_conditional_auxiliary: false
+    plot_2D_chains:
+      full_conditional_theta: false # To speed-up the run, set to false otherwise set to true
+      full_conditional_auxiliary: false
+    plot_ESS:
+      full_conditional_theta: true
+      full_conditional_auxiliary: false
+    plot_comparisons_yspace: false
+    batch_size: 10
+    freq_save: 1
+    regu_spatial_N0: !!float inf # sets to infinite
+    regu_spatial_scale: 1.0
+    regu_spatial_vmin: 1.0e-8
+    regu_spatial_vmax: 1.0e+8
+    list_CI: [95, 99]
+#
+# Debugging
+debugging:
+  run_sampling: true
+  run_results_extraction: true
+  plot_setup: false

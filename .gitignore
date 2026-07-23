@@ -1,7 +1,7 @@
-outputs/*
-sandbox/*
-mermaid/*
+/sandbox/
+/sandbox/**
 
+outputs/*
 # *.csv
 notebooks_pierre/forward_model/figures/*
 notebooks_pierre/forward_model/torch_examples/figures/*
@@ -167,6 +167,9 @@ cython_debug/
 # MAC
 *.DS_Store
 
+# Miniforfe
+Miniforge3-Linux-x86_64.sh
+
 # np data
 *.npy
 *.hdf5
@@ -175,10 +178,15 @@ img/
 *.pdf
 !bmfit/lib/
 logs/
+_slurm/
 
 !examples/img/
 
 notebooks_pierre/*
 animations/*
 
-_slurm/*
+old_outputs0
+old_outputs
+data2_ngoeman
+
+data/toycases/*.sh

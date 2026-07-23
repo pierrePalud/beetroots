@@ -3,11 +3,11 @@ import sys
 import time
 from typing import Dict, Optional, Tuple
 
+# NOTE: Temporary solution because of error while running simulation on server (related to matplotlib backend apparently)
+import matplotlib
 import matplotlib.pyplot as plt
 
-'''Temporary solution because of error while running simulation on server (related to matplotlib backend apparently)'''
-import matplotlib
-matplotlib.use('Agg')
+matplotlib.use("Agg")
 
 import matplotlib.transforms as transforms
 import numpy as np
@@ -15,16 +15,15 @@ import pandas as pd
 from gaussian_mixture_likelihood import GaussianMixtureLikelihood
 from matplotlib.patches import Ellipse
 
-from beetroots.inversion.results.results_mcmc import ResultsExtractorMCMC
-from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
+from beetroots.inversion.results.results_mcmc_mygibbssampler import ResultsExtractorMCMC
 from beetroots.inversion.run.run_mcmc import RunMCMC
 from beetroots.inversion.run.run_optim_map import RunOptimMAP
 from beetroots.modelling.forward_maps.identity import BasicForwardMap
-from beetroots.modelling.posterior import Posterior
 from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
+from beetroots.modelling.target_distribution.posterior import Posterior
 from beetroots.sampler.my_sampler import MySampler
 from beetroots.sampler.saver.my_saver import MySaver
-from beetroots.sampler.utils.my_sampler_params import MySamplerParams
+from beetroots.sampler.utils.sampler_params import MySamplerParams
 from beetroots.simulations.abstract_simulation import Simulation
 from beetroots.space_transform.id_transform import IdScaler
 
@@ -124,7 +123,6 @@ def read_gaussian_distribution_file(modes_filename: str):
 
 
 class SimulationGaussianMixture(Simulation):
-
     __slots__ = (
         "max_workers",
         "n_means",
@@ -223,8 +221,8 @@ class SimulationGaussianMixture(Simulation):
         for i, x in enumerate(self.list_means):
             confidence_ellipse(x, self.list_cov[i], ax, 2.0, edgecolor="red")
 
-        ax.set_xlim((lower_bounds_lin[0], upper_bounds_lin[0]))
-        ax.set_ylim((lower_bounds_lin[1], upper_bounds_lin[1]))
+        ax.set_xlim([lower_bounds_lin[0], upper_bounds_lin[0]])
+        ax.set_ylim([lower_bounds_lin[1], upper_bounds_lin[1]])
         ax.set_xlabel(self.list_names[0])
         ax.set_ylabel(self.list_names[1])
         # ax.grid()
@@ -245,7 +243,7 @@ class SimulationGaussianMixture(Simulation):
         """
         return IdScaler(), BasicForwardMap(self.L, self.N)
 
-    def setup_posteriors(
+    def setup_target_distribution(
         self,
         indicator_margin_scale: float,
         lower_bounds_lin: np.ndarray,
@@ -261,7 +259,7 @@ class SimulationGaussianMixture(Simulation):
         )
 
         # indicator prior
-        list_idx_sampling = list(np.arange(self.D))
+        list_idx_sampling = np.arange(self.D)
 
         lower_bounds_lin = np.array(lower_bounds_lin)
         upper_bounds_lin = np.array(upper_bounds_lin)
@@ -299,7 +297,7 @@ class SimulationGaussianMixture(Simulation):
         lower_bounds_lin: np.ndarray,
         upper_bounds_lin: np.ndarray,
     ):
-        dict_posteriors, scaler = self.setup_posteriors(
+        dict_posteriors, scaler = self.setup_target_distribution(
             indicator_margin_scale,
             lower_bounds_lin,
             upper_bounds_lin,
@@ -344,7 +342,7 @@ class SimulationGaussianMixture(Simulation):
             L=self.L,
             scaler=scaler,
             batch_size=100,
-            list_idx_sampling=list(np.arange(self.D)),
+            list_idx_sampling=np.arange(self.D),
         )
 
         run_mcmc = RunMCMC(self.path_data_csv_out, self.max_workers)
@@ -380,7 +378,7 @@ class SimulationGaussianMixture(Simulation):
                 model_name=model_name,
                 scaler=scaler,
                 list_names=self.list_names,
-                list_idx_sampling=list(np.arange(self.D)),
+                list_idx_sampling=np.arange(self.D),
                 list_fixed_values=[None for _ in range(self.D)],
                 #
                 plot_1D_chains=plot_1D_chains,
@@ -422,7 +420,7 @@ class SimulationGaussianMixture(Simulation):
             L=self.L,
             scaler=scaler,
             batch_size=100,
-            list_idx_sampling=list(np.arange(self.D)),
+            list_idx_sampling=np.arange(self.D),
         )
 
         run_optim_map = RunOptimMAP(self.path_data_csv_out, self.max_workers)
@@ -455,7 +453,7 @@ class SimulationGaussianMixture(Simulation):
                 posterior=posterior,
                 model_name=model_name,
                 scaler=scaler,
-                list_idx_sampling=list(np.arange(self.D)),
+                list_idx_sampling=np.arange(self.D),
                 list_fixed_values=[None for _ in range(self.D)],
                 estimator_plot=None,
                 Theta_true_scaled=self.Theta_true_scaled * 1,
@@ -485,8 +483,8 @@ if __name__ == "__main__":
     dict_posteriors, scaler = simulation_gmm.setup(**params["prior_indicator"])
 
     assert (
-        params["to_run_optim_map"] or params["to_run_mcmc"]
-    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_mcmc' (or both) to true in `input.yaml` file."
+        params["to_run_optim_map"] or params["to_run_optim_map"]
+    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_optim_map' (or both) to true in `input.yaml` file."
 
     if params["to_run_optim_map"]:
         sampler_ = MySampler(

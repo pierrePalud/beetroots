@@ -1,5 +1,4 @@
-"""Implementation of a Gaussian mixture model likelihood
-"""
+"""Implementation of a Gaussian mixture model likelihood"""
 
 from typing import Optional, Union
 
@@ -10,14 +9,14 @@ from beetroots.modelling.forward_maps.abstract_base import ForwardMap
 from beetroots.modelling.likelihoods.abstract_likelihood import Likelihood
 
 
-@nb.jit(nopython=True, cache=True)
+@nb.jit(cache=True)
 def u_i(Theta: np.ndarray, mu_i: np.ndarray, cov_i_inv: np.ndarray) -> np.ndarray:
     u_ = np.exp(-0.5 * np.dot(Theta - mu_i, np.dot(cov_i_inv, Theta - mu_i)))
     u_ /= np.linalg.det(cov_i_inv) ** 0.5
     return u_
 
 
-@nb.jit(nopython=True, cache=True)
+@nb.jit(cache=True)
 def grad_u_i(Theta: np.ndarray, mu_i: np.ndarray, cov_i_inv: np.ndarray) -> np.ndarray:
     return -np.dot(cov_i_inv, Theta - mu_i) * u_i(Theta, mu_i, cov_i_inv)  # (N, D)
 
@@ -94,6 +93,7 @@ class GaussianMixtureLikelihood(Likelihood):
         pixelwise: bool = False,
         full: bool = False,
         idx: Optional[np.ndarray] = None,
+        **kwargs,
     ) -> Union[float, np.ndarray]:
         if idx is None:
             N_pix = self.N * 1

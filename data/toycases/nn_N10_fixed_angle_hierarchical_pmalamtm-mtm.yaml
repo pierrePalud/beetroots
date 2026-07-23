@@ -1,0 +1,165 @@
+simu_init:
+  simu_name: "astro_toy_N10_fixed_angle_hier"
+  cloud_name: "astro_toy_N10"
+  max_workers: 10
+  #
+  params_names:
+    kappa: $\kappa$
+    P: $P_{th}$
+    radm: $G_0$
+    Avmax: $A_V^{tot}$
+    angle: $\alpha$
+  #
+  list_lines_fit:
+    - "co_v0_j4__v0_j3"
+    - "co_v0_j5__v0_j4"
+    - "co_v0_j6__v0_j5"
+    - "co_v0_j7__v0_j6"
+    - "co_v0_j8__v0_j7"
+    - "co_v0_j9__v0_j8"
+    - "co_v0_j10__v0_j9"
+    - "co_v0_j11__v0_j10"
+    - "co_v0_j12__v0_j11"
+    - "co_v0_j13__v0_j12"
+#
+to_run_optim_map: false
+to_run_mcmc: true
+#
+forward_model:
+  forward_model_name: "meudon_pdr_model_dense"
+  force_use_cpu: false
+  fixed_params: # must contain all the params in list_names of the Simulation object. Values are in linear scale.
+    kappa: null
+    P: null
+    radm: null
+    Avmax: null
+    angle: 0.0
+  is_log_scale_params: # defines the scale to work with for each param (either log or lin)
+    kappa: True
+    P: True
+    radm: True
+    Avmax: True
+    angle: False
+#
+#
+sigma_a_float: 1.38715e-10
+sigma_m_float_linscale: 1.1
+#
+# Component distributions and target distributions
+component_distributions:
+  theta_indicator_prior:
+    module: beetroots.modelling.priors.smooth_indicator_prior
+    class_name: "SmoothIndicatorPrior"
+    do_scaling: True
+    params:
+      var_name: "full_conditional_theta"
+      indicator_margin_scale: 1.0e-1
+      lower_bounds_lin:
+        - 1.0e-1 # kappa
+        - 1.0e+5 # thermal pressure
+        - 1.0e+0 # G0
+        - 1.0e+0 # AVtot
+        - 0.0 # angle
+      upper_bounds_lin:
+        - 1.0e+1 # kappa
+        - 1.0e+9 # thermal pressure
+        - 1.0e+5 # G0
+        - 4.0e+1 # AVtot
+        - 60.0 # angle
+  theta_spatial_prior:
+    module: beetroots.modelling.priors.l22_discrete_grad_prior
+    class_name: "L22DiscreteGradSpatialPrior"
+    params:
+      name: "L2-discrete-grad"
+      var_name: "full_conditional_theta"
+      use_next_nearest_neighbors: false
+      initial_regu_weights: [1.0, 1.0, 1.0, 1.0, 1.0]
+  aux_given_theta:
+    module: beetroots.modelling.hierarchical.aux_var_u
+    class_name: "AuxiliaryGivenTarget"
+    params:
+      var_names_dict:
+        target: 'full_conditional_theta'
+        aux: 'full_conditional_auxiliary'
+  obs_given_aux:
+    module: beetroots.modelling.hierarchical.aux_var_u
+    class_name: "ObservationsGivenAuxiliary"
+    params:
+      var_name: "full_conditional_auxiliary"
+#
+target_distributions:
+  full_conditional_theta: ["theta_indicator_prior", "theta_spatial_prior", "aux_given_theta"]
+  full_conditional_auxiliary: ["aux_given_theta", "obs_given_aux"]
+#
+# sampling params
+sampling_params:
+  mcmc:
+    param_interest_name: "full_conditional_theta"
+    initial_step_size:  5.0e-4
+    extreme_grad: 1.0e-5
+    history_weight: 0.99
+    selection_probas:
+      joint:
+        proba: 0.
+        kernel_probabilities: [1.,]
+      disjoint:
+        proba: 1.
+        full_conditional_theta: [0.5, 0.5, 0.] # (p_mtm, p_pmala)
+        full_conditional_auxiliary: [1., 0., 0.] # (p_mtm, p_pmala, MH1D)
+    k_mtm: 100
+    is_stochastic: true
+    compute_correction_term: false
+    model_checking_component_name: "obs_given_aux"
+    proposal_distributions_mtm_params:
+      full_conditional_theta:
+        module_name : "mixture_neighbors"
+        class_name: "ProposalNeighbors"
+        params: {}
+      full_conditional_auxiliary:
+        module_name : "mixture_additive_multiplicative_noises"
+        class_name: "MixtureAdditiveMultiplicative"
+        params: {}
+    sample_variables:
+      full_conditional_theta: true
+      full_conditional_auxiliary: true
+    pmala_add_perturbation:
+      full_conditional_theta: true
+      full_conditional_auxiliary: true
+    pmala_positivity_constraint:
+      full_conditional_theta: false
+      full_conditional_auxiliary: true
+#
+# run params
+run_params:
+  mcmc:
+    N_MCMC: 1
+    T_MC: 200 #3_000
+    T_BI: 50
+    plot_1D_chains:
+      full_conditional_theta: false # To speed-up the run, set to false otherwise set to true
+      full_conditional_auxiliary: false
+    plot_2D_chains:
+      full_conditional_theta: false # To speed-up the run, set to false otherwise set to true
+      full_conditional_auxiliary: false
+    plot_ESS:
+      full_conditional_theta: false
+      full_conditional_auxiliary: true
+    plot_comparisons_yspace: false
+    batch_size: 10
+    freq_save: 1
+    start_from:
+      full_conditional_theta: null
+      full_conditional_auxiliary: null
+    regu_spatial_N0: !!float inf # sets to infinite
+    regu_spatial_scale: 1.0
+    regu_spatial_vmin: 1.0e-8
+    regu_spatial_vmax: 1.0e+8
+    list_CI: [68, 90, 95, 99]
+#
+# Debugging
+debugging:
+  run_sampling: true
+  run_results_extraction: true
+  sampling_start:
+    full_conditional_theta: "random"
+    full_conditional_auxiliary: "obs"

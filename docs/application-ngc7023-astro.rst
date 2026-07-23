@@ -39,14 +39,9 @@ Therefore, the setup of the inversion is very simple, as one only needs to impor
     from beetroots.simulations.astro.real_data.real_data_nn import SimulationRealDataNN
 
     if __name__ == "__main__":
-        yaml_file, path_data, path_models, path_outputs = SimulationRealDataNN.parse_args()
-
-        # load ``.yaml`` file
-        params = SimulationRealDataNN.load_params(path_data, yaml_file)
-
-        SimulationRealDataNN.check_input_params_file(
-            params,
-            data_validation.schema,
+        # path where the data is
+        path_data_cloud = os.path.abspath(
+            f"{os.path.dirname(os.path.abspath(__file__))}/../../data/ngc7023"
         )
 
         # result of another estimation from the literature
@@ -59,14 +54,15 @@ Therefore, the setup of the inversion is very simple, as one only needs to impor
             "value": np.array([[0.7, 1e8, radm_joblin, 1e1, 0.0]]),
         }
 
-        # create simulation object and run its main method to launch the inversion
-        simulation = SimulationRealDataNN(
-            **params["simu_init"],
-            path_data=path_data,
-            path_outputs=path_outputs,
-            path_models=path_models,
-            forward_model_fixed_params=params["forward_model"]["fixed_params"],
+        # load ``.yaml`` file
+        params = SimulationRealDataNN.load_params(path_data_cloud)
+        SimulationRealDataNN.check_input_params_file(
+            params,
+            data_validation.schema,
         )
+
+        # create simulation object and run its main method to launch the inversion
+        simulation = SimulationRealDataNN(**params["simu_init"], params=params)
 
         simulation.main(
             params=params,
@@ -90,11 +86,11 @@ YAML file
         max_workers: 10
         #
         params_names:
-            kappa: $\kappa$
-            P: $P_{th}$
-            radm: $G_0$
-            Avmax: $A_V^{tot}$
-            angle: $\alpha$
+        kappa: $\kappa$
+        P: $P_{th}$
+        radm: $G_0$
+        Avmax: $A_V^{tot}$
+        angle: $\alpha$
         #
         list_lines_fit:
         - "co_v0_j11__v0_j10"

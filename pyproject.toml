@@ -1,10 +1,4 @@
-[build-system]
-# poetry build
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
-
-
-[tool.poetry] # https://python-poetry.org/docs/pyproject/
+[project]
 name = "beetroots"
 version = "1.1.0"
 description = "Beetroots (BayEsian infErence with spaTial Regularization of nOisy multi-line ObservaTion mapS)"
@@ -16,12 +10,9 @@ keywords = [
     "interstellar medium",
 ]
 license = "MIT"
-authors = ["Pierre Palud"]
 readme = "README.md"
-repository = "https://github.com/pierrePalud/beetroots"
-
-
-
+authors = [{ name = "Pierre Palud", email = "address@tocomplete.fr" }]
+requires-python = ">=3.12.0"
 classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
@@ -31,55 +22,68 @@ classifiers = [
     "Operating System :: OS Independent",
 ] # https://pypi.org/classifiers/
 
+dependencies = [
+    "bayesian-optimization>=3.2.0",
+    "cerberus>=1.3.8",
+    "click>=8.3.1",
+    "h5py>=3.15.1",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.2",
+    "pandas>=3.0.1",
+    "scikit-learn>=1.8.0",
+    "scipy>=1.17.0",
+    "torch>=2.10.0",
+    "tqdm>=4.67.3",
+    "numba",
+    "nnbma",
+    "numba-stats>=1.11.0",
+]
 
-[tool.poetry.dependencies] # https://python-poetry.org/docs/cli/#add
-python = ">=3.9,<3.12" # <3.12 required by pygls
-numpy = ">=1.20.2"
-scipy = ">=1.11"
-tqdm = ">=4.62.3"
-numba = ">=0.54.1"
-scikit-learn = ">=1.0.1"
-pandas = ">=1.3.4"
-h5py = ">=3.6.0"
-pre-commit = ">=2.15.0"
-click = ">=8.0.4"
-bayesian-optimization = ">=1.4.3"
-# icc-rt = ">=2020.0.133"
-torch = "==2.2.1" # the versions past 2.2.1 do not work with poetry
-matplotlib = ">=3.6.2"
-nnbma = ">=0.1.2"
-flake8 = ">=6.0.0"
-cerberus = ">=1.3.4"
+[tool.uv.sources]
+# https://docs.astral.sh/uv/guides/integration/pytorch/
+# FIXME: many tests do not pass on GPU for nnbma, forcing CPU in the meantime?
+# ! RuntimeError: Expected all tensors to be on the same device, but got tensors is on cpu, different from other tensors on cuda:0 (when checking argument in method wrapper_CUDA_cat)
+torch = [
+    { index = "pytorch-cu126", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+    { index = "pytorch-cpu", marker = "platform_system == 'Darwin'" },
+]
+# dependency to a local version of a package
+nnbma = { path = "../ism-model-nn-approximation" }
 
-jupyter = { version = ">=1.0.0", optional = true }
-notebook = {version = ">=7.0.7", optional = true}
-jupyter-lsp = {version = ">=2.2.2", optional = true}
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
 
-#* Documentation
-# configuration in docs/conf.py
-Sphinx = { version = ">=5.3.0", optional = true }
-# Sphinx extensions https://www.sphinx-doc.org/en/master/usage/extensions/index.html
-# Manage bibliography .bib files
-# https://github.com/mcmtroffaes/sphinxcontrib-bibtex
-sphinxcontrib-bibtex = { version = ">=2.6.0", optional = true }
-# Checks syntax of reStructuredText and code blocks nested within it https://github.com/myint/rstcheck
-rstcheck = { version = ">=6.1.1", optional = true }
-# Language server for .rst files
-esbonio = { version = ">=0.15.0", optional = true }
-sphinx_rtd_theme = { version = ">=1.2.0", optional = true }
-myst_parser = { version = ">=1.0", optional = true }
-sphinx_design = { version = ">=0.1.0", optional = true }    # designing beautiful, screen-size responsive web-components.
-nbsphinx = { version = ">=0.9.0", optional = true }         # permits to include notebooks in the documentation (relies on pandoc, to be installed separately)
-nbsphinx_link = { version = ">=1.0.0", optional = true }    # permits to use notebooks that are not in the docs folder
-# sphinx_gallery = { version = ">=0.0.10", optional = true }
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
+[build-system]
+requires = ["uv_build>=0.9.27,<0.10.0"]
+build-backend = "uv_build"
 
-
-
-[tool.poetry.extras]
-# poetry install -E notebook -E docs
-notebook = ["jupyter", "notebook", "jupyter-lsp"]
-
+[dependency-groups]
+# Installing all dependencies (dev dependencies are installed by default if not
+# unselected with --no-dev)
+# uv sync --all-groups
+# Development dependencies
+# uv sync installs project in editable mode + dev-dependencies
+# uv sync --no-dev not to install dev dependencies
+# uv add --dev package-name
+dev = [
+    "black>=25.11.0",
+    "dask>=2026.1.2",
+    "distributed>=2026.1.2",
+    "flake8>=7.3.0",
+    "isort>=6.1.0",
+    "pre-commit>=4.5.1",
+    "pydocstyle>=6.3.0",
+    "pylint>=3.3.9",
+    "pytest>=8.4.2",     # run the test suite
+    "pytest-cov>=7.0.0", # generate coverage report see --cov --cov-report flags
+]
 # Documentation is generated with Sphinx
 # https://www.sphinx-doc.org/en/master/index.html
 # - locally with poetry run sphinx-build -b docs docs/_build/html
@@ -87,35 +91,28 @@ notebook = ["jupyter", "notebook", "jupyter-lsp"]
 #     - ReadTheDocs see .readthedocs.yaml file
 #     - GitHub pages see .github/workflows/docs.yml
 docs = [
-    "Sphinx",
-    "sphinxcontrib-bibtex",
-    "rstcheck",
-    "esbonio",
-    "sphinx_rtd_theme",
-    "myst_parser",
-    "sphinx_design",
-    "nbsphinx",
-    "nbsphinx_link",
+    "esbonio>=0.16.5",             # Language server for .rst files
+    "myst-parser>=3.0.1",
+    "nbsphinx>=0.9.8",             # permits to include notebooks in the documentation (relies on pandoc, to be installed separately)
+    "nbsphinx-link>=1.3.1",        # permits to use notebooks that are not in the docs folder
+    "rstcheck>=6.2.5",             # Checks syntax of reStructuredText and code blocks nested within it https://github.com/myint/rstcheck
+    "sphinx>=7.4.7",               # Sphinx extensions https://www.sphinx-doc.org/en/master/usage/extensions/index.html
+    "sphinx-design>=0.6.1",        # designing beautiful, screen-size responsive web-components.
+    "sphinx-rtd-theme>=3.1.0",
+    "sphinxcontrib-bibtex>=2.6.5", # Manage bibliography .bib files
+    # https://github.com/mcmtroffaes/sphinxcontrib-bibtex
+]
+# uv sync --group notebook --group docs
+notebook = [
+    "ipykernel>=7.2.0",
+    "jupyter>=1.1.1",
+    "jupyter-lsp>=2.3.0",
+    "notebook>=7.5.3",
 ]
 
-# Development dependencies
-# poetry install installs project in editable mode + dev-dependencies
-# poetry install --no-dev
-[tool.poetry.dev-dependencies]
-# poetry add package-name --dev
-# see [tool.pytest.ini_options]
-pytest = ">=6.2.3"      # run the test suite
-pytest-cov = ">=2.11.1" # generate coverage report see --cov --cov-report flags
-
-# Python "uncompromising" code formatter https://github.com/psf/black
-black = ">=22.3.0"
-isort = ">=5.12.0"
-pydocstyle = ">=6.1.1"
-pylint = ">=2.11.1"
-
-
 [tool.pytest.ini_options]
-# poetry run pytest
+# uv run pytest
+# uv run pytest --collect-only
 minversion = "6.0"
 addopts = "-ra -q -vv --cov=beetroots --cov-report=term-missing --cov-report=xml"
 testpaths = ["tests"]
@@ -137,6 +134,7 @@ disable = "C0330, C0326"
 [tool.pylint.format]
 max-line-length = "88"
 
-[tool.poetry.urls]
-Documentation = "https://beetroots.readthedocs.io/en/latest/"
-"Bug Tracker" = "https://github.com/pierrePalud/beetroots/issues"
+# [tool.poetry.urls]
+# repository = "https://github.com/pierrePalud/beetroots"
+# Documentation = "https://beetroots.readthedocs.io/en/latest/"
+# "Bug Tracker" = "https://github.com/pierrePalud/beetroots/issues"

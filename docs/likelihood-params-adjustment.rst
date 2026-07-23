@@ -181,7 +181,7 @@ and the python code:
         # step 2: read the additive noise standard deviations for the specified
         # lines
         data_reader = ReadDataRealData(params["list_lines"])
-        (_, _, sigma_a, _, _, _, _) = data_reader.setup_observation(
+        _, _, sigma_a, _, _, _, _ = data_reader.setup_observation(
             data_int_path=f"{path_data}/{params['filename_int']}",
             data_err_path=f"{path_data}/{params['filename_err']}",
             save_obs=False,

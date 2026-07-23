@@ -1,5 +1,5 @@
 simu_init:
-  simu_name: "astro_toy_N10_fixed_angle_optim"
+  simu_name: "astro_toy_N10_fixed_angle"
   cloud_name: "astro_toy_N10"
   max_workers: 10
   #

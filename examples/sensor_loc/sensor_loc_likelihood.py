@@ -1,5 +1,5 @@
-"""Implementation of the likelihood of the sensor localization problem
-"""
+"""Implementation of the likelihood of the sensor localization problem"""
+
 from typing import Optional, Union
 
 import numpy as np
@@ -78,9 +78,8 @@ class SensorLocalizationLikelihood(Likelihood):
         pixelwise: bool = False,
         full: bool = False,
         idx: Optional[np.ndarray] = None,
+        **kwargs,
     ) -> Union[float, np.ndarray]:
-        L = self.y.shape[1]
-
         if idx is None:
             assert forward_map_evals["f_Theta"].shape[0] == self.N
             N_pix = self.N * 1
@@ -123,7 +122,7 @@ class SensorLocalizationLikelihood(Likelihood):
         return np.sum(nlpdf)  # float
 
     def neglog_pdf_candidates(
-        self, candidates: np.ndarray, idx: np.ndarray, Theta_t: np.ndarray
+        self, candidates: np.ndarray, idx: np.ndarray, Theta_t: np.ndarray, **kwargs
     ) -> np.ndarray:
         assert len(candidates.shape) == 2 and candidates.shape[1] == self.D
         assert isinstance(idx, np.ndarray) and idx.size == 1

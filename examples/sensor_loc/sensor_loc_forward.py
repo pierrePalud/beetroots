@@ -1,6 +1,6 @@
-"""Forward model to the sensor localization problem: computes all pairwise distances
-"""
-from typing import List, Tuple, Union
+"""Forward model to the sensor localization problem: computes all pairwise distances"""
+
+from typing import List, Union
 
 import numba as nb
 import numpy as np

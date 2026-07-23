@@ -1,0 +1,168 @@
+simu_init:
+  simu_name: "astro_toy_N10_fixed_angle"
+  cloud_name: "astro_toy_N10"
+  max_workers: 16
+  #
+  params_names:
+    kappa: $\kappa$
+    P: $P_{th}$
+    radm: $G_0$
+    Avmax: $A_V^{tot}$
+    angle: $\alpha$
+  #
+  list_lines_fit:
+    - "co_v0_j4__v0_j3"
+    - "co_v0_j5__v0_j4"
+    - "co_v0_j6__v0_j5"
+    - "co_v0_j7__v0_j6"
+    - "co_v0_j8__v0_j7"
+    - "co_v0_j9__v0_j8"
+    - "co_v0_j10__v0_j9"
+    - "co_v0_j11__v0_j10"
+    - "co_v0_j12__v0_j11"
+    - "co_v0_j13__v0_j12"
+#
+to_run_optim_map: false
+to_run_mcmc: true
+#
+forward_model:
+  forward_model_name: "meudon_pdr_model_dense"
+  force_use_cpu: false
+  fixed_params: # must contain all the params in list_names of the Simulation object. Values are in linear scale.
+    kappa: null
+    P: null
+    radm: null
+    Avmax: null
+    angle: 0.0
+  is_log_scale_params: # defines the scale to work with for each param (either log or lin)
+    kappa: True
+    P: True
+    radm: True
+    Avmax: True
+    angle: False
+#
+#
+sigma_a_float: 1.38715e-10
+sigma_m_float_linscale: 1.1
+#
+# Component distributions and target distributions
+component_distributions:
+  theta_indicator_prior:
+    module: beetroots.modelling.priors.smooth_indicator_prior
+    class_name: "SmoothIndicatorPrior"
+    do_scaling: True
+    params:
+      var_name: "Theta"
+      indicator_margin_scale: 1.0e-4
+      lower_bounds_lin:
+        - 1.0e-1 # kappa
+        - 1.0e+5 # thermal pressure
+        - 1.0e+0 # G0
+        - 1.0e+0 # AVtot
+        - 0.0 # angle
+      upper_bounds_lin:
+        - 1.0e+1 # kappa
+        - 1.0e+9 # thermal pressure
+        - 1.0e+5 # G0
+        - 4.0e+1 # AVtot
+        - 60.0 # angle
+  theta_spatial_prior:
+    module: beetroots.modelling.priors.l22_discrete_grad_prior
+    class_name: "L22DiscreteGradSpatialPrior"
+    params:
+      name: "L2-discrete-grad"
+      var_name: "Theta"
+      use_next_nearest_neighbors: false
+      initial_regu_weights: [2.0, 2.0, 2.0, 2.0, 2.0]
+  approx-likelihood:
+    module: ["beetroots.modelling.likelihoods.approx_censored_add_mult"]
+    class_name: ["MixingModelsLikelihood"]
+    params:
+      name: "approx-likelihood"
+      var_name: "Theta"
+      mixing_model_params_filename: ["best_params.csv"]
+      list_gaussian_approx_params: []
+#
+target_distributions:
+  Theta: ["theta_indicator_prior", "theta_spatial_prior", "approx_likelihood"]
+#
+param_interest_name: "Theta"
+# sampling params
+sampling_params:
+  map:
+    model_checking_component_name: "likelihood"
+    sample_variables:
+      Theta: true
+    start_from_type:
+      Theta: "random"
+    kernels_dic:
+      disjoint:
+        global_proba: 1.
+        Theta:
+          1:
+            module_name: "pmala"
+            class_name: "KernelPMALA"
+            external_parameters: {eps0: 5.0e-2, lambda_: 1.0e-5, alpha: 0.99, compute_correction_term: false, add_perturbation: true, acceptance_wise_type: "pixelwise"}
+          2:
+            module_name: "mixture_neighbors"
+            class_name: "KernelMixtureNeighbors"
+            external_parameters: {k_mtm: 100, acceptance_wise_type: "pixelwise"}
+          sub_proba: {1: 0.5, 2: 0.5}
+  mcmc:
+    model_checking_component_name: "likelihood"
+    sample_variables:
+      Theta: true
+    start_from_type:
+      Theta: "random"
+    kernels_dic:
+      disjoint:
+        global_proba: 1.
+        Theta:
+          1:
+            module_name: "pmala"
+            class_name: "KernelPMALA"
+            external_parameters: {eps0: 5.0e-3, lambda_: 1.0e-5, alpha: 0.99, compute_correction_term: false, add_perturbation: true, acceptance_wise_type: "pixelwise"}
+          2:
+            module_name: "mixture_neighbors"
+            class_name: "KernelMixtureNeighbors"
+            external_parameters: {k_mtm: 100, acceptance_wise_type: "pixelwise", do_indicator: false}
+          sub_proba: {1: 0.5, 2: .5}
+#
+# run params
+run_params:
+  map:
+    rng_seed: 23
+    N_MCMC: 1
+    T_MC: 2000
+    T_BI: 500
+    batch_size: 20
+    freq_save: 1
+    start_from:
+      Theta: null
+  mcmc:
+    rng_seed: 42
+    N_MCMC: 1
+    T_MC: 5000 #3_000
+    T_BI: 500
+    plot_1D_chains:
+      Theta: false # To speed-up the run, set to false otherwise set to true
+    plot_2D_chains:
+      Theta: false # To speed-up the run, set to false otherwise set to true
+    plot_ESS:
+      Theta: true
+    plot_comparisons_yspace: false
+    batch_size: 10
+    freq_save: 1
+    start_from:
+      Theta: null
+    regu_spatial_N0: !!float inf # sets to infinite
+    regu_spatial_scale: 1.0
+    regu_spatial_vmin: 1.0e-8
+    regu_spatial_vmax: 1.0e+8
+    list_CI: [95, 99]
+
+# Debugging
+debugging:
+  run_sampling: true
+  run_results_extraction: true
+  plot_setup: false

@@ -10,21 +10,18 @@ import pandas as pd
 from sensor_loc_forward import SensorLocForwardMap
 from sensor_loc_likelihood import SensorLocalizationLikelihood
 
-from beetroots.inversion.results.results_mcmc import ResultsExtractorMCMC
-from beetroots.inversion.results.results_optim_map import ResultsExtractorOptimMAP
+from beetroots.inversion.results.results_mcmc_mygibbssampler import ResultsExtractorMCMC
 from beetroots.inversion.run.run_mcmc import RunMCMC
-from beetroots.inversion.run.run_optim_map import RunOptimMAP
-from beetroots.modelling.posterior import Posterior
 from beetroots.modelling.priors.smooth_indicator_prior import SmoothIndicatorPrior
+from beetroots.modelling.target_distribution.posterior import Posterior
 from beetroots.sampler.my_sampler import MySampler
 from beetroots.sampler.saver.my_saver import MySaver
-from beetroots.sampler.utils.my_sampler_params import MySamplerParams
+from beetroots.sampler.utils.sampler_params import MySamplerParams
 from beetroots.simulations.abstract_simulation import Simulation
 from beetroots.space_transform.id_transform import IdScaler
 
 
 class SensorLocalizationSimulation(Simulation):
-
     __slots__ = (
         "max_workers",
         "D",
@@ -183,7 +180,6 @@ class SensorLocalizationSimulation(Simulation):
         lower_bounds_lin: np.ndarray,
         upper_bounds_lin: np.ndarray,
     ):
-
         list_Theta_lin = self._read_mc_values(N_MCMC, T_BI)
         freq = 1
 
@@ -290,7 +286,7 @@ class SensorLocalizationSimulation(Simulation):
         )
         return y
 
-    def setup_posteriors(
+    def setup_target_distribution(
         self,
         filename_obs: str,
         R: float,
@@ -356,7 +352,7 @@ class SensorLocalizationSimulation(Simulation):
         lower_bounds_lin: np.ndarray,
         upper_bounds_lin: np.ndarray,
     ):
-        dict_posteriors, scaler = self.setup_posteriors(
+        dict_posteriors, scaler = self.setup_target_distribution(
             filename_obs,
             R,
             sigma_a,
@@ -534,8 +530,8 @@ if __name__ == "__main__":
     )
 
     assert (
-        params["to_run_optim_map"] or params["to_run_mcmc"]
-    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_mcmc' (or both) to true in `input.yaml` file."
+        params["to_run_optim_map"] or params["to_run_optim_map"]
+    ), "Did not run anything! To run either MCMC or optimization, set either 'to_run_optim_map' or 'to_run_optim_map' (or both) to true in `input.yaml` file."
 
     if params["to_run_optim_map"]:
         sampler_ = MySampler(
